@@ -728,9 +728,9 @@
     grid-template-columns: 1fr;
   }
 
-  .ugc-modal {
+  /**.ugc-modal {
     align-items: flex-end;
-  }
+  }**/
 
   .ugc-modal__panel {
     width: 100%;
