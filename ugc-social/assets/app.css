@@ -57,6 +57,19 @@
   animation: gradientShift 15s ease infinite;
   min-height: 100vh;
   position: relative;
+  padding-bottom: 0;
+}
+
+.ugc-app::after {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to top, rgba(102, 126, 234, 0.3), transparent);
+  pointer-events: none;
+  z-index: -1;
 }
 
 @keyframes gradientShift {
@@ -195,6 +208,18 @@
   align-items: center;
   gap: 12px;
   padding: 16px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  background-size: 200% 200%;
+  animation: subtleGradient 8s ease infinite;
+}
+
+@keyframes subtleGradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 .ugc-avatar {
@@ -692,17 +717,6 @@
 
   .ugc-card__head {
     padding: 14px;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 100%);
-    animation: subtleGradient 8s ease infinite;
-  }
-
-  @keyframes subtleGradient {
-    0%, 100% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
   }
 
   .ugc-caption {
