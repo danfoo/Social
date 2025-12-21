@@ -69,8 +69,10 @@
   const feedEl = qs('[data-ugc-feed]', el);
   const composerModal = qs('[data-modal="composer"]', el);
   const commentsModal = qs('[data-modal="comments"]', el);
+  const profileModal = qs('[data-modal="profile"]', el);
   const errorEl = qs('[data-error]', el);
   const commentsErrorEl = qs('[data-comments-error]', el);
+  const profileErrorEl = qs('[data-profile-error]', el);
   const commentsEl = qs('[data-comments]', el);
 
   const mePromptEl = qs('[data-me-prompt]', el);
@@ -350,7 +352,7 @@
     try{
       // if no profile yet, force quick auth via modal
       if(!state.myProfile){
-        setError(commentsErrorEl, 'Veuillez d’abord définir votre pseudonyme et PIN (une seule fois).');
+        setError(commentsErrorEl, 'Veuillez d'abord définir votre pseudonyme et PIN (une seule fois).');
         // Open composer modal but only show identity block
         closeModal(commentsModal);
         if(!composerModal) return;
@@ -375,6 +377,98 @@
       `);
     }catch(e){
       setError(commentsErrorEl, e.message || 'Erreur commentaire.');
+    }
+  }
+
+  async function openProfileModal(){
+    if(!profileModal) return;
+    if(!state.myProfile){
+      setError(profileErrorEl, 'Vous devez d\'abord créer un profil.');
+      return;
+    }
+
+    setError(profileErrorEl, '');
+
+    // Pre-fill current profile info
+    const previewAvatar = qs('[data-profile-avatar-preview]', profileModal);
+    const previewName = qs('[data-profile-name-preview]', profileModal);
+
+    if(previewAvatar) {
+      previewAvatar.innerHTML = `<img class="ugc-avatar ugc-avatar--lg" src="${state.myProfile.avatar_url}" alt="" />`;
+    }
+    if(previewName) {
+      previewName.textContent = state.myProfile.display_name;
+    }
+
+    // Clear input fields
+    qs('[data-input="profile_display_name"]', profileModal).value = '';
+    qs('[data-input="profile_pin"]', profileModal).value = '';
+    qs('[data-input="profile_avatar_file"]', profileModal).value = '';
+
+    openModal(profileModal);
+  }
+
+  async function submitProfile(){
+    setError(profileErrorEl, '');
+
+    if(!state.myProfile){
+      setError(profileErrorEl, 'Profil non trouvé.');
+      return;
+    }
+
+    const newDisplayName = (qs('[data-input="profile_display_name"]', profileModal).value || '').trim();
+    const pin = (qs('[data-input="profile_pin"]', profileModal).value || '').trim();
+    const avatarFile = qs('[data-input="profile_avatar_file"]', profileModal).files[0];
+
+    if(!pin){
+      setError(profileErrorEl, 'PIN requis pour modifier le profil.');
+      return;
+    }
+
+    if(!/^[0-9]{4,6}$/.test(pin)){
+      setError(profileErrorEl, 'PIN invalide (4–6 chiffres).');
+      return;
+    }
+
+    try{
+      let avatar_attachment_id = null;
+
+      // Upload new avatar if provided
+      if(avatarFile){
+        const up = await uploadMedia(avatarFile);
+        avatar_attachment_id = up.id;
+      }
+
+      // Prepare update data
+      const updateData = {
+        display_name: newDisplayName || state.myProfile.display_name,
+        pin: pin
+      };
+
+      if(avatar_attachment_id){
+        updateData.avatar_attachment_id = avatar_attachment_id;
+      }
+
+      const updatedProfile = await api('/profile/upsert', {
+        method: 'POST',
+        body: JSON.stringify(updateData)
+      });
+
+      state.myProfile = updatedProfile;
+      setComposerIdentityUI();
+
+      // Update header avatar
+      renderAvatarHost(updatedProfile.avatar_url);
+
+      closeModal(profileModal);
+
+      // Clear fields
+      qs('[data-input="profile_display_name"]', profileModal).value = '';
+      qs('[data-input="profile_pin"]', profileModal).value = '';
+      qs('[data-input="profile_avatar_file"]', profileModal).value = '';
+
+    }catch(e){
+      setError(profileErrorEl, e.message || 'Erreur lors de la mise à jour du profil.');
     }
   }
 
@@ -429,6 +523,7 @@
     if(action === 'close-modal'){
       closeModal(composerModal);
       closeModal(commentsModal);
+      closeModal(profileModal);
     }
     if(action === 'auth-continue'){
       setError(errorEl,'');
@@ -471,6 +566,12 @@
       const card = ev.target.closest('[data-post-id]');
       if(!card) return;
       await toggleLike(parseInt(card.dataset.postId,10), t);
+    }
+    if(action === 'open-profile'){
+      await openProfileModal();
+    }
+    if(action === 'submit-profile'){
+      await submitProfile();
     }
   });
 

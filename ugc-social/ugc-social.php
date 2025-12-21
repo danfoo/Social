@@ -184,9 +184,15 @@ add_shortcode('ugc_app', function($atts = []) {
     <div class="ugc-app" data-ugc-app="1">
 
       <div class="ugc-header ugc-header--brand">
-        <div class="ugc-tabs ugc-tabs--pill">
-          <button class="ugc-tab is-active" data-mode="latest">Derniers</button>
-          <button class="ugc-tab" data-mode="trending">Tendance</button>
+        <div class="ugc-header__top">
+          <button class="ugc-user-avatar" data-action="open-profile" type="button" title="Mon profil">
+            <div data-me-avatar></div>
+          </button>
+
+          <div class="ugc-tabs ugc-tabs--pill">
+            <button class="ugc-tab is-active" data-mode="latest">Derniers</button>
+            <button class="ugc-tab" data-mode="trending">Tendance</button>
+          </div>
         </div>
 
         <button class="ugc-start" type="button" data-action="open-composer">
@@ -289,6 +295,49 @@ add_shortcode('ugc_app', function($atts = []) {
           <div class="ugc-modal__actions">
             <button class="ugc-btn" type="button" data-action="close-modal">Fermer</button>
             <button class="ugc-btn ugc-btn-primary" type="button" data-action="submit-comment">Envoyer</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Edit Modal -->
+      <div class="ugc-modal" data-modal="profile" aria-hidden="true">
+        <div class="ugc-modal__backdrop" data-action="close-modal"></div>
+        <div class="ugc-modal__panel">
+          <div class="ugc-sheet__handle" aria-hidden="true"></div>
+          <div class="ugc-modal__title">Mon profil</div>
+
+          <div class="ugc-modal__body">
+            <div class="ugc-profile-preview">
+              <div class="ugc-profile-preview__avatar" data-profile-avatar-preview></div>
+              <div class="ugc-profile-preview__name" data-profile-name-preview>Chargement...</div>
+            </div>
+
+            <div class="ugc-grid ugc-grid--auth">
+              <div class="ugc-field">
+                <label>Nouveau pseudonyme</label>
+                <input type="text" maxlength="60" data-input="profile_display_name" placeholder="ex: Mouha" />
+                <div class="ugc-hint">Laissez vide pour garder le même.</div>
+              </div>
+
+              <div class="ugc-field">
+                <label>PIN (requis) <span class="ugc-req">*</span></label>
+                <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" data-input="profile_pin" placeholder="ex: 1234" />
+                <div class="ugc-hint">Pour sécuriser les modifications.</div>
+              </div>
+
+              <div class="ugc-field">
+                <label>Nouvel avatar</label>
+                <input type="file" accept="image/*" data-input="profile_avatar_file" />
+                <div class="ugc-hint">Laissez vide pour garder le même.</div>
+              </div>
+            </div>
+
+            <div class="ugc-error" data-profile-error></div>
+          </div>
+
+          <div class="ugc-modal__actions">
+            <button class="ugc-btn" type="button" data-action="close-modal">Annuler</button>
+            <button class="ugc-btn ugc-btn-primary" type="button" data-action="submit-profile">Enregistrer</button>
           </div>
         </div>
       </div>
