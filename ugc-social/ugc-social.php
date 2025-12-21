@@ -51,6 +51,61 @@ add_filter('intermediate_image_sizes_advanced', function($sizes, $metadata, $att
     return $sizes;
 }, 10, 3);
 
+/**
+ * Disable big image size threshold for formats that may not be supported by GD/Imagick.
+ * This prevents the "cannot generate responsive sizes" error.
+ */
+add_filter('big_image_size_threshold', function($threshold, $imagesize, $file, $attachment_id){
+    if (!$attachment_id) return $threshold;
+
+    $mime = get_post_mime_type($attachment_id);
+    $skip = ['image/webp','image/avif','image/heic','image/heif','image/tiff','image/bmp','image/x-icon'];
+
+    if ($mime && in_array($mime, $skip, true)) {
+        return false; // disable threshold = no resize
+    }
+    return $threshold;
+}, 10, 4);
+
+/**
+ * Remove subsizes error from attachment metadata to prevent upload failures.
+ */
+add_filter('wp_update_attachment_metadata', function($data, $attachment_id){
+    if (isset($data['sizes']) && is_array($data['sizes'])) {
+        // Remove any error entries in sizes array
+        foreach ($data['sizes'] as $size_name => $size_data) {
+            if (isset($size_data['error'])) {
+                unset($data['sizes'][$size_name]);
+            }
+        }
+    }
+    return $data;
+}, 10, 2);
+
+/**
+ * Suppress image sub-size generation errors for unsupported formats.
+ */
+add_filter('wp_generate_attachment_metadata', function($metadata, $attachment_id){
+    $mime = get_post_mime_type($attachment_id);
+    $skip = ['image/webp','image/avif','image/heic','image/heif','image/tiff','image/bmp','image/x-icon'];
+
+    if ($mime && in_array($mime, $skip, true)) {
+        // Ensure sizes array exists but is empty
+        if (!isset($metadata['sizes'])) {
+            $metadata['sizes'] = [];
+        }
+        // Remove any error entries
+        if (is_array($metadata['sizes'])) {
+            foreach ($metadata['sizes'] as $size_name => $size_data) {
+                if (isset($size_data['error'])) {
+                    unset($metadata['sizes'][$size_name]);
+                }
+            }
+        }
+    }
+    return $metadata;
+}, 10, 2);
+
 
 register_activation_hook(__FILE__, ['UGC_Activator', 'activate']);
 register_deactivation_hook(__FILE__, ['UGC_Activator', 'deactivate']);
