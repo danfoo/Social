@@ -376,8 +376,21 @@
   box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5);
 }
 
+/* Icon styles */
+.ugc-icon {
+  display: inline-block;
+  vertical-align: middle;
+  transition: all var(--ugc-transition-base);
+  flex-shrink: 0;
+}
+
 .ugc-btn-like {
   transition: all var(--ugc-transition-base);
+}
+
+.ugc-btn-like .ugc-icon {
+  stroke: currentColor;
+  fill: none;
 }
 
 .ugc-btn-like.is-liked {
@@ -386,8 +399,29 @@
   color: var(--ugc-like);
 }
 
+.ugc-btn-like.is-liked .ugc-icon {
+  fill: currentColor;
+  animation: heartPulse 0.4s ease;
+}
+
+@keyframes heartPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 .ugc-btn-like.is-liked:hover {
   background: rgba(255, 77, 122, 0.2);
+}
+
+.ugc-btn:hover .ugc-icon {
+  transform: scale(1.1);
 }
 
 /* ==========================================

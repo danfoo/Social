@@ -173,8 +173,18 @@
         ${mediaHtml}
         ${item.caption ? `<div class="ugc-caption">${item.caption}</div>` : ``}
         <div class="ugc-actions">
-          <button class="ugc-btn ugc-btn-like ${item.liked_by_me ? 'is-liked':''}" data-action="like">♥ <span data-like-count>${item.like_count}</span></button>
-          <button class="ugc-btn" data-action="comments">💬 <span>${item.comment_count}</span></button>
+          <button class="ugc-btn ugc-btn-like ${item.liked_by_me ? 'is-liked':''}" data-action="like">
+            <svg class="ugc-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+            <span data-like-count>${item.like_count}</span>
+          </button>
+          <button class="ugc-btn" data-action="comments">
+            <svg class="ugc-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>${item.comment_count}</span>
+          </button>
         </div>
       </div>
     `;
@@ -352,7 +362,7 @@
     try{
       // if no profile yet, force quick auth via modal
       if(!state.myProfile){
-        setError(commentsErrorEl, 'Veuillez d'abord définir votre pseudonyme et PIN (une seule fois).');
+        setError(commentsErrorEl, 'Veuillez d\'abord définir votre pseudonyme et PIN (une seule fois).');
         // Open composer modal but only show identity block
         closeModal(commentsModal);
         if(!composerModal) return;
