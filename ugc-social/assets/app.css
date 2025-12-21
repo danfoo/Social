@@ -122,7 +122,7 @@
 .ugc-tab {
   background: transparent;
   border: 0;
-  color: rgba(255, 255, 255, 0.8);
+  color: #303a97;
   padding: 10px 18px;
   border-radius: var(--ugc-radius-full);
   cursor: pointer;
