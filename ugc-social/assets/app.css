@@ -322,6 +322,17 @@
   font-size: 15px;
 }
 
+/* Hashtag styling */
+.ugc-hashtag {
+  font-weight: 700;
+  color: #667eea;
+  transition: all var(--ugc-transition-fast);
+}
+
+.ugc-hashtag:hover {
+  color: #5a67d8;
+}
+
 .ugc-actions {
   display: flex;
   gap: 12px;

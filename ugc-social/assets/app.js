@@ -171,7 +171,7 @@
           </div>
         </div>
         ${mediaHtml}
-        ${item.caption ? `<div class="ugc-caption">${item.caption}</div>` : ``}
+        ${item.caption ? `<div class="ugc-caption">${formatHashtags(item.caption)}</div>` : ``}
         <div class="ugc-actions">
           <button class="ugc-btn ugc-btn-like ${item.liked_by_me ? 'is-liked':''}" data-action="like">
             <svg class="ugc-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -192,6 +192,14 @@
 
   function escapeHtml(str){
     return String(str||'').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+  }
+
+  function formatHashtags(text){
+    if(!text) return '';
+    // Escape HTML first
+    const escaped = escapeHtml(text);
+    // Then replace hashtags with styled version
+    return escaped.replace(/#(\w+)/g, '<span class="ugc-hashtag">#$1</span>');
   }
 
   async function loadFeed(reset=false){
@@ -345,7 +353,7 @@
           <img class="ugc-avatar ugc-avatar--sm" src="${c.author.avatar_url}" alt="" />
           <div class="ugc-comment__body">
             <div class="ugc-comment__meta"><strong>${escapeHtml(c.author.display_name)}</strong> · ${new Date(c.date).toLocaleString()}</div>
-            <div class="ugc-comment__text">${c.content}</div>
+            <div class="ugc-comment__text">${formatHashtags(c.content)}</div>
           </div>
         </div>
       `).join('');
@@ -381,10 +389,20 @@
           <img class="ugc-avatar ugc-avatar--sm" src="${res.author.avatar_url}" alt="" />
           <div class="ugc-comment__body">
             <div class="ugc-comment__meta"><strong>${escapeHtml(res.author.display_name)}</strong> · ${new Date().toLocaleString()}</div>
-            <div class="ugc-comment__text">${res.content}</div>
+            <div class="ugc-comment__text">${formatHashtags(res.content)}</div>
           </div>
         </div>
       `);
+
+      // Update comment counter in the feed card
+      const postCard = feedEl.querySelector(`[data-post-id="${state.activePostForComments}"]`);
+      if(postCard){
+        const commentBtn = postCard.querySelector('[data-action="comments"] span');
+        if(commentBtn){
+          const currentCount = parseInt(commentBtn.textContent, 10) || 0;
+          commentBtn.textContent = String(currentCount + 1);
+        }
+      }
     }catch(e){
       setError(commentsErrorEl, e.message || 'Erreur commentaire.');
     }
