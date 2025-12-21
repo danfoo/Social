@@ -63,14 +63,16 @@
 
 .ugc-header--brand {
   background: linear-gradient(135deg, #303A97 0%, #4f5fb5 100%);
-  border-radius: var(--ugc-radius-lg);
+  border-radius: 0;
   padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: var(--ugc-shadow-lg),
-              inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  margin-bottom: 24px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: none;
+  margin-bottom: 0;
   position: relative;
   overflow: hidden;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
 }
 
 .ugc-header--brand::before {
@@ -172,35 +174,28 @@
 
 .ugc-feed {
   display: grid;
-  gap: 20px;
-  padding: 0 0 24px;
+  gap: 0;
+  padding: 0;
+  margin: 0 -20px;
 }
 
 .ugc-card {
   background: var(--ugc-card);
-  border: 1px solid var(--ugc-border);
-  border-radius: var(--ugc-radius-lg);
-  box-shadow: var(--ugc-shadow-md);
+  border: 0;
+  border-top: 1px solid var(--ugc-border);
+  border-bottom: 1px solid var(--ugc-border);
+  border-radius: 0;
+  box-shadow: none;
   overflow: hidden;
   backdrop-filter: blur(10px);
   transition: all var(--ugc-transition-base);
   position: relative;
-}
-
-.ugc-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
 }
 
 .ugc-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--ugc-shadow-lg);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(20, 25, 45, 1), rgba(15, 18, 35, 1));
 }
 
 .ugc-card__head {
@@ -683,7 +678,11 @@
 .ugc-loadmore {
   display: flex;
   justify-content: center;
-  margin: 24px 0;
+  padding: 24px 20px;
+  background: var(--ugc-bg);
+  border-top: 1px solid var(--ugc-border);
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
 }
 
 /* ==========================================
@@ -779,18 +778,12 @@
 }
 
 /* Smooth entrance for feed items */
-.ugc-card {
-  animation: fadeInUp 0.4s ease-out;
-}
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
