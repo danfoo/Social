@@ -2,14 +2,14 @@
 /**
  * Plugin Name: UGC Social Feed (Pseudo + PIN)
  * Description: Mini social feed (text/photo/video) with pseudo unique + PIN, likes, comments, trending feed, and frontend posting.
- * Version: 0.1.1
+ * Version: 0.2.4
  * Author: PERSO
  * Text Domain: ugc-social
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('UGC_SOCIAL_VERSION', '0.2.3');
+define('UGC_SOCIAL_VERSION', '0.2.4');
 define('UGC_SOCIAL_PATH', plugin_dir_path(__FILE__));
 define('UGC_SOCIAL_URL', plugin_dir_url(__FILE__));
 
@@ -164,7 +164,7 @@ add_action('ugc_social_recalc_trending', function() {
 
 add_shortcode('ugc_app', function($atts = []) {
     wp_enqueue_style('ugc-social', UGC_SOCIAL_URL . 'assets/app.css', [], filemtime(UGC_SOCIAL_PATH . 'assets/app.css'));
-    wp_enqueue_script('ugc-social', UGC_SOCIAL_URL . 'assets/app.js', ['wp-api-fetch'], UGC_SOCIAL_VERSION, true);
+    wp_enqueue_script('ugc-social', UGC_SOCIAL_URL . 'assets/app.js', ['wp-api-fetch'], filemtime(UGC_SOCIAL_PATH . 'assets/app.js'), true);
 
     wp_localize_script('ugc-social', 'UGC_SOCIAL', [
         'restUrl' => esc_url_raw(rest_url('ugc/v1')),
