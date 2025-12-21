@@ -3,18 +3,19 @@
    ========================================== */
 
 :root{
-  /* Colors - Instagram Style */
-  --ugc-bg: #fafafa;
+  /* Colors - Gradient Blue/Purple */
+  --ugc-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --ugc-bg-secondary: #ffffff;
   --ugc-card: #ffffff;
-  --ugc-text: #262626;
-  --ugc-muted: #8e8e8e;
-  --ugc-border: #dbdbdb;
-  --ugc-primary: #0095f6;
-  --ugc-primary-hover: #1877f2;
-  --ugc-like: #ed4956;
-  --ugc-success: #4ade80;
-  --ugc-warning: #fbbf24;
+  --ugc-text: #2d3748;
+  --ugc-text-light: #ffffff;
+  --ugc-muted: #718096;
+  --ugc-border: rgba(255, 255, 255, 0.2);
+  --ugc-primary: #667eea;
+  --ugc-primary-hover: #5a67d8;
+  --ugc-like: #f56565;
+  --ugc-success: #48bb78;
+  --ugc-warning: #ed8936;
 
   /* Spacing & Radius */
   --ugc-radius-sm: 12px;
@@ -51,7 +52,23 @@
   color: var(--ugc-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--ugc-bg);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 15s ease infinite;
+  min-height: 100vh;
+  position: relative;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 * {
@@ -63,13 +80,14 @@
    ========================================== */
 
 .ugc-header--brand {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
   border-radius: 0;
   padding: 20px;
   border: 0;
-  border-bottom: 1px solid var(--ugc-border);
-  box-shadow: none;
-  margin-bottom: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
   position: relative;
   overflow: hidden;
   width: 100vw;
@@ -82,15 +100,16 @@
   gap: 6px;
   padding: 4px;
   border-radius: var(--ugc-radius-full);
-  background: #efefef;
-  border: 1px solid var(--ugc-border);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   margin-bottom: 16px;
+  backdrop-filter: blur(5px);
 }
 
 .ugc-tab {
   background: transparent;
   border: 0;
-  color: var(--ugc-muted);
+  color: rgba(255, 255, 255, 0.8);
   padding: 10px 18px;
   border-radius: var(--ugc-radius-full);
   cursor: pointer;
@@ -101,21 +120,22 @@
 }
 
 .ugc-tab:hover {
-  color: var(--ugc-text);
-  background: rgba(0, 0, 0, 0.05);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .ugc-tab.is-active {
-  background: #ffffff;
-  color: var(--ugc-text);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--ugc-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Composer Start Button */
 .ugc-start {
   width: 100%;
-  border: 1px solid var(--ugc-border);
-  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
   border-radius: var(--ugc-radius-md);
   padding: 18px 20px;
   cursor: pointer;
@@ -126,8 +146,9 @@
 }
 
 .ugc-start:hover {
-  border-color: var(--ugc-muted);
-  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
 }
 
 .ugc-start:active {
@@ -135,7 +156,7 @@
 }
 
 .ugc-start__text {
-  color: var(--ugc-muted);
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 400;
   font-size: 15px;
 }
@@ -613,8 +634,8 @@
   display: flex;
   justify-content: center;
   padding: 24px 20px;
-  background: var(--ugc-bg);
-  border-top: 1px solid var(--ugc-border);
+  background: transparent;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
   width: 100vw;
   margin-left: calc(50% - 50vw);
 }
@@ -722,6 +743,38 @@
 }
 
 /* Button simple effect - Instagram style */
+
+/* ==========================================
+   Heart Animation - Flying Hearts
+   ========================================== */
+
+.ugc-flying-heart {
+  position: absolute;
+  font-size: 24px;
+  color: var(--ugc-like);
+  pointer-events: none;
+  animation: flyUp 2s ease-out forwards;
+  z-index: 1000;
+}
+
+@keyframes flyUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(-50px) scale(1.2) rotate(15deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-120px) scale(0.5) rotate(30deg);
+  }
+}
+
+.ugc-card {
+  position: relative;
+}
 
 /* ==========================================
    Accessibility

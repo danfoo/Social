@@ -270,12 +270,49 @@
     }
   }
 
+  function createFlyingHeart(x, y, card){
+    const heart = document.createElement('div');
+    heart.className = 'ugc-flying-heart';
+    heart.textContent = '❤️';
+    heart.style.left = `${x}px`;
+    heart.style.top = `${y}px`;
+
+    // Random slight horizontal movement
+    const randomX = (Math.random() - 0.5) * 40;
+    heart.style.setProperty('--random-x', `${randomX}px`);
+
+    card.appendChild(heart);
+
+    // Remove after animation
+    setTimeout(() => {
+      heart.remove();
+    }, 2000);
+  }
+
   async function toggleLike(postId, btn){
     try{
       const res = await api('/like/toggle', { method:'POST', body: JSON.stringify({post_id: postId}) });
       const countEl = btn.querySelector('[data-like-count]');
       if(countEl) countEl.textContent = String(res.like_count);
       btn.classList.toggle('is-liked', !!res.liked);
+
+      // Flying hearts animation when liked
+      if(res.liked){
+        const card = btn.closest('[data-post-id]');
+        if(card){
+          const rect = btn.getBoundingClientRect();
+          const cardRect = card.getBoundingClientRect();
+
+          // Create multiple hearts
+          for(let i = 0; i < 5; i++){
+            setTimeout(() => {
+              const x = rect.left - cardRect.left + (Math.random() * 30);
+              const y = rect.top - cardRect.top + (Math.random() * 20);
+              createFlyingHeart(x, y, card);
+            }, i * 100);
+          }
+        }
+      }
     }catch(e){
       alert(e.message || 'Erreur like.');
     }
