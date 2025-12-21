@@ -35,7 +35,7 @@
 }
 .ugc-card__head{ display:flex; align-items:center; gap:10px; padding:12px 12px 10px; }
 .ugc-avatar{ width:44px; height:44px !important; border-radius:50% !important; border:1px solid var(--ugc-border); object-fit:cover; background:#0f1320; }
-.ugc-avatar--sm{ width:34px; height:34px; border-radius:12px; }
+.ugc-avatar--sm{ width:34px; height:34px !important; border-radius:50%; }
 .ugc-author__name{ font-weight:700; line-height:1.1; }
 .ugc-author__date{ font-size:12px; color:var(--ugc-muted); margin-top:2px; }
 
