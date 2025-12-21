@@ -52,7 +52,7 @@
   color: var(--ugc-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #f5effb 100%);;
   background-size: 200% 200%;
   animation: gradientShift 15s ease infinite;
   min-height: 100vh;
