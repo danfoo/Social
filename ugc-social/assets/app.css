@@ -224,7 +224,7 @@
 
 .ugc-avatar {
   width: 48px;
-  height: 48px;
+  height: 48px !important;
   border-radius: 50%;
   border: 2px solid #fafafa;
   object-fit: cover;
