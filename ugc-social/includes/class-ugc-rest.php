@@ -56,6 +56,12 @@ class UGC_REST {
             'callback' => [__CLASS__, 'report_add'],
             'permission_callback' => [__CLASS__, 'perm_public_nonce'],
         ]);
+
+        register_rest_route('ugc/v1', '/upload', [
+            'methods' => 'POST',
+            'callback' => [__CLASS__, 'upload_media'],
+            'permission_callback' => [__CLASS__, 'perm_public_nonce'],
+        ]);
     }
 
     public static function perm_public_nonce($request) {
@@ -522,5 +528,124 @@ class UGC_REST {
         if (!$ok) return new WP_Error('ugc_report_failed', 'Signalement impossible.', ['status' => 500]);
 
         return rest_ensure_response(['ok' => true]);
+    }
+
+    public static function upload_media($request) {
+        // Custom upload endpoint that bypasses WordPress image validation
+        require_once(ABSPATH . 'wp-admin/includes/file.php');
+        require_once(ABSPATH . 'wp-admin/includes/media.php');
+        require_once(ABSPATH . 'wp-admin/includes/image.php');
+
+        $files = $request->get_file_params();
+
+        if (empty($files['file'])) {
+            return new WP_Error('ugc_no_file', 'Aucun fichier fourni.', ['status' => 400]);
+        }
+
+        $file = $files['file'];
+
+        // Validate file type
+        $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+                         'image/avif', 'image/heic', 'image/heif', 'image/bmp',
+                         'video/mp4', 'video/webm', 'video/quicktime'];
+
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime_type = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
+
+        if (!in_array($mime_type, $allowed_types, true) && !in_array($file['type'], $allowed_types, true)) {
+            return new WP_Error('ugc_invalid_type', 'Type de fichier non autorisé.', ['status' => 400]);
+        }
+
+        // Temporarily disable all image processing to prevent errors
+        add_filter('intermediate_image_sizes_advanced', '__return_empty_array', 9999);
+        add_filter('big_image_size_threshold', '__return_false', 9999);
+
+        // Handle the upload using WordPress functions but suppress errors
+        $upload_overrides = [
+            'test_form' => false,
+            'mimes' => [
+                'jpg|jpeg|jpe' => 'image/jpeg',
+                'png' => 'image/png',
+                'gif' => 'image/gif',
+                'webp' => 'image/webp',
+                'avif' => 'image/avif',
+                'heic' => 'image/heic',
+                'heif' => 'image/heif',
+                'bmp' => 'image/bmp',
+                'mp4' => 'video/mp4',
+                'webm' => 'video/webm',
+                'mov' => 'video/quicktime',
+            ]
+        ];
+
+        $uploaded = wp_handle_upload($file, $upload_overrides);
+
+        // Re-enable filters
+        remove_filter('intermediate_image_sizes_advanced', '__return_empty_array', 9999);
+        remove_filter('big_image_size_threshold', '__return_false', 9999);
+
+        if (isset($uploaded['error'])) {
+            return new WP_Error('ugc_upload_error', $uploaded['error'], ['status' => 500]);
+        }
+
+        // Create attachment post
+        $attachment_data = [
+            'post_mime_type' => $uploaded['type'],
+            'post_title' => sanitize_file_name(pathinfo($uploaded['file'], PATHINFO_FILENAME)),
+            'post_content' => '',
+            'post_status' => 'inherit'
+        ];
+
+        $attachment_id = wp_insert_attachment($attachment_data, $uploaded['file']);
+
+        if (is_wp_error($attachment_id)) {
+            return $attachment_id;
+        }
+
+        // Generate minimal metadata without sub-sizes for images
+        $metadata = [];
+
+        if (strpos($uploaded['type'], 'image/') === 0) {
+            $imagesize = @getimagesize($uploaded['file']);
+            if ($imagesize) {
+                $metadata = [
+                    'width' => $imagesize[0],
+                    'height' => $imagesize[1],
+                    'file' => _wp_relative_upload_path($uploaded['file']),
+                    'sizes' => [], // No sub-sizes
+                    'image_meta' => [
+                        'aperture' => '0',
+                        'credit' => '',
+                        'camera' => '',
+                        'caption' => '',
+                        'created_timestamp' => '0',
+                        'copyright' => '',
+                        'focal_length' => '0',
+                        'iso' => '0',
+                        'shutter_speed' => '0',
+                        'title' => '',
+                        'orientation' => '0',
+                        'keywords' => [],
+                    ],
+                ];
+            }
+        } elseif (strpos($uploaded['type'], 'video/') === 0) {
+            $metadata = [
+                'file' => _wp_relative_upload_path($uploaded['file']),
+            ];
+        }
+
+        if (!empty($metadata)) {
+            wp_update_attachment_metadata($attachment_id, $metadata);
+        }
+
+        // Return response similar to wp/v2/media
+        return rest_ensure_response([
+            'id' => $attachment_id,
+            'source_url' => wp_get_attachment_url($attachment_id),
+            'mime_type' => $uploaded['type'],
+            'media_details' => $metadata,
+        ]);
     }
 }

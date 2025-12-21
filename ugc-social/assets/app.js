@@ -45,10 +45,10 @@
   }
 
   async function uploadMedia(file){
-    // Upload to WP Media Library via wp/v2/media
+    // Upload to custom UGC endpoint that bypasses WordPress image validation
     const form = new FormData();
     form.append('file', file);
-    const res = await fetch(`${UGC_SOCIAL.siteUrl}wp-json/wp/v2/media`, {
+    const res = await fetch(`${UGC_SOCIAL.restUrl}/upload`, {
       method: 'POST',
       headers: {
         'X-WP-Nonce': UGC_SOCIAL.nonce,
