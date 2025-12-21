@@ -139,7 +139,6 @@
   function resetComposerStep(){
     window.showComposerStep('auth');
   }
-  }
 
   function openModal(modal){ modal.setAttribute('aria-hidden','false'); modal.classList.add('is-open'); }
   function closeModal(modal){ modal.setAttribute('aria-hidden','true'); modal.classList.remove('is-open'); }
@@ -255,7 +254,6 @@
       // keep pseudo/pin for convenience
 
       // Refresh feed
-      await setActiveTab(state.mode || 'latest');
       loadFeed(true);
       // fallback auto-load in case of cached event handlers
       setTimeout(()=>{
