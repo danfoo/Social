@@ -105,6 +105,7 @@
       if(authMeAvatar) authMeAvatar.src = state.myProfile.avatar_url;
       if(authMeName) authMeName.textContent = state.myProfile.display_name;
     }
+  }
 
   function configureMediaPicker(kind){
     const mediaInput = qs('[data-input="media_file"]', composerModal);
