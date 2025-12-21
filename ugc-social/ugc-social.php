@@ -302,34 +302,36 @@ add_shortcode('ugc_app', function($atts = []) {
       <!-- Profile Edit Modal -->
       <div class="ugc-modal" data-modal="profile" aria-hidden="true">
         <div class="ugc-modal__backdrop" data-action="close-modal"></div>
-        <div class="ugc-modal__panel">
+        <div class="ugc-modal__panel ugc-modal__panel--compact">
           <div class="ugc-sheet__handle" aria-hidden="true"></div>
           <div class="ugc-modal__title">Mon profil</div>
 
           <div class="ugc-modal__body">
-            <div class="ugc-profile-preview">
-              <div class="ugc-profile-preview__avatar" data-profile-avatar-preview></div>
-              <div class="ugc-profile-preview__name" data-profile-name-preview>Chargement...</div>
+            <div class="ugc-profile-avatar-wrapper">
+              <div class="ugc-profile-avatar-edit" data-action="open-avatar-picker">
+                <div class="ugc-profile-avatar-container" data-profile-avatar-preview></div>
+                <button class="ugc-avatar-edit-btn" type="button" title="Modifier l'avatar">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </button>
+              </div>
+              <div class="ugc-profile-name" data-profile-name-preview>Chargement...</div>
             </div>
 
-            <div class="ugc-grid ugc-grid--auth">
-              <div class="ugc-field">
+            <div class="ugc-grid ugc-grid--auth ugc-grid--compact">
+              <div class="ugc-field ugc-field--compact">
                 <label>Nouveau pseudonyme</label>
                 <input type="text" maxlength="60" data-input="profile_display_name" placeholder="ex: Mouha" />
-                <div class="ugc-hint">Laissez vide pour garder le même.</div>
               </div>
 
-              <div class="ugc-field">
+              <div class="ugc-field ugc-field--compact">
                 <label>PIN (requis) <span class="ugc-req">*</span></label>
                 <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" data-input="profile_pin" placeholder="ex: 1234" />
-                <div class="ugc-hint">Pour sécuriser les modifications.</div>
               </div>
 
-              <div class="ugc-field">
-                <label>Nouvel avatar</label>
-                <input type="file" accept="image/*" data-input="profile_avatar_file" />
-                <div class="ugc-hint">Laissez vide pour garder le même.</div>
-              </div>
+              <input type="file" accept="image/*" data-input="profile_avatar_file" style="display:none;" />
             </div>
 
             <div class="ugc-error" data-profile-error></div>

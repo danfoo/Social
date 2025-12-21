@@ -418,6 +418,11 @@
     openModal(profileModal);
   }
 
+  function openAvatarPicker(){
+    const fileInput = qs('[data-input="profile_avatar_file"]', profileModal);
+    if(fileInput) fileInput.click();
+  }
+
   async function submitProfile(){
     setError(profileErrorEl, '');
 
@@ -582,6 +587,9 @@
     }
     if(action === 'submit-profile'){
       await submitProfile();
+    }
+    if(action === 'open-avatar-picker'){
+      openAvatarPicker();
     }
   });
 
