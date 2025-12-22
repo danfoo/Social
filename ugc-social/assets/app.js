@@ -161,6 +161,25 @@
       return `<img class="ugc-media" src="${m.url}" alt="" loading="lazy" />`;
     })();
 
+    // Check if current user is the author
+    const isMyPost = state.myProfile && item.author.id === state.myProfile.id;
+    const actionsMenu = isMyPost ? `
+      <div class="ugc-post-menu">
+        <button class="ugc-post-menu-btn" data-action="edit-post" title="Modifier">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+        </button>
+        <button class="ugc-post-menu-btn ugc-post-menu-btn--delete" data-action="delete-post" title="Supprimer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+      </div>
+    ` : '';
+
     return `
       <div class="ugc-card" data-post-id="${item.id}">
         <div class="ugc-card__head">
@@ -169,6 +188,7 @@
             <div class="ugc-author__name">${escapeHtml(item.author.display_name)}</div>
             <div class="ugc-author__date">${new Date(item.date).toLocaleString()}</div>
           </div>
+          ${actionsMenu}
         </div>
         ${mediaHtml}
         ${item.caption ? `<div class="ugc-caption">${formatHashtags(item.caption)}</div>` : ``}
@@ -251,7 +271,12 @@
     const mediaFile = qs('[data-input="media_file"]', composerModal).files[0];
 
     try{
-      await ensureProfileFromComposer();
+      // Check if we're editing an existing post
+      const isEditing = !!state.editingPostId;
+
+      if(!isEditing){
+        await ensureProfileFromComposer();
+      }
 
       let media_ids = [];
       let media_type = 'none';
@@ -262,10 +287,26 @@
         media_type = (up.mime_type && up.mime_type.startsWith('video/')) ? 'video' : 'image';
       }
 
-      const post = await api('/posts', {
-        method: 'POST',
-        body: JSON.stringify({ caption, media_type, media_ids })
-      });
+      if(isEditing){
+        // Update existing post
+        await api(`/posts/${state.editingPostId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ caption, media_type, media_ids: mediaFile ? media_ids : undefined })
+        });
+
+        // Clear editing state
+        state.editingPostId = null;
+
+        // Reset button text
+        const submitBtn = qs('[data-action="submit-post"]', composerModal);
+        if(submitBtn) submitBtn.textContent = 'Publier';
+      } else {
+        // Create new post
+        await api('/posts', {
+          method: 'POST',
+          body: JSON.stringify({ caption, media_type, media_ids })
+        });
+      }
 
       closeModal(composerModal);
       resetComposerStep();
@@ -505,6 +546,60 @@
     }
   }
 
+  async function deletePost(postId, card){
+    if(!confirm('Êtes-vous sûr de vouloir supprimer cette publication ?')) return;
+
+    try{
+      await api(`/posts/${postId}`, { method: 'DELETE' });
+
+      // Remove from DOM with animation
+      card.style.opacity = '0';
+      card.style.transform = 'scale(0.95)';
+      card.style.transition = 'all 0.3s ease';
+
+      setTimeout(() => {
+        card.remove();
+      }, 300);
+    }catch(e){
+      alert(e.message || 'Erreur lors de la suppression.');
+    }
+  }
+
+  async function editPost(postId, card){
+    if(!composerModal) return;
+
+    try{
+      // Fetch post data
+      const postData = await api(`/posts/${postId}`, { method: 'GET' });
+
+      setError(errorEl, '');
+
+      // Store editing state
+      state.editingPostId = postId;
+
+      // Pre-fill caption
+      const captionInput = qs('[data-input="caption"]', composerModal);
+      if(captionInput) captionInput.value = postData.caption || '';
+
+      // Clear media file input (can't pre-fill file inputs)
+      const mediaInput = qs('[data-input="media_file"]', composerModal);
+      if(mediaInput) mediaInput.value = '';
+
+      // Show composer with pre-filled data
+      openModal(composerModal);
+      showAuthBlock(false);
+      window.showComposerStep('post');
+
+      // Change button text
+      const submitBtn = qs('[data-action="submit-post"]', composerModal);
+      if(submitBtn) submitBtn.textContent = 'Mettre à jour';
+
+      if(captionInput) setTimeout(() => captionInput.focus(), 50);
+    }catch(e){
+      alert(e.message || 'Erreur lors du chargement du post.');
+    }
+  }
+
   // Tabs
   qsa('.ugc-tab', el).forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -608,6 +703,16 @@
     }
     if(action === 'open-avatar-picker'){
       openAvatarPicker();
+    }
+    if(action === 'delete-post'){
+      const card = ev.target.closest('[data-post-id]');
+      if(!card) return;
+      await deletePost(parseInt(card.dataset.postId,10), card);
+    }
+    if(action === 'edit-post'){
+      const card = ev.target.closest('[data-post-id]');
+      if(!card) return;
+      await editPost(parseInt(card.dataset.postId,10), card);
     }
   });
 

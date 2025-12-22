@@ -27,6 +27,24 @@ class UGC_REST {
             'permission_callback' => [__CLASS__, 'perm_public_nonce'],
         ]);
 
+        register_rest_route('ugc/v1', '/posts/(?P<id>\d+)', [
+            'methods' => 'GET',
+            'callback' => [__CLASS__, 'get_post'],
+            'permission_callback' => '__return_true',
+        ]);
+
+        register_rest_route('ugc/v1', '/posts/(?P<id>\d+)', [
+            'methods' => 'PUT',
+            'callback' => [__CLASS__, 'update_post'],
+            'permission_callback' => [__CLASS__, 'perm_public_nonce'],
+        ]);
+
+        register_rest_route('ugc/v1', '/posts/(?P<id>\d+)', [
+            'methods' => 'DELETE',
+            'callback' => [__CLASS__, 'delete_post'],
+            'permission_callback' => [__CLASS__, 'perm_public_nonce'],
+        ]);
+
         register_rest_route('ugc/v1', '/feed', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'feed'],
@@ -270,6 +288,112 @@ class UGC_REST {
         UGC_Trending::recalc_for_post($post_id);
 
         return rest_ensure_response(self::post_to_public($post_id, (int)$profile->id));
+    }
+
+    public static function get_post($request) {
+        $post_id = (int) $request->get_param('id');
+
+        if (!$post_id || get_post_type($post_id) !== 'ugc_post') {
+            return new WP_Error('ugc_post_invalid', 'Post invalide.', ['status' => 404]);
+        }
+
+        $uuid = self::get_visitor_uuid($request);
+        $my_profile_id = 0;
+        if ($uuid) {
+            global $wpdb;
+            $my_profile_id = (int)$wpdb->get_var($wpdb->prepare("SELECT id FROM " . self::table_profiles() . " WHERE visitor_uuid=%s LIMIT 1", $uuid));
+        }
+
+        $post_data = self::post_to_public($post_id, $my_profile_id);
+        if (!$post_data) {
+            return new WP_Error('ugc_post_not_found', 'Post introuvable.', ['status' => 404]);
+        }
+
+        return rest_ensure_response($post_data);
+    }
+
+    public static function update_post($request) {
+        global $wpdb;
+        $profile = self::require_profile($request);
+        if (is_wp_error($profile)) return $profile;
+
+        $post_id = (int) $request->get_param('id');
+
+        if (!$post_id || get_post_type($post_id) !== 'ugc_post') {
+            return new WP_Error('ugc_post_invalid', 'Post invalide.', ['status' => 404]);
+        }
+
+        // Check ownership
+        $post_profile_id = (int) get_post_meta($post_id, 'ugc_profile_id', true);
+        if ($post_profile_id !== (int)$profile->id) {
+            return new WP_Error('ugc_unauthorized', 'Vous n\'êtes pas autorisé à modifier ce post.', ['status' => 403]);
+        }
+
+        $caption = wp_kses_post((string) $request->get_param('caption'));
+        $media_type = sanitize_text_field((string) $request->get_param('media_type'));
+        $media_ids = $request->get_param('media_ids');
+
+        // Update post content
+        wp_update_post([
+            'ID' => $post_id,
+            'post_content' => $caption ?: '',
+            'post_title' => wp_trim_words(wp_strip_all_tags($caption ?: 'Publication'), 8, '…'),
+        ]);
+
+        // Update media if provided
+        if ($media_ids !== null) {
+            if (!is_array($media_ids)) $media_ids = [];
+            $media_ids = array_values(array_filter(array_map('intval', $media_ids)));
+
+            update_post_meta($post_id, 'ugc_media_type', $media_type ?: 'none');
+            update_post_meta($post_id, 'ugc_media_ids', wp_json_encode($media_ids));
+
+            if (!empty($media_ids)) {
+                $first = (int)$media_ids[0];
+                if ($first) {
+                    $mime = get_post_mime_type($first);
+                    if ($mime && strpos($mime, 'image/') === 0) {
+                        set_post_thumbnail($post_id, $first);
+                    }
+                }
+            } else {
+                delete_post_thumbnail($post_id);
+            }
+        }
+
+        UGC_Trending::recalc_for_post($post_id);
+
+        return rest_ensure_response(self::post_to_public($post_id, (int)$profile->id));
+    }
+
+    public static function delete_post($request) {
+        global $wpdb;
+        $profile = self::require_profile($request);
+        if (is_wp_error($profile)) return $profile;
+
+        $post_id = (int) $request->get_param('id');
+
+        if (!$post_id || get_post_type($post_id) !== 'ugc_post') {
+            return new WP_Error('ugc_post_invalid', 'Post invalide.', ['status' => 404]);
+        }
+
+        // Check ownership
+        $post_profile_id = (int) get_post_meta($post_id, 'ugc_profile_id', true);
+        if ($post_profile_id !== (int)$profile->id) {
+            return new WP_Error('ugc_unauthorized', 'Vous n\'êtes pas autorisé à supprimer ce post.', ['status' => 403]);
+        }
+
+        // Delete the post (WordPress will handle post meta cleanup)
+        $result = wp_delete_post($post_id, true);
+
+        if (!$result) {
+            return new WP_Error('ugc_delete_failed', 'Impossible de supprimer le post.', ['status' => 500]);
+        }
+
+        // Clean up orphaned likes and comments will be handled by WordPress
+        $wpdb->delete(self::table_likes(), ['post_id' => $post_id], ['%d']);
+
+        return rest_ensure_response(['success' => true, 'message' => 'Post supprimé avec succès.']);
     }
 
     private static function post_to_public($post_id, $my_profile_id = 0) {

@@ -254,6 +254,52 @@
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
   background-size: 200% 200%;
   animation: subtleGradient 8s ease infinite;
+  position: relative;
+}
+
+/* Post menu actions (edit/delete) */
+.ugc-post-menu {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.ugc-post-menu-btn {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--ugc-transition-fast);
+  padding: 0;
+}
+
+.ugc-post-menu-btn:hover {
+  background: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ugc-post-menu-btn:active {
+  transform: scale(0.95);
+}
+
+.ugc-post-menu-btn svg {
+  color: #667eea;
+  stroke: currentColor;
+}
+
+.ugc-post-menu-btn--delete:hover {
+  background: rgba(245, 101, 101, 0.1);
+  border-color: rgba(245, 101, 101, 0.3);
+}
+
+.ugc-post-menu-btn--delete:hover svg {
+  color: #f56565;
 }
 
 @keyframes subtleGradient {
