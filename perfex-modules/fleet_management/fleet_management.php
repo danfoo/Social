@@ -14,7 +14,7 @@ define('FLEET_MANAGEMENT_MODULE', 'fleet_management');
 
 // Bump this whenever the database schema changes so the auto-migration below
 // recreates any missing table/column without a manual deactivate/reactivate.
-define('FLEET_MANAGEMENT_DB_VERSION', '1.0.13');
+define('FLEET_MANAGEMENT_DB_VERSION', '1.0.14');
 
 $CI = &get_instance();
 
@@ -226,4 +226,5 @@ function fleet_management_cron()
     $CI = &get_instance();
     $CI->load->model('fleet_management/fleet_management_model');
     $CI->fleet_management_model->send_due_reminders();
+    $CI->fleet_management_model->send_due_license_reminders();
 }

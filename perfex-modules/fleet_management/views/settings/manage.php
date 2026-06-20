@@ -38,6 +38,15 @@ foreach ($expense_categories as $c) {
                         </div>
                     </div>
 
+                    <h4 class="bold mtop20"><i class="fa fa-id-card text-danger"></i> <?php echo _l('fleet_drivers'); ?></h4>
+                    <hr class="hr-panel-heading" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <?php echo render_input('fleet_license_notify_days', 'fleet_set_license_notify_days', get_option('fleet_license_notify_days'), 'number'); ?>
+                            <p class="text-muted tw-text-xs"><?php echo _l('fleet_set_license_notify_days_help'); ?></p>
+                        </div>
+                    </div>
+
                     <div class="mtop15">
                         <button type="submit" class="btn btn-primary"><?php echo _l('submit'); ?></button>
                     </div>

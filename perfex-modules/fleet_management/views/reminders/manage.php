@@ -26,6 +26,47 @@ foreach ($suppliers as $sup) {
                 <?php endif; ?>
             </div>
         </div>
+        <?php if (!empty($expiring_licenses)) : ?>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel_s">
+                        <div class="panel-body">
+                            <h4 class="bold no-margin"><i class="fa fa-id-card text-danger"></i> <?php echo _l('fleet_license_reminders'); ?></h4>
+                            <hr class="hr-panel-heading" />
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead><tr>
+                                        <th><?php echo _l('fleet_driver'); ?></th>
+                                        <th><?php echo _l('fleet_license_number'); ?></th>
+                                        <th><?php echo _l('fleet_license_expiry'); ?></th>
+                                        <th><?php echo _l('fleet_status'); ?></th>
+                                        <th class="text-right"><?php echo _l('options'); ?></th>
+                                    </tr></thead>
+                                    <tbody>
+                                    <?php foreach ($expiring_licenses as $dl) :
+                                        $days = (int) floor((strtotime($dl['license_expiry']) - strtotime(date('Y-m-d'))) / 86400);
+                                        if ($days < 0) {
+                                            $badge = '<span class="label label-danger">' . _l('fleet_expired') . '</span>';
+                                        } else {
+                                            $badge = '<span class="label label-warning">' . _l('fleet_reminder_soon', $days) . '</span>';
+                                        }
+                                        ?>
+                                        <tr>
+                                            <td><a href="<?php echo admin_url('fleet_management/drivers/profile/' . $dl['staff_id']); ?>" class="bold"><?php echo html_escape($dl['full_name']); ?></a></td>
+                                            <td><?php echo html_escape($dl['license_number']) ?: '—'; ?></td>
+                                            <td><?php echo _d($dl['license_expiry']); ?></td>
+                                            <td><?php echo $badge; ?></td>
+                                            <td class="text-right"><a href="<?php echo admin_url('fleet_management/drivers/profile/' . $dl['staff_id']); ?>" class="btn btn-default btn-icon btn-sm"><i class="fa fa-eye"></i></a></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
         <div class="row">
             <div class="col-md-12">
                 <div class="panel_s">

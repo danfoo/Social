@@ -20,6 +20,7 @@ class Settings extends AdminController
             update_option('fleet_expense_category_id', $this->input->post('fleet_expense_category_id'));
             update_option('fleet_invoice_due_days', (int) $this->input->post('fleet_invoice_due_days'));
             update_option('fleet_occupancy_days', (int) $this->input->post('fleet_occupancy_days'));
+            update_option('fleet_license_notify_days', (int) $this->input->post('fleet_license_notify_days'));
             set_alert('success', _l('settings_updated'));
             redirect(admin_url('fleet_management/settings'));
         }

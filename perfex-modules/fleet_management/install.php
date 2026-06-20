@@ -414,11 +414,17 @@ if (!$CI->db->table_exists(db_prefix() . 'fleet_driver_profiles')) {
         `emergency_contact` VARCHAR(191) NULL,
         `emergency_phone` VARCHAR(50) NULL,
         `notes` TEXT NULL,
+        `license_notified` TINYINT(1) NOT NULL DEFAULT 0,
         `created_by` INT(11) NULL,
         `date_created` DATETIME NULL,
         PRIMARY KEY (`id`),
         UNIQUE KEY `staff_id` (`staff_id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
+// License-expiry notification tracking (idempotent upgrade).
+if ($CI->db->table_exists(db_prefix() . 'fleet_driver_profiles') && !$CI->db->field_exists('license_notified', db_prefix() . 'fleet_driver_profiles')) {
+    $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_driver_profiles` ADD `license_notified` TINYINT(1) NOT NULL DEFAULT 0');
 }
 
 // Driver incident/accident log.
@@ -472,6 +478,7 @@ if (get_option('fleet_driver_role_id') == '') {
 
 add_option('fleet_invoice_due_days', 14);
 add_option('fleet_occupancy_days', 30);
+add_option('fleet_license_notify_days', 30);
 
 // Mark the schema as up to date so the auto-migration stops re-running.
 $fleet_db_version = defined('FLEET_MANAGEMENT_DB_VERSION') ? FLEET_MANAGEMENT_DB_VERSION : '1.0.3';

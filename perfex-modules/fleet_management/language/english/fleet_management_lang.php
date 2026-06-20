@@ -359,3 +359,9 @@ $lang['fleet_severity_moderate']      = 'Moderate';
 $lang['fleet_severity_severe']        = 'Severe';
 $lang['fleet_at_fault']               = 'At fault';
 $lang['fleet_third_party']            = 'Third party';
+
+# Driver license reminders
+$lang['fleet_license_reminders']            = 'Driver licenses to renew';
+$lang['fleet_license_due_notification']     = '%s driver license is due for renewal (expires %s)';
+$lang['fleet_set_license_notify_days']      = 'License alert (days before)';
+$lang['fleet_set_license_notify_days_help'] = 'Number of days before a driver license expires from which a reminder is generated and staff are notified.';

@@ -154,6 +154,10 @@ class Fleet_management_model extends App_Model
         $exists = $this->db->get_where(db_prefix() . 'fleet_driver_profiles', ['staff_id' => $staff_id])->row();
 
         if ($exists) {
+            // Re-arm the license notification whenever the expiry date is changed.
+            if (($exists->license_expiry ?? null) != ($data['license_expiry'] ?? null)) {
+                $data['license_notified'] = 0;
+            }
             $this->db->where('staff_id', $staff_id);
             $this->db->update(db_prefix() . 'fleet_driver_profiles', $data);
         } else {
@@ -201,6 +205,77 @@ class Fleet_management_model extends App_Model
         $this->db->order_by('f.date', 'desc');
 
         return $this->db->get()->result_array();
+    }
+
+    /**
+     * Active drivers whose license expires within the notice window (or is
+     * already expired). Used by the Reminders page and the cron notifier.
+     */
+    public function get_expiring_licenses($within_days = null)
+    {
+        $role_id = get_option('fleet_driver_role_id');
+        if ($role_id == '') {
+            return [];
+        }
+
+        if ($within_days === null) {
+            $within_days = (int) (get_option('fleet_license_notify_days') ?: 30);
+        }
+
+        $this->db->select('p.*, CONCAT(s.firstname, " ", s.lastname) as full_name, s.staffid');
+        $this->db->from(db_prefix() . 'fleet_driver_profiles p');
+        $this->db->join(db_prefix() . 'staff s', 's.staffid = p.staff_id');
+        $this->db->where('s.role', $role_id);
+        $this->db->where('s.active', 1);
+        $this->db->where('p.license_expiry IS NOT NULL');
+        $this->db->where('p.license_expiry !=', '0000-00-00');
+        $this->db->where('DATE_SUB(p.license_expiry, INTERVAL ' . (int) $within_days . ' DAY) <=', date('Y-m-d'));
+        $this->db->order_by('p.license_expiry', 'asc');
+
+        return $this->db->get()->result_array();
+    }
+
+    /**
+     * Cron entry point: notify fleet staff when a driver license is within its
+     * renewal window. Each driver is notified once until the expiry changes.
+     */
+    public function send_due_license_reminders()
+    {
+        $drivers = $this->get_expiring_licenses();
+
+        if (empty($drivers)) {
+            return;
+        }
+
+        $staff = $this->db->get(db_prefix() . 'staff')->result_array();
+
+        foreach ($drivers as $driver) {
+            if (!empty($driver['license_notified'])) {
+                continue; // already notified for this expiry date
+            }
+
+            foreach ($staff as $member) {
+                if (!is_staff_member($member['staffid']) || !staff_can('view', 'fleet', $member['staffid'])) {
+                    continue;
+                }
+
+                $notified = add_notification([
+                    'description'     => 'fleet_license_due_notification',
+                    'touserid'        => $member['staffid'],
+                    'fromcompany'     => 1,
+                    'fromuserid'      => 0,
+                    'additional_data' => serialize([$driver['full_name'], _d($driver['license_expiry'])]),
+                    'link'            => 'fleet_management/drivers/profile/' . $driver['staff_id'],
+                ]);
+
+                if ($notified) {
+                    pusher_trigger_notification([$member['staffid']]);
+                }
+            }
+
+            $this->db->where('staff_id', $driver['staff_id']);
+            $this->db->update(db_prefix() . 'fleet_driver_profiles', ['license_notified' => 1]);
+        }
     }
 
     /* ----------------------------------------------------------------- *

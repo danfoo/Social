@@ -16,10 +16,11 @@ class Reminders extends AdminController
             access_denied('fleet');
         }
 
-        $data['reminders'] = $this->fleet->get_reminders();
-        $data['vehicles']  = $this->fleet->get_vehicle();
-        $data['suppliers'] = $this->fleet->get_supplier();
-        $data['title']     = _l('fleet_reminders');
+        $data['reminders']          = $this->fleet->get_reminders();
+        $data['vehicles']           = $this->fleet->get_vehicle();
+        $data['suppliers']          = $this->fleet->get_supplier();
+        $data['expiring_licenses']  = $this->fleet->get_expiring_licenses();
+        $data['title']              = _l('fleet_reminders');
         $this->load->view('fleet_management/reminders/manage', $data);
     }
 

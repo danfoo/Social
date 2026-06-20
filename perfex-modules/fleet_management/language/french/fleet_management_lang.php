@@ -359,3 +359,9 @@ $lang['fleet_severity_moderate']      = 'Modéré';
 $lang['fleet_severity_severe']        = 'Grave';
 $lang['fleet_at_fault']               = 'Responsable';
 $lang['fleet_third_party']            = 'Tiers impliqué';
+
+# Driver license reminders
+$lang['fleet_license_reminders']            = 'Permis de conduire à renouveler';
+$lang['fleet_license_due_notification']     = 'Permis de %s à renouveler (expire le %s)';
+$lang['fleet_set_license_notify_days']      = 'Alerte permis (jours avant)';
+$lang['fleet_set_license_notify_days_help'] = 'Nombre de jours avant l\'expiration d\'un permis de conduire à partir duquel un rappel est généré et le personnel notifié.';
