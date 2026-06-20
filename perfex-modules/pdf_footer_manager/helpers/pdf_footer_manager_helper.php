@@ -3,45 +3,43 @@
 defined('BASEPATH') or exit('No direct script access allowed');
 
 /**
- * Register the injection callback on the PDF construction hooks.
+ * Inject the configured footer into every Perfex PDF document.
  *
- * Perfex fires an action right after the PDF object (App_pdf, which extends
- * \Mpdf\Mpdf on recent versions) is built. We register on the known candidate
- * hook names so the module keeps working across Perfex versions. A hook that
- * does not exist on the running version simply never fires, so registering
- * several of them is harmless.
+ * Perfex 3.x fires this action while building the PDF object
+ * (application/libraries/pdf/App_pdf.php), before the document HTML is written:
+ *
+ *     hooks()->do_action('pdf_construct', ['pdf_instance' => $this, 'type' => $this->type()]);
+ *
+ * So the callback receives an associative array with the mPDF instance and the
+ * document type ("invoice", "estimate", "proposal", "credit_note"...). We set the
+ * HTML footer here so it repeats on every page, with no core file editing.
  */
 hooks()->add_action('pdf_construct', 'pdf_footer_manager_apply');
-hooks()->add_action('app_pdf', 'pdf_footer_manager_apply');
-hooks()->add_action('after_app_pdf_init', 'pdf_footer_manager_apply');
 
-/**
- * Inject the configured footer into the PDF instance.
- *
- * @param mixed $pdf The App_pdf / mPDF instance passed by the hook.
- */
-function pdf_footer_manager_apply($pdf)
+function pdf_footer_manager_apply($data)
 {
     if (get_option('pdf_footer_manager_enabled') != '1') {
-        return $pdf;
+        return $data;
     }
 
-    // Some hooks may pass the object wrapped in an array.
-    if (is_array($pdf) && isset($pdf[0]) && is_object($pdf[0])) {
-        $pdf = $pdf[0];
-    }
+    $pdf  = is_array($data) && isset($data['pdf_instance']) ? $data['pdf_instance'] : $data;
+    $type = is_array($data) && isset($data['type']) ? (string) $data['type'] : '';
 
-    // We rely on mPDF's HTML footer API. Older TCPDF-based installs do not have
-    // it; in that case we bail out gracefully (see README for the alternative).
+    // We rely on mPDF's HTML footer API (Perfex >= 2.3). Bail out gracefully
+    // on the legacy TCPDF engine, which does not expose SetHTMLFooter.
     if (!is_object($pdf) || !method_exists($pdf, 'SetHTMLFooter')) {
-        return $pdf;
+        return $data;
     }
 
-    $type = pdf_footer_manager_detect_type($pdf);
+    // Fall back to class-name detection if the hook did not provide a type.
+    if ($type === '') {
+        $type = pdf_footer_manager_detect_type($pdf);
+    }
+
     $html = pdf_footer_manager_get_html($type);
 
     if ($html === '') {
-        return $pdf;
+        return $data;
     }
 
     // Reserve room at the bottom of the page for the footer (in millimetres).
@@ -52,13 +50,12 @@ function pdf_footer_manager_apply($pdf)
 
     $pdf->SetHTMLFooter($html);
 
-    return $pdf;
+    return $data;
 }
 
 /**
- * Resolve the internal document type from the concrete PDF class name.
- * Each Perfex document has its own App_pdf subclass (Invoice_pdf, Estimate_pdf...),
- * so the class name reliably identifies the document being generated.
+ * Resolve the internal document type from the concrete PDF class name, used only
+ * as a fallback when the hook payload does not carry the type.
  *
  * @return string Internal type (e.g. "invoice") or "" when unknown.
  */
@@ -121,7 +118,7 @@ function pdf_footer_manager_parse_merge_fields($html)
         '{company_phone}'   => get_option('invoice_company_phonenumber'),
         '{company_email}'   => get_option('smtp_email'),
         '{company_vat}'     => get_option('company_vat'),
-        '{website}'         => get_option('companyname') ? site_url() : '',
+        '{website}'         => site_url(),
         '{year}'            => date('Y'),
     ]);
 

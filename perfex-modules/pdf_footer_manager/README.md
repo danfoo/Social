@@ -57,26 +57,26 @@ Exemple :
 
 ## Comment ça marche (technique)
 
-- Le module s'enregistre sur les hooks de construction du PDF de Perfex
-  (`pdf_construct` et alias), récupère l'instance `App_pdf` (qui étend
-  `\Mpdf\Mpdf` sur Perfex ≥ 2.3) et appelle `SetHTMLFooter()`.
-- Le **type de document** est déduit du nom de la classe PDF concrète
-  (`Invoice_pdf`, `Estimate_pdf`, `Proposal_pdf`, `Credit_note_pdf`, …), ce qui
-  permet des footers par type sans édition de vue.
+Testé pour **Perfex 3.4.1**. Le module s'accroche au hook fired par
+`application/libraries/pdf/App_pdf.php` lors de la construction du PDF :
+
+```php
+hooks()->do_action('pdf_construct', ['pdf_instance' => $this, 'type' => $this->type()]);
+```
+
+- On récupère l'instance mPDF (`pdf_instance`) et le **type de document**
+  (`type` : `invoice`, `estimate`, `proposal`, `credit_note`, …) directement
+  depuis le payload du hook, puis on appelle `SetHTMLFooter()`.
+- Si le type n'est pas fourni, on le déduit en secours du nom de la classe PDF
+  (`Invoice_pdf`, `Estimate_pdf`…).
 - Aucun fichier de `application/views` ni `application/libraries` n'est modifié.
 
 ## Compatibilité
 
-- **Perfex ≥ 2.3** (moteur mPDF) : pied de page injecté automatiquement.
+- **Perfex 3.x (dont 3.4.1)** — moteur mPDF : pied de page injecté
+  automatiquement via le hook `pdf_construct`.
 - **Anciennes versions sous TCPDF** (pas de `SetHTMLFooter`) : le module se
-  désactive proprement (aucune erreur). Pour ces versions, le pied de page doit
-  être ajouté dans les vues `application/views/themes/perfex/views/*pdf.php`.
-
-> Note : selon la version exacte de Perfex, le nom du hook de construction PDF
-> peut varier. Le module écoute plusieurs noms candidats. Si le footer
-> n'apparaît pas, vérifiez dans `application/libraries/App_pdf.php` le nom passé
-> à `hooks()->do_action(...)` au moment de la construction et ajoutez-le dans
-> `helpers/pdf_footer_manager_helper.php`.
+  désactive proprement (aucune erreur).
 
 ## Désinstallation
 
