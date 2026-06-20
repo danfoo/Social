@@ -52,9 +52,13 @@ class Vehicles extends AdminController
             access_denied('fleet');
         }
 
-        $data['vehicle'] = $id == '' ? null : $this->fleet->get_vehicle($id);
-        $data['drivers'] = $this->fleet->get_drivers();
-        $data['title']   = $data['vehicle'] ? $data['vehicle']->name : _l('fleet_add_vehicle');
+        $data['vehicle']    = $id == '' ? null : $this->fleet->get_vehicle($id);
+        $data['drivers']    = $this->fleet->get_drivers();
+        $data['categories'] = $this->fleet->get_categories();
+        $data['brands']     = $this->fleet->get_brands();
+        $data['models']     = $this->fleet->get_models();
+        $data['insurers']   = $this->fleet->get_supplier('', 'insurance');
+        $data['title']      = $data['vehicle'] ? $data['vehicle']->name : _l('fleet_add_vehicle');
         $this->load->view('fleet_management/vehicles/vehicle', $data);
     }
 

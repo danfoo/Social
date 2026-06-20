@@ -439,6 +439,101 @@ class Fleet_management_model extends App_Model
     }
 
     /* ----------------------------------------------------------------- *
+     * Catalog: categories, brands, models
+     * ----------------------------------------------------------------- */
+
+    public function get_categories()
+    {
+        $this->db->order_by('name', 'asc');
+
+        return $this->db->get(db_prefix() . 'fleet_categories')->result_array();
+    }
+
+    public function add_category($name)
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return false;
+        }
+        $this->db->insert(db_prefix() . 'fleet_categories', ['name' => $name]);
+
+        return $this->db->insert_id();
+    }
+
+    public function delete_category($id)
+    {
+        $this->db->where('id', $id);
+        $this->db->delete(db_prefix() . 'fleet_categories');
+
+        return $this->db->affected_rows() > 0;
+    }
+
+    public function get_brands()
+    {
+        $this->db->order_by('name', 'asc');
+
+        return $this->db->get(db_prefix() . 'fleet_brands')->result_array();
+    }
+
+    public function add_brand($name)
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return false;
+        }
+        $this->db->insert(db_prefix() . 'fleet_brands', ['name' => $name]);
+
+        return $this->db->insert_id();
+    }
+
+    public function delete_brand($id)
+    {
+        $this->db->where('id', $id);
+        $this->db->delete(db_prefix() . 'fleet_brands');
+
+        // Orphan models go away with their brand.
+        $this->db->where('brand_id', $id);
+        $this->db->delete(db_prefix() . 'fleet_models');
+
+        return true;
+    }
+
+    public function get_models($brand_id = '')
+    {
+        $this->db->select('m.*, b.name as brand_name');
+        $this->db->from(db_prefix() . 'fleet_models m');
+        $this->db->join(db_prefix() . 'fleet_brands b', 'b.id = m.brand_id', 'left');
+
+        if (is_numeric($brand_id)) {
+            $this->db->where('m.brand_id', $brand_id);
+        }
+
+        $this->db->order_by('b.name', 'asc');
+        $this->db->order_by('m.name', 'asc');
+
+        return $this->db->get()->result_array();
+    }
+
+    public function add_model($brand_id, $name)
+    {
+        $name = trim($name);
+        if ($name === '' || !is_numeric($brand_id)) {
+            return false;
+        }
+        $this->db->insert(db_prefix() . 'fleet_models', ['brand_id' => $brand_id, 'name' => $name]);
+
+        return $this->db->insert_id();
+    }
+
+    public function delete_model($id)
+    {
+        $this->db->where('id', $id);
+        $this->db->delete(db_prefix() . 'fleet_models');
+
+        return $this->db->affected_rows() > 0;
+    }
+
+    /* ----------------------------------------------------------------- *
      * Suppliers (garages, insurers, fuel stations, partners...)
      * ----------------------------------------------------------------- */
 

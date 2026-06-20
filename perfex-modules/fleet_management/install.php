@@ -167,6 +167,32 @@ if (!$CI->db->field_exists('supplier_id', db_prefix() . 'fleet_reminders')) {
     $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_reminders` ADD `supplier_id` INT(11) NULL AFTER `provider`');
 }
 
+if (!$CI->db->table_exists(db_prefix() . 'fleet_categories')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_categories` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(150) NOT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
+if (!$CI->db->table_exists(db_prefix() . 'fleet_brands')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_brands` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(150) NOT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
+if (!$CI->db->table_exists(db_prefix() . 'fleet_models')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_models` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `brand_id` INT(11) NOT NULL,
+        `name` VARCHAR(150) NOT NULL,
+        PRIMARY KEY (`id`),
+        KEY `brand_id` (`brand_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
 /**
  * Create a dedicated "Driver" staff role once, and remember its id.
  * Drivers are simply staff members holding this role.

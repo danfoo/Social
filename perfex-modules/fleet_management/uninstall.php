@@ -10,6 +10,9 @@ $tables = [
     'fleet_assignments',
     'fleet_reminders',
     'fleet_maintenance',
+    'fleet_models',
+    'fleet_brands',
+    'fleet_categories',
     'fleet_suppliers',
     'fleet_vehicles',
 ];

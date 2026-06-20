@@ -36,6 +36,13 @@ $lang['fleet_notes']                  = 'Notes';
 $lang['fleet_status']                 = 'Status';
 $lang['fleet_phone']                  = 'Phone';
 
+# Catalog (categories / brands / models)
+$lang['fleet_library']                = 'Configuration';
+$lang['fleet_categories']             = 'Categories';
+$lang['fleet_brands']                 = 'Brands';
+$lang['fleet_models']                 = 'Models';
+$lang['fleet_model_label']            = 'Model';
+
 # Vehicle statuses
 $lang['fleet_status_available']       = 'Available';
 $lang['fleet_status_rented']          = 'Rented';

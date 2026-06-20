@@ -11,6 +11,11 @@ Compatible **Perfex CRM ≥ 2.3** (testé pour la lignée 3.4.x).
 
 - **Véhicules** : fiche complète (immatriculation, marque/modèle, VIN, carburant,
   boîte, places, kilométrage, tarifs jour avec/sans chauffeur, assurance, statut).
+  La **catégorie**, la **marque** et le **modèle** se choisissent dans des listes
+  gérées sous **Configuration** (le modèle se filtre selon la marque). La
+  **compagnie d'assurance** provient des **fournisseurs de type « assurance »**.
+- **Configuration (catalogue)** : gestion des **catégories**, **marques** et
+  **modèles** de véhicules (un modèle appartient à une marque).
 - **Entretiens** : historique par véhicule (vidange, révision, pneus, freins,
   réparation, carrosserie…), coût, kilométrage, prochain entretien, fournisseur.
 - **Carburant** : suivi des pleins (litres, prix/litre, coût total calculé auto,
@@ -86,10 +91,20 @@ Tables créées : `fleet_vehicles`, `fleet_maintenance`, `fleet_reminders`,
 `fleet_assignments`, `fleet_rentals`, `fleet_suppliers`, `fleet_fuel_logs`
 (préfixe Perfex appliqué).
 
-> Mise à niveau : si le module était déjà installé avant l'ajout du carburant
-> et des fournisseurs, désactivez puis réactivez-le. `install.php` est
-> idempotent : il crée les nouvelles tables et ajoute la colonne `supplier_id`
-> aux entretiens/rappels sans toucher aux données existantes.
+> Mise à niveau : après chaque nouvelle version, **désactivez puis réactivez** le
+> module. `install.php` est idempotent : il crée les nouvelles tables
+> (`fleet_suppliers`, `fleet_fuel_logs`, `fleet_categories`, `fleet_brands`,
+> `fleet_models`) et ajoute les colonnes manquantes sans toucher aux données
+> existantes.
+
+### Pour commencer
+
+1. Allez d'abord dans **Configuration** pour créer vos **catégories**, **marques**
+   et **modèles**.
+2. Créez vos **fournisseurs** (notamment ceux de type « assurance » et
+   « station-service »).
+3. Vous pouvez alors créer des véhicules : catégorie, marque/modèle et compagnie
+   d'assurance sont proposés sous forme de listes déroulantes.
 
 ## Notes / limites connues
 

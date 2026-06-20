@@ -20,7 +20,9 @@ register_uninstall_hook(FLEET_MANAGEMENT_MODULE, 'fleet_management_uninstall_hoo
 
 register_language_files(FLEET_MANAGEMENT_MODULE, [FLEET_MANAGEMENT_MODULE]);
 
-$CI->load->helper(FLEET_MANAGEMENT_MODULE . '/fleet_management');
+// Load the module helper deterministically so its functions are always defined
+// in controllers and views (a deferred loader call can silently fail at bootstrap).
+require_once __DIR__ . '/helpers/fleet_management_helper.php';
 
 function fleet_management_activation_hook()
 {
@@ -123,6 +125,13 @@ function fleet_management_init_menu_items()
         'name'     => _l('fleet_suppliers'),
         'href'     => admin_url('fleet_management/suppliers'),
         'position' => 7,
+    ]);
+
+    $CI->app_menu->add_sidebar_children_item('fleet-management', [
+        'slug'     => 'fleet-library',
+        'name'     => _l('fleet_library'),
+        'href'     => admin_url('fleet_management/library'),
+        'position' => 8,
     ]);
 }
 
