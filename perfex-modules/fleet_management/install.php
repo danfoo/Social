@@ -285,6 +285,7 @@ if (get_option('fleet_driver_role_id') == '') {
 }
 
 add_option('fleet_invoice_due_days', 14);
+add_option('fleet_occupancy_days', 30);
 
 // Mark the schema as up to date so the auto-migration stops re-running.
 $fleet_db_version = defined('FLEET_MANAGEMENT_DB_VERSION') ? FLEET_MANAGEMENT_DB_VERSION : '1.0.3';

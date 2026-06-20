@@ -1066,7 +1066,7 @@ class Fleet_management_model extends App_Model
     /**
      * Cost breakdown and KPIs per vehicle for the dashboard.
      */
-    public function dashboard($start = null, $end = null)
+    public function dashboard($start = null, $end = null, $occupancy_days = 30)
     {
         $vehicles = $this->get_vehicle();
 
@@ -1075,7 +1075,7 @@ class Fleet_management_model extends App_Model
         $rem   = $this->_sum_by_vehicle('fleet_reminders', 'cost', 'due_date', $start, $end);
         $parts = $this->_sum_by_vehicle('fleet_parts', 'total_price', 'purchase_date', $start, $end);
 
-        list($occ, $window_days) = $this->_occupancy_by_vehicle($start, $end);
+        list($occ, $window_days) = $this->_occupancy_by_vehicle($occupancy_days);
 
         $rows   = [];
         $totals = ['maintenance' => 0, 'fuel' => 0, 'parts' => 0, 'reminders' => 0, 'total' => 0];
@@ -1218,18 +1218,15 @@ class Fleet_management_model extends App_Model
      *
      * @return array [occupancy_map, window_days]
      */
-    private function _occupancy_by_vehicle($start = null, $end = null)
+    private function _occupancy_by_vehicle($days = 30)
     {
-        if (!$this->db->table_exists(db_prefix() . 'fleet_rentals')) {
-            return [[], 0];
+        $days = (int) $days;
+        if (!$this->db->table_exists(db_prefix() . 'fleet_rentals') || $days < 1) {
+            return [[], max($days, 0)];
         }
 
-        $endTs   = $end ? strtotime($end) : strtotime(date('Y-m-d'));
-        $startTs = $start ? strtotime($start) : ($endTs - 29 * 86400);
-        $days    = (int) floor(($endTs - $startTs) / 86400) + 1;
-        if ($days < 1) {
-            return [[], 0];
-        }
+        $endTs   = strtotime(date('Y-m-d'));
+        $startTs = $endTs - ($days - 1) * 86400;
 
         $this->db->where_in('status', ['reserved', 'ongoing', 'completed']);
         $rentals = $this->db->get(db_prefix() . 'fleet_rentals')->result_array();

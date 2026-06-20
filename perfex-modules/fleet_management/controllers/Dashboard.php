@@ -19,7 +19,12 @@ class Dashboard extends AdminController
         $period = $this->input->get('period') ?: 'year';
         list($start, $end) = $this->_range($period);
 
-        $data            = $this->fleet->dashboard($start, $end);
+        $occ_days = (int) get_option('fleet_occupancy_days');
+        if ($occ_days < 1) {
+            $occ_days = 30;
+        }
+
+        $data            = $this->fleet->dashboard($start, $end, $occ_days);
         $data['series']  = $this->fleet->monthly_expense_series(12);
         $data['recent']  = $this->fleet->get_recent_vehicles(10);
         $data['period']  = $period;

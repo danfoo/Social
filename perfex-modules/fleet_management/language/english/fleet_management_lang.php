@@ -54,6 +54,17 @@ $lang['fleet_dash_expense_evolution'] = 'Expense evolution (12 months)';
 $lang['fleet_dash_cost_split']        = 'Cost split';
 $lang['fleet_dash_recent_vehicles']   = 'Last 10 vehicles';
 $lang['fleet_search']                 = 'Search...';
+
+# Settings
+$lang['fleet_settings']                     = 'Settings';
+$lang['fleet_set_billing']                  = 'Billing & expenses';
+$lang['fleet_set_expense_category']         = 'Expense category for fleet costs';
+$lang['fleet_set_expense_category_help']    = 'Maintenance, fuel, parts and costed reminders are posted to this Expenses category.';
+$lang['fleet_set_invoice_due_days']         = 'Invoice due (days)';
+$lang['fleet_set_invoice_due_days_help']    = 'Number of days added to today for the due date of invoices created from a rental.';
+$lang['fleet_set_occupancy_days']           = 'Occupancy window (days)';
+$lang['fleet_set_occupancy_days_help']      = 'Rolling window used to compute the vehicle occupancy rate on the dashboard.';
+$lang['fleet_set_driver_role']              = 'Driver role';
 $lang['fleet_dash_most_used']         = 'Most used vehicle';
 $lang['fleet_dash_most_expensive']    = 'Most expensive vehicle';
 $lang['fleet_dash_most_fuel']         = 'Highest fuel cost';

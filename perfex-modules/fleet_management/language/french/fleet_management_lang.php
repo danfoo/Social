@@ -54,6 +54,17 @@ $lang['fleet_dash_expense_evolution'] = 'Évolution des dépenses (12 mois)';
 $lang['fleet_dash_cost_split']        = 'Répartition des coûts';
 $lang['fleet_dash_recent_vehicles']   = '10 derniers véhicules';
 $lang['fleet_search']                 = 'Rechercher...';
+
+# Settings
+$lang['fleet_settings']                     = 'Réglages';
+$lang['fleet_set_billing']                  = 'Facturation & dépenses';
+$lang['fleet_set_expense_category']         = 'Catégorie de dépense pour la flotte';
+$lang['fleet_set_expense_category_help']    = 'Les entretiens, pleins, pièces et rappels chiffrés sont enregistrés dans cette catégorie de dépenses.';
+$lang['fleet_set_invoice_due_days']         = 'Échéance facture (jours)';
+$lang['fleet_set_invoice_due_days_help']    = 'Nombre de jours ajoutés à aujourd\'hui pour l\'échéance des factures créées depuis une location.';
+$lang['fleet_set_occupancy_days']           = 'Fenêtre d\'occupation (jours)';
+$lang['fleet_set_occupancy_days_help']      = 'Période glissante utilisée pour calculer le taux d\'occupation des véhicules sur le tableau de bord.';
+$lang['fleet_set_driver_role']              = 'Rôle chauffeur';
 $lang['fleet_dash_most_used']         = 'Véhicule le plus utilisé';
 $lang['fleet_dash_most_expensive']    = 'Véhicule le plus coûteux';
 $lang['fleet_dash_most_fuel']         = 'Plus gros budget carburant';

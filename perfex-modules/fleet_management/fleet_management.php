@@ -14,7 +14,7 @@ define('FLEET_MANAGEMENT_MODULE', 'fleet_management');
 
 // Bump this whenever the database schema changes so the auto-migration below
 // recreates any missing table/column without a manual deactivate/reactivate.
-define('FLEET_MANAGEMENT_DB_VERSION', '1.0.6');
+define('FLEET_MANAGEMENT_DB_VERSION', '1.0.7');
 
 $CI = &get_instance();
 
@@ -164,6 +164,13 @@ function fleet_management_init_menu_items()
         'name'     => _l('fleet_library'),
         'href'     => admin_url('fleet_management/library'),
         'position' => 9,
+    ]);
+
+    $CI->app_menu->add_sidebar_children_item('fleet-management', [
+        'slug'     => 'fleet-settings',
+        'name'     => _l('fleet_settings'),
+        'href'     => admin_url('fleet_management/settings'),
+        'position' => 10,
     ]);
 }
 
