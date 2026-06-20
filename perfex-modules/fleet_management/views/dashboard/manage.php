@@ -117,19 +117,56 @@
                 <div class="panel_s"><div class="panel-body">
                     <h4 class="bold no-margin"><?php echo _l('fleet_dash_expense_evolution'); ?></h4>
                     <hr class="hr-panel-heading" />
-                    <canvas id="fleetExpenseChart" height="120"></canvas>
+                    <div style="position:relative;height:280px;width:100%;"><canvas id="fleetExpenseChart"></canvas></div>
                 </div></div>
             </div>
             <div class="col-md-4">
                 <div class="panel_s"><div class="panel-body">
                     <h4 class="bold no-margin"><?php echo _l('fleet_dash_cost_split'); ?></h4>
                     <hr class="hr-panel-heading" />
-                    <canvas id="fleetSplitChart" height="150"></canvas>
+                    <div style="position:relative;height:180px;width:100%;"><canvas id="fleetSplitChart"></canvas></div>
                     <div class="mtop15">
                         <div class="clearfix mbot5"><span class="fleet-chip" style="background:#f0ad4e;"></span> <?php echo _l('fleet_maintenance'); ?> <span class="pull-right bold"><?php echo app_format_money($totals['maintenance'], $bc); ?></span></div>
                         <div class="clearfix mbot5"><span class="fleet-chip" style="background:#5cb85c;"></span> <?php echo _l('fleet_fuel'); ?> <span class="pull-right bold"><?php echo app_format_money($totals['fuel'], $bc); ?></span></div>
                         <div class="clearfix mbot5"><span class="fleet-chip" style="background:#337ab7;"></span> <?php echo _l('fleet_parts_articles'); ?> <span class="pull-right bold"><?php echo app_format_money($totals['parts'], $bc); ?></span></div>
                         <div class="clearfix"><span class="fleet-chip" style="background:#d9534f;"></span> <?php echo _l('fleet_reminders'); ?> <span class="pull-right bold"><?php echo app_format_money($totals['reminders'], $bc); ?></span></div>
+                    </div>
+                </div></div>
+            </div>
+        </div>
+
+        <!-- Last 10 vehicles -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel_s"><div class="panel-body">
+                    <h4 class="bold no-margin"><?php echo _l('fleet_dash_recent_vehicles'); ?></h4>
+                    <hr class="hr-panel-heading" />
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead><tr>
+                                <th><?php echo _l('fleet_vehicle'); ?></th>
+                                <th><?php echo _l('fleet_plate'); ?></th>
+                                <th><?php echo _l('fleet_category'); ?></th>
+                                <th><?php echo _l('fleet_odometer'); ?></th>
+                                <th><?php echo _l('fleet_status'); ?></th>
+                                <th><?php echo _l('fleet_purchase_date'); ?></th>
+                            </tr></thead>
+                            <tbody>
+                                <?php foreach ($recent as $v) : ?>
+                                    <tr>
+                                        <td><a href="<?php echo admin_url('fleet_management/vehicles/view/' . $v['id']); ?>" class="bold"><?php echo html_escape($v['name']); ?></a></td>
+                                        <td><?php echo html_escape($v['plate']); ?></td>
+                                        <td><?php echo html_escape($v['category']); ?></td>
+                                        <td><?php echo (int) $v['odometer']; ?> km</td>
+                                        <td><?php echo fleet_vehicle_status_badge($v['status']); ?></td>
+                                        <td><?php echo $v['date_created'] ? _dt($v['date_created']) : '-'; ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                <?php if (empty($recent)) : ?>
+                                    <tr><td colspan="6" class="text-center text-muted"><?php echo _l('fleet_history_empty'); ?></td></tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div></div>
             </div>

@@ -12,8 +12,11 @@
                                 <a href="<?php echo admin_url('staff/member'); ?>" class="btn btn-info btn-xs pull-right"><?php echo _l('fleet_add_staff_member'); ?></a>
                             <?php endif; ?>
                         </div>
+                        <div class="text-right mbot15">
+                            <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
+                        </div>
                         <div class="table-responsive">
-                            <table class="table">
+                            <table class="table fleet-list">
                                 <thead>
                                     <tr>
                                         <th><?php echo _l('fleet_driver'); ?></th>

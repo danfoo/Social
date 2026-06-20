@@ -168,6 +168,27 @@ function fleet_management_init_menu_items()
 }
 
 /**
+ * Lightweight client-side search for the module list tables. A single delegated
+ * handler filters any table marked ".fleet-list" from a ".fleet-search" input in
+ * the same panel. Output once in the admin footer to keep the views DRY.
+ */
+hooks()->add_action('app_admin_footer', 'fleet_management_admin_footer');
+
+function fleet_management_admin_footer()
+{
+    echo '<script>
+(function($){
+    $(document).on("keyup", ".fleet-search", function(){
+        var q = $(this).val().toLowerCase();
+        $(this).closest(".panel-body").find("table.fleet-list > tbody > tr").each(function(){
+            $(this).toggle($(this).text().toLowerCase().indexOf(q) > -1);
+        });
+    });
+})(jQuery);
+</script>';
+}
+
+/**
  * Send reminder notifications for expiring vehicle documents (insurance,
  * technical inspection...) X days before the due date. Runs on the Perfex cron.
  */

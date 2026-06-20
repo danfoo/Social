@@ -44,8 +44,11 @@ foreach (fleet_fuel_types() as $t) {
                                 <i class="fa fa-plus"></i> <?php echo _l('fleet_add_fuel'); ?>
                             </a>
                         <?php endif; ?>
+                        <div class="text-right mbot15">
+                            <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
+                        </div>
                         <div class="table-responsive">
-                            <table class="table">
+                            <table class="table fleet-list">
                                 <thead>
                                     <tr>
                                         <th><?php echo _l('fleet_date'); ?></th>

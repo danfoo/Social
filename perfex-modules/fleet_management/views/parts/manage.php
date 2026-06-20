@@ -36,8 +36,11 @@ foreach (fleet_part_statuses() as $st) {
                                 <i class="fa fa-plus"></i> <?php echo _l('fleet_add_part'); ?>
                             </a>
                         <?php endif; ?>
+                        <div class="text-right mbot15">
+                            <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
+                        </div>
                         <div class="table-responsive">
-                            <table class="table">
+                            <table class="table fleet-list">
                                 <thead>
                                     <tr>
                                         <th><?php echo _l('fleet_part_name'); ?></th>

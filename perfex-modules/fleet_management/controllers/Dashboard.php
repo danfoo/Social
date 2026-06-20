@@ -19,10 +19,11 @@ class Dashboard extends AdminController
         $period = $this->input->get('period') ?: 'year';
         list($start, $end) = $this->_range($period);
 
-        $data           = $this->fleet->dashboard($start, $end);
-        $data['series'] = $this->fleet->monthly_expense_series(12);
-        $data['period'] = $period;
-        $data['title']  = _l('fleet_dashboard');
+        $data            = $this->fleet->dashboard($start, $end);
+        $data['series']  = $this->fleet->monthly_expense_series(12);
+        $data['recent']  = $this->fleet->get_recent_vehicles(10);
+        $data['period']  = $period;
+        $data['title']   = _l('fleet_dashboard');
         $this->load->view('fleet_management/dashboard/manage', $data);
     }
 

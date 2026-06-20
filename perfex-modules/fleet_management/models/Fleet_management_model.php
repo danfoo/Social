@@ -1054,6 +1054,15 @@ class Fleet_management_model extends App_Model
         return $counts;
     }
 
+    public function get_recent_vehicles($limit = 10)
+    {
+        $this->db->order_by('date_created', 'desc');
+        $this->db->order_by('id', 'desc');
+        $this->db->limit($limit);
+
+        return $this->db->get(db_prefix() . 'fleet_vehicles')->result_array();
+    }
+
     /**
      * Cost breakdown and KPIs per vehicle for the dashboard.
      */
