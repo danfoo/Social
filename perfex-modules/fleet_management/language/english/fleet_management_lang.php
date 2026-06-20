@@ -156,6 +156,7 @@ $lang['fleet_drivers_help']           = 'Drivers are Perfex staff members holdin
 $lang['fleet_add_staff_member']       = 'Add staff member';
 
 # Suppliers
+$lang['fleet_suppliers']              = 'Suppliers';
 $lang['fleet_supplier']               = 'Supplier';
 $lang['fleet_add_supplier']           = 'Add supplier';
 $lang['fleet_supplier_name']          = 'Name';

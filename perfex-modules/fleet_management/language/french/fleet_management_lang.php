@@ -156,6 +156,7 @@ $lang['fleet_drivers_help']           = 'Les chauffeurs sont des membres du staf
 $lang['fleet_add_staff_member']       = 'Ajouter un membre du staff';
 
 # Suppliers
+$lang['fleet_suppliers']              = 'Fournisseurs';
 $lang['fleet_supplier']               = 'Fournisseur';
 $lang['fleet_add_supplier']           = 'Ajouter un fournisseur';
 $lang['fleet_supplier_name']          = 'Nom';
