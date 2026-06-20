@@ -117,6 +117,147 @@ class Fleet_management_model extends App_Model
         return $role_id != '' && total_rows(db_prefix() . 'staff', ['staffid' => $staff_id, 'role' => $role_id]) > 0;
     }
 
+    /**
+     * Full driver record: the staff member merged with the editable fleet
+     * profile fields (license, personal details, emergency contact...).
+     */
+    public function get_driver($staff_id)
+    {
+        $staff = $this->db->get_where(db_prefix() . 'staff', ['staffid' => $staff_id])->row();
+
+        if (!$staff) {
+            return null;
+        }
+
+        $profile = $this->db->get_where(db_prefix() . 'fleet_driver_profiles', ['staff_id' => $staff_id])->row();
+
+        $staff->full_name = trim($staff->firstname . ' ' . $staff->lastname);
+
+        // Expose every profile column on the staff object (null when no profile yet).
+        $fields = [
+            'date_of_birth', 'national_id', 'phone', 'address', 'license_number',
+            'license_category', 'license_issue_date', 'license_expiry', 'hire_date',
+            'blood_type', 'emergency_contact', 'emergency_phone', 'profile_notes',
+        ];
+        foreach ($fields as $f) {
+            $col           = $f === 'profile_notes' ? 'notes' : $f;
+            $staff->{$f}   = $profile ? $profile->{$col} : null;
+        }
+
+        return $staff;
+    }
+
+    public function save_driver_profile($staff_id, $data)
+    {
+        $data = $this->_clean_dates($data, ['date_of_birth', 'license_issue_date', 'license_expiry', 'hire_date']);
+
+        $exists = $this->db->get_where(db_prefix() . 'fleet_driver_profiles', ['staff_id' => $staff_id])->row();
+
+        if ($exists) {
+            $this->db->where('staff_id', $staff_id);
+            $this->db->update(db_prefix() . 'fleet_driver_profiles', $data);
+        } else {
+            $data['staff_id']     = $staff_id;
+            $data['created_by']   = get_staff_user_id();
+            $data['date_created'] = date('Y-m-d H:i:s');
+            $this->db->insert(db_prefix() . 'fleet_driver_profiles', $data);
+        }
+
+        return true;
+    }
+
+    /** Vehicles this driver has been assigned to. */
+    public function get_driver_assignments($staff_id)
+    {
+        $this->db->select('a.*, v.name as vehicle_name, v.plate as vehicle_plate');
+        $this->db->from(db_prefix() . 'fleet_assignments a');
+        $this->db->join(db_prefix() . 'fleet_vehicles v', 'v.id = a.vehicle_id', 'left');
+        $this->db->where('a.staff_id', $staff_id);
+        $this->db->order_by('a.date_start', 'desc');
+
+        return $this->db->get()->result_array();
+    }
+
+    /** Rentals operated by this driver (with-driver rentals). */
+    public function get_driver_rentals($staff_id)
+    {
+        $this->db->select('r.*, v.name as vehicle_name, v.plate as vehicle_plate, c.company as client_name');
+        $this->db->from(db_prefix() . 'fleet_rentals r');
+        $this->db->join(db_prefix() . 'fleet_vehicles v', 'v.id = r.vehicle_id', 'left');
+        $this->db->join(db_prefix() . 'clients c', 'c.userid = r.clientid', 'left');
+        $this->db->where('r.driver_id', $staff_id);
+        $this->db->order_by('r.date_start', 'desc');
+
+        return $this->db->get()->result_array();
+    }
+
+    /** Fuel logs recorded against this driver. */
+    public function get_driver_fuel($staff_id)
+    {
+        $this->db->select('f.*, v.name as vehicle_name, v.plate as vehicle_plate');
+        $this->db->from(db_prefix() . 'fleet_fuel_logs f');
+        $this->db->join(db_prefix() . 'fleet_vehicles v', 'v.id = f.vehicle_id', 'left');
+        $this->db->where('f.driver_id', $staff_id);
+        $this->db->order_by('f.date', 'desc');
+
+        return $this->db->get()->result_array();
+    }
+
+    /* ----------------------------------------------------------------- *
+     * Driver accidents / incidents
+     * ----------------------------------------------------------------- */
+
+    public function get_driver_accidents($staff_id)
+    {
+        $this->db->select('ac.*, v.name as vehicle_name, v.plate as vehicle_plate');
+        $this->db->from(db_prefix() . 'fleet_driver_accidents ac');
+        $this->db->join(db_prefix() . 'fleet_vehicles v', 'v.id = ac.vehicle_id', 'left');
+        $this->db->where('ac.staff_id', $staff_id);
+        $this->db->order_by('ac.accident_date', 'desc');
+
+        return $this->db->get()->result_array();
+    }
+
+    public function get_accident($id)
+    {
+        return $this->db->get_where(db_prefix() . 'fleet_driver_accidents', ['id' => $id])->row();
+    }
+
+    public function add_accident($data)
+    {
+        $data = $this->_clean_dates($data, ['accident_date']);
+        $data = $this->_clean_numeric($data, ['vehicle_id', 'cost']);
+
+        $data['at_fault']     = !empty($data['at_fault']) ? 1 : 0;
+        $data['created_by']   = get_staff_user_id();
+        $data['date_created'] = date('Y-m-d H:i:s');
+
+        $this->db->insert(db_prefix() . 'fleet_driver_accidents', $data);
+
+        return $this->db->insert_id();
+    }
+
+    public function update_accident($id, $data)
+    {
+        $data = $this->_clean_dates($data, ['accident_date']);
+        $data = $this->_clean_numeric($data, ['vehicle_id', 'cost']);
+
+        $data['at_fault'] = !empty($data['at_fault']) ? 1 : 0;
+
+        $this->db->where('id', $id);
+        $this->db->update(db_prefix() . 'fleet_driver_accidents', $data);
+
+        return true;
+    }
+
+    public function delete_accident($id)
+    {
+        $this->db->where('id', $id);
+        $this->db->delete(db_prefix() . 'fleet_driver_accidents');
+
+        return true;
+    }
+
     /* ----------------------------------------------------------------- *
      * Driver assignments
      * ----------------------------------------------------------------- */

@@ -396,6 +396,51 @@ if (!$CI->db->table_exists(db_prefix() . 'fleet_payments')) {
     ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
 }
 
+// Driver profiles (personal/license details, one row per driver staff member).
+if (!$CI->db->table_exists(db_prefix() . 'fleet_driver_profiles')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_driver_profiles` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `staff_id` INT(11) NOT NULL,
+        `date_of_birth` DATE NULL,
+        `national_id` VARCHAR(100) NULL,
+        `phone` VARCHAR(50) NULL,
+        `address` TEXT NULL,
+        `license_number` VARCHAR(100) NULL,
+        `license_category` VARCHAR(100) NULL,
+        `license_issue_date` DATE NULL,
+        `license_expiry` DATE NULL,
+        `hire_date` DATE NULL,
+        `blood_type` VARCHAR(10) NULL,
+        `emergency_contact` VARCHAR(191) NULL,
+        `emergency_phone` VARCHAR(50) NULL,
+        `notes` TEXT NULL,
+        `created_by` INT(11) NULL,
+        `date_created` DATETIME NULL,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `staff_id` (`staff_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
+// Driver incident/accident log.
+if (!$CI->db->table_exists(db_prefix() . 'fleet_driver_accidents')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_driver_accidents` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `staff_id` INT(11) NOT NULL,
+        `vehicle_id` INT(11) NULL,
+        `accident_date` DATE NULL,
+        `location` VARCHAR(191) NULL,
+        `severity` VARCHAR(30) NOT NULL DEFAULT 'minor',
+        `at_fault` TINYINT(1) NOT NULL DEFAULT 0,
+        `third_party` VARCHAR(191) NULL,
+        `cost` DECIMAL(15,2) NULL,
+        `description` TEXT NULL,
+        `created_by` INT(11) NULL,
+        `date_created` DATETIME NULL,
+        PRIMARY KEY (`id`),
+        KEY `staff_id` (`staff_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
 // Dedicated expense category so fleet costs are grouped in the Expenses module.
 if (get_option('fleet_expense_category_id') == '' && $CI->db->table_exists(db_prefix() . 'expenses_categories')) {
     $CI->db->insert(db_prefix() . 'expenses_categories', [

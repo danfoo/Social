@@ -195,3 +195,15 @@ function fleet_reminder_due_badge($due_date, $notify_days = 7)
 
     return '<span class="label label-success">' . _l('fleet_reminder_ok', $diff) . '</span>';
 }
+
+function fleet_accident_severity_badge($severity)
+{
+    $map = [
+        'minor'    => 'default',
+        'moderate' => 'warning',
+        'severe'   => 'danger',
+    ];
+    $color = isset($map[$severity]) ? $map[$severity] : 'default';
+
+    return '<span class="label label-' . $color . '">' . _l('fleet_severity_' . $severity) . '</span>';
+}

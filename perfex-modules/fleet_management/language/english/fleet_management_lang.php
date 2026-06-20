@@ -321,3 +321,41 @@ $lang['fleet_assignment_start']       = 'Start date';
 $lang['fleet_assignment_end']         = 'End date';
 $lang['fleet_ended']                  = 'Ended';
 $lang['fleet_end_assignment']         = 'End';
+
+# Driver profile
+$lang['fleet_driver_profile']         = 'Driver profile';
+$lang['fleet_personal_info']          = 'Personal information';
+$lang['fleet_staff_account']          = 'Staff account';
+$lang['fleet_age']                    = 'Age';
+$lang['fleet_years']                  = 'years';
+$lang['fleet_date_of_birth']          = 'Date of birth';
+$lang['fleet_national_id']            = 'National ID';
+$lang['fleet_blood_type']             = 'Blood type';
+$lang['fleet_hire_date']              = 'Hire date';
+$lang['fleet_emergency_contact']      = 'Emergency contact';
+$lang['fleet_emergency_phone']        = 'Emergency phone';
+$lang['fleet_employment_emergency']   = 'Employment & emergency';
+$lang['fleet_license']                = 'Driver license';
+$lang['fleet_license_number']         = 'License number';
+$lang['fleet_license_category']       = 'License category';
+$lang['fleet_license_issue_date']     = 'Issue date';
+$lang['fleet_license_expiry']         = 'Expiry date';
+$lang['fleet_valid']                  = 'Valid';
+$lang['fleet_expired']                = 'Expired';
+$lang['fleet_expiring_soon']          = 'Expiring soon';
+$lang['fleet_location']               = 'Location';
+$lang['fleet_client']                 = 'Client';
+$lang['fleet_yes']                    = 'Yes';
+$lang['fleet_no']                     = 'No';
+
+# Driver accidents
+$lang['fleet_accidents']              = 'Accidents';
+$lang['fleet_accident']               = 'Accident / incident';
+$lang['fleet_add_accident']           = 'Report an accident';
+$lang['fleet_no_accidents']           = 'No accident recorded';
+$lang['fleet_severity']               = 'Severity';
+$lang['fleet_severity_minor']         = 'Minor';
+$lang['fleet_severity_moderate']      = 'Moderate';
+$lang['fleet_severity_severe']        = 'Severe';
+$lang['fleet_at_fault']               = 'At fault';
+$lang['fleet_third_party']            = 'Third party';

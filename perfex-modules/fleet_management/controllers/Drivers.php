@@ -22,6 +22,84 @@ class Drivers extends AdminController
         $this->load->view('fleet_management/drivers/manage', $data);
     }
 
+    public function profile($staff_id = '')
+    {
+        if (!staff_can('view', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $driver = $this->fleet->get_driver($staff_id);
+        if (!$driver) {
+            show_404();
+        }
+
+        $data['driver']      = $driver;
+        $data['assignments'] = $this->fleet->get_driver_assignments($staff_id);
+        $data['rentals']     = $this->fleet->get_driver_rentals($staff_id);
+        $data['fuel']        = $this->fleet->get_driver_fuel($staff_id);
+        $data['accidents']   = $this->fleet->get_driver_accidents($staff_id);
+        $data['vehicles']    = $this->fleet->get_vehicle();
+        $data['title']       = $driver->full_name;
+        $this->load->view('fleet_management/drivers/profile', $data);
+    }
+
+    public function save_profile($staff_id = '')
+    {
+        if (!staff_can('edit', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        if (!$this->fleet->is_driver($staff_id)) {
+            show_404();
+        }
+
+        $this->fleet->save_driver_profile($staff_id, $this->input->post());
+        set_alert('success', _l('updated_successfully', _l('fleet_driver_profile')));
+        redirect(admin_url('fleet_management/drivers/profile/' . $staff_id));
+    }
+
+    public function accident_save()
+    {
+        if (!staff_can('create', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $data     = $this->input->post();
+        $id       = isset($data['id']) ? $data['id'] : '';
+        $staff_id = $data['staff_id'];
+        unset($data['id']);
+
+        if ($id == '') {
+            $this->fleet->add_accident($data);
+            set_alert('success', _l('added_successfully', _l('fleet_accident')));
+        } else {
+            $this->fleet->update_accident($id, $data);
+            set_alert('success', _l('updated_successfully', _l('fleet_accident')));
+        }
+
+        redirect(admin_url('fleet_management/drivers/profile/' . $staff_id));
+    }
+
+    public function accident_get($id)
+    {
+        if (!staff_can('view', 'fleet')) {
+            ajax_access_denied();
+        }
+
+        echo json_encode($this->fleet->get_accident($id));
+    }
+
+    public function accident_delete($id, $staff_id)
+    {
+        if (!staff_can('delete', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $this->fleet->delete_accident($id);
+        set_alert('success', _l('deleted', _l('fleet_accident')));
+        redirect(admin_url('fleet_management/drivers/profile/' . $staff_id));
+    }
+
     public function export()
     {
         if (!staff_can('view', 'fleet')) {

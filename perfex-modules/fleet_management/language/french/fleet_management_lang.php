@@ -321,3 +321,41 @@ $lang['fleet_assignment_start']       = 'Date de début';
 $lang['fleet_assignment_end']         = 'Date de fin';
 $lang['fleet_ended']                  = 'Terminée';
 $lang['fleet_end_assignment']         = 'Terminer';
+
+# Driver profile
+$lang['fleet_driver_profile']         = 'Fiche du chauffeur';
+$lang['fleet_personal_info']          = 'Informations personnelles';
+$lang['fleet_staff_account']          = 'Compte utilisateur';
+$lang['fleet_age']                    = 'Âge';
+$lang['fleet_years']                  = 'ans';
+$lang['fleet_date_of_birth']          = 'Date de naissance';
+$lang['fleet_national_id']            = 'N° pièce d\'identité';
+$lang['fleet_blood_type']             = 'Groupe sanguin';
+$lang['fleet_hire_date']              = 'Date d\'embauche';
+$lang['fleet_emergency_contact']      = 'Contact d\'urgence';
+$lang['fleet_emergency_phone']        = 'Téléphone d\'urgence';
+$lang['fleet_employment_emergency']   = 'Emploi & urgence';
+$lang['fleet_license']                = 'Permis de conduire';
+$lang['fleet_license_number']         = 'N° de permis';
+$lang['fleet_license_category']       = 'Catégorie de permis';
+$lang['fleet_license_issue_date']     = 'Date de délivrance';
+$lang['fleet_license_expiry']         = 'Date d\'expiration';
+$lang['fleet_valid']                  = 'Valide';
+$lang['fleet_expired']                = 'Expiré';
+$lang['fleet_expiring_soon']          = 'Expire bientôt';
+$lang['fleet_location']               = 'Lieu';
+$lang['fleet_client']                 = 'Client';
+$lang['fleet_yes']                    = 'Oui';
+$lang['fleet_no']                     = 'Non';
+
+# Driver accidents
+$lang['fleet_accidents']              = 'Accidents';
+$lang['fleet_accident']               = 'Accident / incident';
+$lang['fleet_add_accident']           = 'Déclarer un accident';
+$lang['fleet_no_accidents']           = 'Aucun accident enregistré';
+$lang['fleet_severity']               = 'Gravité';
+$lang['fleet_severity_minor']         = 'Léger';
+$lang['fleet_severity_moderate']      = 'Modéré';
+$lang['fleet_severity_severe']        = 'Grave';
+$lang['fleet_at_fault']               = 'Responsable';
+$lang['fleet_third_party']            = 'Tiers impliqué';

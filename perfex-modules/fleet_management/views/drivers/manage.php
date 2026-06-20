@@ -33,13 +33,14 @@
                                 <tbody>
                                     <?php foreach ($drivers as $d) : ?>
                                         <tr>
-                                            <td><?php echo html_escape($d['full_name']); ?></td>
+                                            <td><a href="<?php echo admin_url('fleet_management/drivers/profile/' . $d['staffid']); ?>" class="bold"><?php echo html_escape($d['full_name']); ?></a></td>
                                             <td><?php echo html_escape($d['email']); ?></td>
                                             <td><?php echo html_escape($d['phonenumber']); ?></td>
                                             <td><?php echo $d['active'] ? '<span class="label label-success">' . _l('active') . '</span>' : '<span class="label label-default">' . _l('inactive') . '</span>'; ?></td>
                                             <td>
+                                                <a href="<?php echo admin_url('fleet_management/drivers/profile/' . $d['staffid']); ?>" class="btn btn-default btn-icon" title="<?php echo _l('fleet_driver_profile'); ?>"><i class="fa fa-eye"></i></a>
                                                 <?php if (has_permission('staff', '', 'edit')) : ?>
-                                                    <a href="<?php echo admin_url('staff/member/' . $d['staffid']); ?>" class="btn btn-default btn-icon"><i class="fa fa-pencil-square"></i></a>
+                                                    <a href="<?php echo admin_url('staff/member/' . $d['staffid']); ?>" class="btn btn-default btn-icon" title="<?php echo _l('edit'); ?>"><i class="fa fa-pencil-square"></i></a>
                                                 <?php endif; ?>
                                             </td>
                                         </tr>
