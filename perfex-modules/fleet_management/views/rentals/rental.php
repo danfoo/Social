@@ -28,7 +28,7 @@ foreach (fleet_rental_statuses() as $s) {
                         <hr class="hr-panel-heading" />
                         <?php echo form_open($rental ? admin_url('fleet_management/rentals/rental/' . $rental->id) : admin_url('fleet_management/rentals/rental')); ?>
                         <div class="row">
-                            <div class="col-md-6"><?php echo render_select('vehicle_id', $vehicle_options, ['id', 'name'], 'fleet_vehicle', $rental->vehicle_id ?? ''); ?></div>
+                            <div class="col-md-6"><?php echo render_select('vehicle_id', $vehicle_options, ['id', 'name'], 'fleet_vehicle', $rental->vehicle_id ?? ($preselect_vehicle ?? '')); ?></div>
                             <div class="col-md-6"><?php echo render_select('clientid', $client_options, ['id', 'name'], 'client', $rental->clientid ?? ''); ?></div>
                         </div>
                         <div class="row">

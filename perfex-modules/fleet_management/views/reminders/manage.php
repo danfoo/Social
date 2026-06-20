@@ -123,6 +123,16 @@ function fleet_reminder_modal(id) {
     }
     modal.modal('show');
 }
+<?php if ($this->input->get('open')) : ?>
+$(function() {
+    fleet_reminder_modal();
+    <?php if ($this->input->get('vehicle_id')) : ?>
+    var pm = $('#fleet_reminder_modal');
+    pm.find('[name="vehicle_id"]').val('<?php echo (int) $this->input->get('vehicle_id'); ?>');
+    if (pm.find('.selectpicker').length) { pm.find('.selectpicker').selectpicker('refresh'); }
+    <?php endif; ?>
+});
+<?php endif; ?>
 </script>
 </body>
 </html>

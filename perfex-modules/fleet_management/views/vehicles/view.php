@@ -31,6 +31,16 @@ foreach ($drivers as $d) {
             <div class="col-md-8">
                 <div class="panel_s">
                     <div class="panel-body">
+                        <?php if (staff_can('create', 'fleet')) : ?>
+                            <div class="mbot15 fleet-quick-actions">
+                                <a href="<?php echo admin_url('fleet_management/rentals/rental?vehicle_id=' . $vehicle->id); ?>" class="btn btn-info btn-sm"><i class="fa fa-calendar"></i> <?php echo _l('fleet_add_rental'); ?></a>
+                                <a href="<?php echo admin_url('fleet_management/maintenance?vehicle_id=' . $vehicle->id . '&open=1'); ?>" class="btn btn-warning btn-sm"><i class="fa fa-wrench"></i> <?php echo _l('fleet_add_maintenance'); ?></a>
+                                <a href="<?php echo admin_url('fleet_management/fuel?vehicle_id=' . $vehicle->id . '&open=1'); ?>" class="btn btn-success btn-sm"><i class="fa fa-tint"></i> <?php echo _l('fleet_add_fuel'); ?></a>
+                                <a href="<?php echo admin_url('fleet_management/parts?vehicle_id=' . $vehicle->id . '&open=1'); ?>" class="btn btn-primary btn-sm"><i class="fa fa-cog"></i> <?php echo _l('fleet_add_part'); ?></a>
+                                <a href="<?php echo admin_url('fleet_management/reminders?vehicle_id=' . $vehicle->id . '&open=1'); ?>" class="btn btn-danger btn-sm"><i class="fa fa-bell"></i> <?php echo _l('fleet_add_reminder'); ?></a>
+                            </div>
+                            <hr class="mtop10 mbot15" />
+                        <?php endif; ?>
                         <ul class="nav nav-tabs" role="tablist">
                             <li role="presentation" class="active"><a href="#tab_history" role="tab" data-toggle="tab"><?php echo _l('fleet_history'); ?></a></li>
                             <li role="presentation"><a href="#tab_assign" role="tab" data-toggle="tab"><?php echo _l('fleet_drivers'); ?></a></li>

@@ -102,6 +102,15 @@ foreach (fleet_part_statuses() as $st) {
                     <div class="col-md-6"><?php echo render_select('vehicle_id', $vehicle_options, ['id', 'name'], 'fleet_vehicle'); ?></div>
                     <div class="col-md-6"><?php echo render_select('supplier_id', $supplier_options, ['id', 'name'], 'fleet_supplier'); ?></div>
                 </div>
+                <div class="form-group">
+                    <label class="control-label" for="part_maintenance_id"><?php echo _l('fleet_link_maintenance'); ?></label>
+                    <select name="maintenance_id" id="part_maintenance_id" class="form-control">
+                        <option value=""><?php echo _l('fleet_no_link'); ?></option>
+                        <?php foreach ($maintenances as $mm) : ?>
+                            <option value="<?php echo $mm['id']; ?>" data-vehicle="<?php echo (int) $mm['vehicle_id']; ?>"><?php echo html_escape($mm['vehicle_plate'] . ' · ' . _l('fleet_mtype_' . $mm['type']) . ' · ' . ($mm['service_date'] ? _d($mm['service_date']) : '')); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
                 <div class="row">
                     <div class="col-md-4"><?php echo render_input('quantity', 'fleet_quantity', 1, 'number'); ?></div>
                     <div class="col-md-4"><?php echo render_input('unit_price', 'fleet_unit_price', '', 'number'); ?></div>
@@ -124,6 +133,23 @@ foreach (fleet_part_statuses() as $st) {
 
 <?php init_tail(); ?>
 <script>
+var fleetPartAllMaint = null;
+
+function fleetPartFilterMaintenance() {
+    var modal = $('#fleet_part_modal');
+    var $m = $('#part_maintenance_id');
+    if (fleetPartAllMaint === null) { fleetPartAllMaint = $m.find('option').clone(); }
+    var vid = modal.find('[name="vehicle_id"]').val();
+    var current = $m.val();
+    $m.empty().append('<option value=""><?php echo _l('fleet_no_link'); ?></option>');
+    fleetPartAllMaint.each(function() {
+        var o = $(this);
+        if (o.val() === '') { return; }
+        if (!vid || String(o.data('vehicle')) === String(vid)) { $m.append(o.clone()); }
+    });
+    $m.val(current);
+}
+
 $(function() {
     $('#fleet_part_modal').on('input', '[name="quantity"], [name="unit_price"]', function() {
         var q = parseFloat($('#fleet_part_modal [name="quantity"]').val());
@@ -132,7 +158,9 @@ $(function() {
             $('#fleet_part_modal [name="total_price"]').val((q * u).toFixed(2));
         }
     });
+    $('#fleet_part_modal').on('change', '[name="vehicle_id"]', fleetPartFilterMaintenance);
 });
+
 function fleet_part_modal(id) {
     var modal = $('#fleet_part_modal');
     modal.find('form')[0].reset();
@@ -150,13 +178,28 @@ function fleet_part_modal(id) {
             modal.find('[name="total_price"]').val(rec.total_price);
             modal.find('[name="status"]').val(rec.status);
             modal.find('[name="notes"]').val(rec.notes);
+            fleetPartFilterMaintenance();
+            $('#part_maintenance_id').val(rec.maintenance_id);
             if (modal.find('.selectpicker').length) {
                 modal.find('.selectpicker').selectpicker('refresh');
             }
         });
+    } else {
+        fleetPartFilterMaintenance();
     }
     modal.modal('show');
 }
+<?php if ($this->input->get('open')) : ?>
+$(function() {
+    fleet_part_modal();
+    <?php if ($this->input->get('vehicle_id')) : ?>
+    var pm = $('#fleet_part_modal');
+    pm.find('[name="vehicle_id"]').val('<?php echo (int) $this->input->get('vehicle_id'); ?>');
+    if (pm.find('.selectpicker').length) { pm.find('.selectpicker').selectpicker('refresh'); }
+    fleetPartFilterMaintenance();
+    <?php endif; ?>
+});
+<?php endif; ?>
 </script>
 </body>
 </html>

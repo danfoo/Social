@@ -93,7 +93,14 @@ function fleet_management_init_menu_items()
         'name'     => _l('fleet_management'),
         'icon'     => 'fa fa-car',
         'position' => 30,
-        'href'     => admin_url('fleet_management/vehicles'),
+        'href'     => admin_url('fleet_management/dashboard'),
+    ]);
+
+    $CI->app_menu->add_sidebar_children_item('fleet-management', [
+        'slug'     => 'fleet-dashboard',
+        'name'     => _l('fleet_dashboard'),
+        'href'     => admin_url('fleet_management/dashboard'),
+        'position' => 0,
     ]);
 
     $CI->app_menu->add_sidebar_children_item('fleet-management', [

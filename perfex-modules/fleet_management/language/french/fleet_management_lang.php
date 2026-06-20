@@ -43,6 +43,18 @@ $lang['fleet_brands']                 = 'Marques';
 $lang['fleet_models']                 = 'Modèles';
 $lang['fleet_model_label']            = 'Modèle';
 
+# Dashboard
+$lang['fleet_dashboard']              = 'Tableau de bord';
+$lang['fleet_dash_total_cost']        = 'Coût total';
+$lang['fleet_dash_occupancy']         = 'Occupation (%s j)';
+$lang['fleet_dash_occupancy_short']   = 'Occupation';
+$lang['fleet_dash_per_vehicle']       = 'Coût par véhicule';
+$lang['fleet_dash_cost_per_km']       = 'Coût / km';
+
+# Part <-> maintenance link
+$lang['fleet_link_maintenance']       = 'Rattacher à un entretien (facultatif)';
+$lang['fleet_no_link']                = '— Aucun —';
+
 # Vehicle statuses
 $lang['fleet_status_available']       = 'Disponible';
 $lang['fleet_status_rented']          = 'En location';

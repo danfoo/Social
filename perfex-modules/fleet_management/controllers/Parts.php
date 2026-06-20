@@ -16,11 +16,12 @@ class Parts extends AdminController
             access_denied('fleet');
         }
 
-        $data['parts']     = $this->fleet->get_part();
-        $data['stats']     = $this->fleet->parts_stats();
-        $data['vehicles']  = $this->fleet->get_vehicle();
-        $data['suppliers'] = $this->fleet->get_supplier();
-        $data['title']     = _l('fleet_parts_articles');
+        $data['parts']        = $this->fleet->get_part();
+        $data['stats']        = $this->fleet->parts_stats();
+        $data['vehicles']     = $this->fleet->get_vehicle();
+        $data['suppliers']    = $this->fleet->get_supplier();
+        $data['maintenances'] = $this->fleet->get_maintenance();
+        $data['title']        = _l('fleet_parts_articles');
         $this->load->view('fleet_management/parts/manage', $data);
     }
 

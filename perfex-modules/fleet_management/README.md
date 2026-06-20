@@ -9,6 +9,13 @@ Compatible **Perfex CRM ≥ 2.3** (testé pour la lignée 3.4.x).
 
 ## Fonctionnalités
 
+- **Tableau de bord** : coût total de la flotte et par véhicule (entretien +
+  carburant + pièces + rappels), **coût/km** et **taux d'occupation** sur 30
+  jours (barre de progression), répartition des coûts et statuts des véhicules.
+- **Actions rapides** : depuis la fiche d'un véhicule, boutons pour créer
+  directement une location, un entretien, un plein, une pièce ou un rappel
+  **pré-remplis avec ce véhicule**.
+
 - **Véhicules** : fiche complète (immatriculation, marque/modèle, VIN, carburant,
   boîte, places, kilométrage, tarifs jour avec/sans chauffeur, assurance, statut).
   La **catégorie**, la **marque** et le **modèle** se choisissent dans des listes

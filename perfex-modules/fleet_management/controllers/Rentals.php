@@ -50,11 +50,12 @@ class Rentals extends AdminController
         }
 
         $this->load->model('clients_model');
-        $data['rental']   = $id == '' ? null : $this->fleet->get_rental($id);
-        $data['vehicles'] = $this->fleet->get_vehicle();
-        $data['drivers']  = $this->fleet->get_drivers();
-        $data['clients']  = $this->clients_model->get();
-        $data['title']    = $data['rental'] ? _l('fleet_rental') . ' #' . $id : _l('fleet_add_rental');
+        $data['rental']            = $id == '' ? null : $this->fleet->get_rental($id);
+        $data['vehicles']          = $this->fleet->get_vehicle();
+        $data['drivers']           = $this->fleet->get_drivers();
+        $data['clients']           = $this->clients_model->get();
+        $data['preselect_vehicle'] = $this->input->get('vehicle_id');
+        $data['title']             = $data['rental'] ? _l('fleet_rental') . ' #' . $id : _l('fleet_add_rental');
         $this->load->view('fleet_management/rentals/rental', $data);
     }
 
