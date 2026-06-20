@@ -18,6 +18,7 @@ class Maintenance extends AdminController
 
         $data['maintenance'] = $this->fleet->get_maintenance();
         $data['vehicles']    = $this->fleet->get_vehicle();
+        $data['suppliers']   = $this->fleet->get_supplier();
         $data['title']       = _l('fleet_maintenance');
         $this->load->view('fleet_management/maintenance/manage', $data);
     }

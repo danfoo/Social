@@ -64,6 +64,22 @@ function fleet_maintenance_types()
 }
 
 /**
+ * Supplier categories.
+ */
+function fleet_supplier_types()
+{
+    return ['garage', 'insurance', 'fuel_station', 'rental_partner', 'parts', 'other'];
+}
+
+/**
+ * Common fuel types, reused for vehicles and fuel logs.
+ */
+function fleet_fuel_types()
+{
+    return ['diesel', 'petrol', 'lpg', 'electric', 'hybrid', 'other'];
+}
+
+/**
  * Due-date badge for a reminder, based on how close the due date is.
  */
 function fleet_reminder_due_badge($due_date, $notify_days = 7)

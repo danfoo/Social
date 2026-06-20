@@ -8,6 +8,10 @@ $type_options = [];
 foreach (fleet_reminder_types() as $t) {
     $type_options[] = ['id' => $t, 'name' => _l('fleet_rtype_' . $t)];
 }
+$supplier_options = [];
+foreach ($suppliers as $sup) {
+    $supplier_options[] = ['id' => $sup['id'], 'name' => $sup['name']];
+}
 ?>
 <?php init_head(); ?>
 <div id="wrapper">
@@ -82,6 +86,7 @@ foreach (fleet_reminder_types() as $t) {
                     <div class="col-md-6"><?php echo render_input('cost', 'fleet_cost', '', 'number'); ?></div>
                     <div class="col-md-6"><?php echo render_input('provider', 'fleet_provider', ''); ?></div>
                 </div>
+                <?php echo render_select('supplier_id', $supplier_options, ['id', 'name'], 'fleet_supplier'); ?>
                 <?php echo render_textarea('description', 'fleet_description', ''); ?>
             </div>
             <div class="modal-footer">
@@ -114,6 +119,7 @@ function fleet_reminder_modal(id) {
             modal.find('[name="notify_days"]').val(rec.notify_days);
             modal.find('[name="cost"]').val(rec.cost);
             modal.find('[name="provider"]').val(rec.provider);
+            modal.find('[name="supplier_id"]').val(rec.supplier_id);
             modal.find('[name="description"]').val(rec.description);
             if (modal.find('.selectpicker').length) {
                 modal.find('.selectpicker').selectpicker('refresh');

@@ -118,6 +118,55 @@ if (!$CI->db->table_exists(db_prefix() . 'fleet_rentals')) {
     ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
 }
 
+if (!$CI->db->table_exists(db_prefix() . 'fleet_suppliers')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_suppliers` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(191) NOT NULL,
+        `type` VARCHAR(50) NOT NULL DEFAULT 'other',
+        `contact_name` VARCHAR(191) NULL,
+        `phone` VARCHAR(50) NULL,
+        `email` VARCHAR(191) NULL,
+        `address` TEXT NULL,
+        `vat` VARCHAR(100) NULL,
+        `website` VARCHAR(191) NULL,
+        `notes` TEXT NULL,
+        `active` TINYINT(1) NOT NULL DEFAULT 1,
+        `created_by` INT(11) NULL,
+        `date_created` DATETIME NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
+if (!$CI->db->table_exists(db_prefix() . 'fleet_fuel_logs')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_fuel_logs` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `vehicle_id` INT(11) NOT NULL,
+        `driver_id` INT(11) NULL,
+        `supplier_id` INT(11) NULL,
+        `date` DATE NOT NULL,
+        `odometer` INT(11) NULL,
+        `liters` DECIMAL(10,2) NOT NULL DEFAULT 0,
+        `price_per_liter` DECIMAL(10,3) NULL,
+        `total_cost` DECIMAL(15,2) NOT NULL DEFAULT 0,
+        `fuel_type` VARCHAR(50) NULL,
+        `full_tank` TINYINT(1) NOT NULL DEFAULT 1,
+        `notes` TEXT NULL,
+        `created_by` INT(11) NULL,
+        `date_created` DATETIME NULL,
+        PRIMARY KEY (`id`),
+        KEY `vehicle_id` (`vehicle_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
+// Link maintenance and reminders to a supplier (idempotent upgrade for
+// installations created before these columns existed).
+if (!$CI->db->field_exists('supplier_id', db_prefix() . 'fleet_maintenance')) {
+    $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_maintenance` ADD `supplier_id` INT(11) NULL AFTER `provider`');
+}
+if (!$CI->db->field_exists('supplier_id', db_prefix() . 'fleet_reminders')) {
+    $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_reminders` ADD `supplier_id` INT(11) NULL AFTER `provider`');
+}
+
 /**
  * Create a dedicated "Driver" staff role once, and remember its id.
  * Drivers are simply staff members holding this role.

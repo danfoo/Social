@@ -112,6 +112,45 @@ $lang['fleet_rtype_other']                = 'Other';
 $lang['fleet_drivers_help']           = 'Drivers are Perfex staff members holding the dedicated "Driver" role. Assign that role to a staff member to make them available here.';
 $lang['fleet_add_staff_member']       = 'Add staff member';
 
+# Suppliers
+$lang['fleet_supplier']               = 'Supplier';
+$lang['fleet_add_supplier']           = 'Add supplier';
+$lang['fleet_supplier_name']          = 'Name';
+$lang['fleet_contact_name']           = 'Contact name';
+$lang['fleet_website']                = 'Website';
+$lang['fleet_vat']                    = 'VAT number';
+$lang['fleet_address']                = 'Address';
+
+$lang['fleet_stype_garage']           = 'Garage';
+$lang['fleet_stype_insurance']        = 'Insurance company';
+$lang['fleet_stype_fuel_station']     = 'Fuel station';
+$lang['fleet_stype_rental_partner']   = 'Rental partner';
+$lang['fleet_stype_parts']            = 'Parts supplier';
+$lang['fleet_stype_other']            = 'Other';
+
+# Fuel
+$lang['fleet_fuel']                   = 'Fuel';
+$lang['fleet_fuel_log']               = 'Fuel entry';
+$lang['fleet_add_fuel']               = 'Add fuel entry';
+$lang['fleet_date']                   = 'Date';
+$lang['fleet_liters']                 = 'Liters';
+$lang['fleet_price_per_liter']        = 'Price / liter';
+$lang['fleet_total_cost']             = 'Total cost';
+$lang['fleet_station']                = 'Fuel station';
+$lang['fleet_full_tank']              = 'Full tank';
+$lang['fleet_fuel_type']              = 'Fuel type';
+$lang['fleet_fuel_entries']           = 'Entries';
+$lang['fleet_fuel_total_liters']      = 'Total liters';
+$lang['fleet_fuel_total_cost']        = 'Total cost';
+$lang['fleet_fuel_total_hint']        = 'Leave the total cost blank to compute it automatically from liters × price per liter.';
+
+$lang['fleet_fuel_diesel']            = 'Diesel';
+$lang['fleet_fuel_petrol']            = 'Petrol';
+$lang['fleet_fuel_lpg']               = 'LPG';
+$lang['fleet_fuel_electric']          = 'Electric';
+$lang['fleet_fuel_hybrid']            = 'Hybrid';
+$lang['fleet_fuel_other']             = 'Other';
+
 # Assignments
 $lang['fleet_driver_assigned']        = 'Driver assigned to the vehicle';
 $lang['fleet_assignment_ended']       = 'Assignment ended';

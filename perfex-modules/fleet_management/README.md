@@ -12,7 +12,14 @@ Compatible **Perfex CRM ≥ 2.3** (testé pour la lignée 3.4.x).
 - **Véhicules** : fiche complète (immatriculation, marque/modèle, VIN, carburant,
   boîte, places, kilométrage, tarifs jour avec/sans chauffeur, assurance, statut).
 - **Entretiens** : historique par véhicule (vidange, révision, pneus, freins,
-  réparation, carrosserie…), coût, kilométrage, prochain entretien.
+  réparation, carrosserie…), coût, kilométrage, prochain entretien, fournisseur.
+- **Carburant** : suivi des pleins (litres, prix/litre, coût total calculé auto,
+  kilométrage, station-service, chauffeur, plein complet) + statistiques
+  (nombre de pleins, litres et coût cumulés). Le km met à jour l'odomètre du
+  véhicule.
+- **Fournisseurs** : carnet d'adresses (garages, assurances, stations-service,
+  partenaires, pièces…) avec contact, téléphone, email, TVA, adresse. Reliable
+  aux entretiens, rappels et pleins de carburant.
 - **Rappels + notifications** : échéances de documents avec notification
   automatique X jours avant via le **cron Perfex** (notification interne aux
   membres du staff autorisés). Badges « bientôt » / « expiré ».
@@ -76,7 +83,13 @@ fleet_management/
 ```
 
 Tables créées : `fleet_vehicles`, `fleet_maintenance`, `fleet_reminders`,
-`fleet_assignments`, `fleet_rentals` (préfixe Perfex appliqué).
+`fleet_assignments`, `fleet_rentals`, `fleet_suppliers`, `fleet_fuel_logs`
+(préfixe Perfex appliqué).
+
+> Mise à niveau : si le module était déjà installé avant l'ajout du carburant
+> et des fournisseurs, désactivez puis réactivez-le. `install.php` est
+> idempotent : il crée les nouvelles tables et ajoute la colonne `supplier_id`
+> aux entretiens/rappels sans toucher aux données existantes.
 
 ## Notes / limites connues
 

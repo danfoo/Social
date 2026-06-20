@@ -2,7 +2,7 @@
 
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Reminders extends AdminController
+class Suppliers extends AdminController
 {
     public function __construct()
     {
@@ -16,17 +16,15 @@ class Reminders extends AdminController
             access_denied('fleet');
         }
 
-        $data['reminders'] = $this->fleet->get_reminders();
-        $data['vehicles']  = $this->fleet->get_vehicle();
         $data['suppliers'] = $this->fleet->get_supplier();
-        $data['title']     = _l('fleet_reminders');
-        $this->load->view('fleet_management/reminders/manage', $data);
+        $data['title']     = _l('fleet_suppliers');
+        $this->load->view('fleet_management/suppliers/manage', $data);
     }
 
     public function save()
     {
         if (!$this->input->post()) {
-            redirect(admin_url('fleet_management/reminders'));
+            redirect(admin_url('fleet_management/suppliers'));
         }
 
         $data = $this->input->post();
@@ -37,17 +35,17 @@ class Reminders extends AdminController
             if (!staff_can('create', 'fleet')) {
                 access_denied('fleet');
             }
-            $this->fleet->add_reminder($data);
-            set_alert('success', _l('added_successfully', _l('fleet_reminder')));
+            $this->fleet->add_supplier($data);
+            set_alert('success', _l('added_successfully', _l('fleet_supplier')));
         } else {
             if (!staff_can('edit', 'fleet')) {
                 access_denied('fleet');
             }
-            $this->fleet->update_reminder($id, $data);
-            set_alert('success', _l('updated_successfully', _l('fleet_reminder')));
+            $this->fleet->update_supplier($id, $data);
+            set_alert('success', _l('updated_successfully', _l('fleet_supplier')));
         }
 
-        redirect($this->input->server('HTTP_REFERER') ?: admin_url('fleet_management/reminders'));
+        redirect(admin_url('fleet_management/suppliers'));
     }
 
     public function get($id)
@@ -56,7 +54,7 @@ class Reminders extends AdminController
             ajax_access_denied();
         }
 
-        echo json_encode($this->fleet->get_reminders($id));
+        echo json_encode($this->fleet->get_supplier($id));
     }
 
     public function delete($id)
@@ -65,8 +63,8 @@ class Reminders extends AdminController
             access_denied('fleet');
         }
 
-        $this->fleet->delete_reminder($id);
-        set_alert('success', _l('deleted', _l('fleet_reminder')));
-        redirect($this->input->server('HTTP_REFERER') ?: admin_url('fleet_management/reminders'));
+        $this->fleet->delete_supplier($id);
+        set_alert('success', _l('deleted', _l('fleet_supplier')));
+        redirect(admin_url('fleet_management/suppliers'));
     }
 }

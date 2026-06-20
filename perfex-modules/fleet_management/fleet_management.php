@@ -98,17 +98,31 @@ function fleet_management_init_menu_items()
     ]);
 
     $CI->app_menu->add_sidebar_children_item('fleet-management', [
+        'slug'     => 'fleet-fuel',
+        'name'     => _l('fleet_fuel'),
+        'href'     => admin_url('fleet_management/fuel'),
+        'position' => 4,
+    ]);
+
+    $CI->app_menu->add_sidebar_children_item('fleet-management', [
         'slug'     => 'fleet-reminders',
         'name'     => _l('fleet_reminders'),
         'href'     => admin_url('fleet_management/reminders'),
-        'position' => 4,
+        'position' => 5,
     ]);
 
     $CI->app_menu->add_sidebar_children_item('fleet-management', [
         'slug'     => 'fleet-drivers',
         'name'     => _l('fleet_drivers'),
         'href'     => admin_url('fleet_management/drivers'),
-        'position' => 5,
+        'position' => 6,
+    ]);
+
+    $CI->app_menu->add_sidebar_children_item('fleet-management', [
+        'slug'     => 'fleet-suppliers',
+        'name'     => _l('fleet_suppliers'),
+        'href'     => admin_url('fleet_management/suppliers'),
+        'position' => 7,
     ]);
 }
 

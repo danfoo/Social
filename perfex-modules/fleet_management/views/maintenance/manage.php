@@ -8,6 +8,10 @@ $type_options = [];
 foreach (fleet_maintenance_types() as $t) {
     $type_options[] = ['id' => $t, 'name' => _l('fleet_mtype_' . $t)];
 }
+$supplier_options = [];
+foreach ($suppliers as $sup) {
+    $supplier_options[] = ['id' => $sup['id'], 'name' => $sup['name']];
+}
 ?>
 <?php init_head(); ?>
 <div id="wrapper">
@@ -83,6 +87,7 @@ foreach (fleet_maintenance_types() as $t) {
                     <div class="col-md-6"><?php echo render_input('odometer', 'fleet_odometer', '', 'number'); ?></div>
                     <div class="col-md-6"><?php echo render_input('provider', 'fleet_provider', ''); ?></div>
                 </div>
+                <?php echo render_select('supplier_id', $supplier_options, ['id', 'name'], 'fleet_supplier'); ?>
                 <div class="row">
                     <div class="col-md-6"><?php echo render_date_input('next_service_date', 'fleet_next_service_date', ''); ?></div>
                     <div class="col-md-6"><?php echo render_input('next_service_odometer', 'fleet_next_service_odometer', '', 'number'); ?></div>
@@ -118,6 +123,7 @@ function fleet_maintenance_modal(id) {
             modal.find('[name="cost"]').val(rec.cost);
             modal.find('[name="odometer"]').val(rec.odometer);
             modal.find('[name="provider"]').val(rec.provider);
+            modal.find('[name="supplier_id"]').val(rec.supplier_id);
             modal.find('[name="next_service_odometer"]').val(rec.next_service_odometer);
             modal.find('[name="description"]').val(rec.description);
             if (modal.find('[name="vehicle_id"]').hasClass('selectpicker')) {

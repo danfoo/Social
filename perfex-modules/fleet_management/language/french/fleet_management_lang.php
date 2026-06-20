@@ -112,6 +112,45 @@ $lang['fleet_rtype_other']                = 'Autre';
 $lang['fleet_drivers_help']           = 'Les chauffeurs sont des membres du staff Perfex possédant le rôle dédié « Chauffeur ». Attribuez ce rôle à un membre du staff pour qu\'il apparaisse ici.';
 $lang['fleet_add_staff_member']       = 'Ajouter un membre du staff';
 
+# Suppliers
+$lang['fleet_supplier']               = 'Fournisseur';
+$lang['fleet_add_supplier']           = 'Ajouter un fournisseur';
+$lang['fleet_supplier_name']          = 'Nom';
+$lang['fleet_contact_name']           = 'Nom du contact';
+$lang['fleet_website']                = 'Site web';
+$lang['fleet_vat']                    = 'N° de TVA';
+$lang['fleet_address']                = 'Adresse';
+
+$lang['fleet_stype_garage']           = 'Garage';
+$lang['fleet_stype_insurance']        = 'Compagnie d\'assurance';
+$lang['fleet_stype_fuel_station']     = 'Station-service';
+$lang['fleet_stype_rental_partner']   = 'Partenaire de location';
+$lang['fleet_stype_parts']            = 'Fournisseur de pièces';
+$lang['fleet_stype_other']            = 'Autre';
+
+# Fuel
+$lang['fleet_fuel']                   = 'Carburant';
+$lang['fleet_fuel_log']               = 'Plein de carburant';
+$lang['fleet_add_fuel']               = 'Ajouter un plein';
+$lang['fleet_date']                   = 'Date';
+$lang['fleet_liters']                 = 'Litres';
+$lang['fleet_price_per_liter']        = 'Prix / litre';
+$lang['fleet_total_cost']             = 'Coût total';
+$lang['fleet_station']                = 'Station-service';
+$lang['fleet_full_tank']              = 'Plein complet';
+$lang['fleet_fuel_type']              = 'Type de carburant';
+$lang['fleet_fuel_entries']           = 'Pleins';
+$lang['fleet_fuel_total_liters']      = 'Litres au total';
+$lang['fleet_fuel_total_cost']        = 'Coût total';
+$lang['fleet_fuel_total_hint']        = 'Laissez le coût total vide pour le calculer automatiquement (litres × prix au litre).';
+
+$lang['fleet_fuel_diesel']            = 'Diesel';
+$lang['fleet_fuel_petrol']            = 'Essence';
+$lang['fleet_fuel_lpg']               = 'GPL';
+$lang['fleet_fuel_electric']          = 'Électrique';
+$lang['fleet_fuel_hybrid']            = 'Hybride';
+$lang['fleet_fuel_other']             = 'Autre';
+
 # Assignments
 $lang['fleet_driver_assigned']        = 'Chauffeur affecté au véhicule';
 $lang['fleet_assignment_ended']       = 'Affectation terminée';
