@@ -64,7 +64,7 @@ class Fleet_management_model extends App_Model
     public function delete_vehicle($id)
     {
         // Remove the core expenses linked to this vehicle's costed records first.
-        foreach (['fleet_maintenance', 'fleet_fuel_logs', 'fleet_reminders'] as $table) {
+        foreach (['fleet_maintenance', 'fleet_fuel_logs', 'fleet_reminders', 'fleet_parts'] as $table) {
             if (!$this->db->field_exists('expense_id', db_prefix() . $table)) {
                 continue;
             }
@@ -80,7 +80,7 @@ class Fleet_management_model extends App_Model
         $this->db->delete(db_prefix() . 'fleet_vehicles');
 
         if ($this->db->affected_rows() > 0) {
-            foreach (['fleet_maintenance', 'fleet_reminders', 'fleet_assignments', 'fleet_rentals', 'fleet_fuel_logs', 'fleet_activity'] as $table) {
+            foreach (['fleet_maintenance', 'fleet_reminders', 'fleet_assignments', 'fleet_rentals', 'fleet_fuel_logs', 'fleet_parts', 'fleet_activity'] as $table) {
                 $this->db->where('vehicle_id', $id);
                 $this->db->delete(db_prefix() . $table);
             }
@@ -913,6 +913,127 @@ class Fleet_management_model extends App_Model
         $this->db->delete(db_prefix() . 'fleet_maintenance_files');
 
         return $this->db->affected_rows() > 0;
+    }
+
+    /* ----------------------------------------------------------------- *
+     * Parts / articles purchased for vehicles
+     * ----------------------------------------------------------------- */
+
+    public function get_part($id = '', $vehicle_id = '')
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_parts')) {
+            return is_numeric($id) ? null : [];
+        }
+
+        if (is_numeric($id)) {
+            $this->db->where('id', $id);
+
+            return $this->db->get(db_prefix() . 'fleet_parts')->row();
+        }
+
+        $this->db->select('p.*, v.name as vehicle_name, v.plate as vehicle_plate, s.name as supplier_name');
+        $this->db->from(db_prefix() . 'fleet_parts p');
+        $this->db->join(db_prefix() . 'fleet_vehicles v', 'v.id = p.vehicle_id', 'left');
+        $this->db->join(db_prefix() . 'fleet_suppliers s', 's.id = p.supplier_id', 'left');
+
+        if (is_numeric($vehicle_id)) {
+            $this->db->where('p.vehicle_id', $vehicle_id);
+        }
+
+        $this->db->order_by('p.purchase_date', 'desc');
+        $this->db->order_by('p.id', 'desc');
+
+        return $this->db->get()->result_array();
+    }
+
+    public function add_part($data)
+    {
+        $data['date_created'] = date('Y-m-d H:i:s');
+        $data['created_by']   = get_staff_user_id();
+        $data                 = $this->_prepare_part_data($data);
+
+        $this->db->insert(db_prefix() . 'fleet_parts', $data);
+        $id = $this->db->insert_id();
+
+        if ($id && !empty($data['vehicle_id'])) {
+            $this->log_activity($data['vehicle_id'], 'part', _l('fleet_log_part_added', $data['name'] ?? ''));
+        }
+
+        if ($id) {
+            $this->_sync_record_expense(
+                'fleet_parts',
+                $id,
+                $data['total_price'] ?? 0,
+                _l('fleet_part') . ' - ' . ($data['name'] ?? '') . ' - ' . $this->_vehicle_label($data['vehicle_id'] ?? 0),
+                $data['reference'] ?? '',
+                $data['purchase_date'] ?? null
+            );
+        }
+
+        return $id;
+    }
+
+    public function update_part($id, $data)
+    {
+        $data = $this->_prepare_part_data($data);
+
+        $this->db->where('id', $id);
+        $this->db->update(db_prefix() . 'fleet_parts', $data);
+
+        $record = $this->get_part($id);
+        if ($record) {
+            $this->_sync_record_expense(
+                'fleet_parts',
+                $id,
+                $record->total_price,
+                _l('fleet_part') . ' - ' . $record->name . ' - ' . $this->_vehicle_label($record->vehicle_id),
+                $record->reference,
+                $record->purchase_date
+            );
+        }
+
+        return true;
+    }
+
+    public function delete_part($id)
+    {
+        $this->_delete_record_expense('fleet_parts', $id);
+
+        $this->db->where('id', $id);
+        $this->db->delete(db_prefix() . 'fleet_parts');
+
+        return $this->db->affected_rows() > 0;
+    }
+
+    public function parts_stats($vehicle_id = '')
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_parts')) {
+            return (object) ['entries' => 0, 'total_cost' => 0];
+        }
+        if (is_numeric($vehicle_id)) {
+            $this->db->where('vehicle_id', $vehicle_id);
+        }
+        $this->db->select('COUNT(*) as entries, COALESCE(SUM(total_price),0) as total_cost');
+
+        return $this->db->get(db_prefix() . 'fleet_parts')->row();
+    }
+
+    private function _prepare_part_data($data)
+    {
+        $data = $this->_clean_numeric($data, ['vehicle_id', 'supplier_id', 'maintenance_id', 'quantity', 'unit_price', 'total_price']);
+        $data = $this->_clean_dates($data, ['purchase_date']);
+
+        $qty = (isset($data['quantity']) && $data['quantity'] !== null) ? (int) $data['quantity'] : 1;
+        $data['quantity']    = $qty > 0 ? $qty : 1;
+        $data['total_price'] = round((float) ($data['unit_price'] ?? 0) * $data['quantity'], 2);
+
+        foreach (['vehicle_id', 'supplier_id', 'maintenance_id'] as $fk) {
+            if (empty($data[$fk])) {
+                $data[$fk] = null;
+            }
+        }
+
+        return $data;
     }
 
     /* ----------------------------------------------------------------- *

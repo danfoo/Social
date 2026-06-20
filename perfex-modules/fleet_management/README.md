@@ -14,6 +14,11 @@ Compatible **Perfex CRM ≥ 2.3** (testé pour la lignée 3.4.x).
   La **catégorie**, la **marque** et le **modèle** se choisissent dans des listes
   gérées sous **Configuration** (le modèle se filtre selon la marque). La
   **compagnie d'assurance** provient des **fournisseurs de type « assurance »**.
+- **Pièces / Articles** : inventaire des pièces et articles achetés, avec le
+  **véhicule** auquel ils sont affectés, le **fournisseur** chez qui ils ont été
+  achetés, la **quantité**, le **prix d'achat unitaire** et le **total** (calculé
+  automatiquement). Chaque achat est compté comme **dépense Perfex** et apparaît
+  dans l'historique du véhicule (onglet **Pièces** sur la fiche).
 - **Configuration (catalogue)** : gestion des **catégories**, **marques** et
   **modèles** de véhicules (un modèle appartient à une marque).
 - **Dépenses automatiques** : tout coût lié à un véhicule (entretien, plein de

@@ -184,6 +184,23 @@ $lang['fleet_log_rental_created']     = 'Rental created (#%s)';
 $lang['fleet_log_invoice_created']    = 'Invoice %s created';
 $lang['fleet_log_photo_added']        = 'Photo added (%s)';
 
+# Parts / articles inventory
+$lang['fleet_parts_articles']         = 'Parts / Articles';
+$lang['fleet_part']                   = 'Part';
+$lang['fleet_add_part']               = 'Add part';
+$lang['fleet_part_name']              = 'Part / article name';
+$lang['fleet_reference']              = 'Reference';
+$lang['fleet_quantity']               = 'Quantity';
+$lang['fleet_unit_price']             = 'Unit purchase price';
+$lang['fleet_parts_count']            = 'Parts purchased';
+$lang['fleet_parts_total_cost']       = 'Total purchase cost';
+$lang['fleet_pstatus_installed']      = 'Installed';
+$lang['fleet_pstatus_in_stock']       = 'In stock';
+$lang['fleet_pstatus_ordered']        = 'Ordered';
+$lang['fleet_pstatus_returned']       = 'Returned';
+$lang['fleet_log_part_added']         = 'Part purchased: %s';
+$lang['fleet_atype_part']             = 'Part';
+
 # Maintenance parts & photos
 $lang['fleet_parts']                  = 'Replaced parts';
 $lang['fleet_parts_hint']             = 'List the parts replaced (one per line)';

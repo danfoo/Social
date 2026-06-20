@@ -220,6 +220,29 @@ if (!$CI->db->table_exists(db_prefix() . 'fleet_maintenance_files')) {
     ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
 }
 
+if (!$CI->db->table_exists(db_prefix() . 'fleet_parts')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_parts` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(191) NOT NULL,
+        `reference` VARCHAR(100) NULL,
+        `vehicle_id` INT(11) NULL,
+        `supplier_id` INT(11) NULL,
+        `maintenance_id` INT(11) NULL,
+        `quantity` INT(11) NOT NULL DEFAULT 1,
+        `unit_price` DECIMAL(15,2) NOT NULL DEFAULT 0,
+        `total_price` DECIMAL(15,2) NOT NULL DEFAULT 0,
+        `purchase_date` DATE NULL,
+        `status` VARCHAR(50) NOT NULL DEFAULT 'installed',
+        `notes` TEXT NULL,
+        `expense_id` INT(11) NULL,
+        `created_by` INT(11) NULL,
+        `date_created` DATETIME NULL,
+        PRIMARY KEY (`id`),
+        KEY `vehicle_id` (`vehicle_id`),
+        KEY `supplier_id` (`supplier_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
 // Parts replaced during a maintenance operation (idempotent upgrade).
 if (!$CI->db->field_exists('parts', db_prefix() . 'fleet_maintenance')) {
     $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_maintenance` ADD `parts` TEXT NULL AFTER `description`');

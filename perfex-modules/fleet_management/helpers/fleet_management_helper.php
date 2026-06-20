@@ -80,6 +80,14 @@ function fleet_fuel_types()
 }
 
 /**
+ * Part / article statuses.
+ */
+function fleet_part_statuses()
+{
+    return ['installed', 'in_stock', 'ordered', 'returned'];
+}
+
+/**
  * Activity log types and their icon / colour for the vehicle timeline.
  */
 function fleet_activity_icon($type)
@@ -88,6 +96,7 @@ function fleet_activity_icon($type)
         'vehicle'    => 'fa-car',
         'assignment' => 'fa-user',
         'maintenance'=> 'fa-wrench',
+        'part'       => 'fa-cog',
         'photo'      => 'fa-camera',
         'reminder'   => 'fa-bell',
         'fuel'       => 'fa-tint',
@@ -105,6 +114,7 @@ function fleet_activity_color($type)
         'vehicle'    => 'default',
         'assignment' => 'info',
         'maintenance'=> 'warning',
+        'part'       => 'primary',
         'photo'      => 'warning',
         'reminder'   => 'danger',
         'fuel'       => 'success',

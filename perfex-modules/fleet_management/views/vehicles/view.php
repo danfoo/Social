@@ -35,6 +35,7 @@ foreach ($drivers as $d) {
                             <li role="presentation" class="active"><a href="#tab_history" role="tab" data-toggle="tab"><?php echo _l('fleet_history'); ?></a></li>
                             <li role="presentation"><a href="#tab_assign" role="tab" data-toggle="tab"><?php echo _l('fleet_drivers'); ?></a></li>
                             <li role="presentation"><a href="#tab_maintenance" role="tab" data-toggle="tab"><?php echo _l('fleet_maintenance'); ?></a></li>
+                            <li role="presentation"><a href="#tab_parts" role="tab" data-toggle="tab"><?php echo _l('fleet_parts_articles'); ?></a></li>
                             <li role="presentation"><a href="#tab_reminders" role="tab" data-toggle="tab"><?php echo _l('fleet_reminders'); ?></a></li>
                         </ul>
                         <div class="tab-content mtop15">
@@ -101,6 +102,24 @@ foreach ($drivers as $d) {
                                             <td><?php echo $m['service_date'] ? _d($m['service_date']) : '-'; ?></td>
                                             <td><?php echo app_format_money($m['cost'], get_base_currency()); ?></td>
                                             <td><?php echo $m['next_service_date'] ? _d($m['next_service_date']) : '-'; ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div role="tabpanel" class="tab-pane" id="tab_parts">
+                                <p class="text-muted"><?php echo _l('fleet_maintenance_in_global'); ?> <a href="<?php echo admin_url('fleet_management/parts'); ?>"><?php echo _l('fleet_parts_articles'); ?></a>.</p>
+                                <table class="table">
+                                    <thead><tr><th><?php echo _l('fleet_part_name'); ?></th><th><?php echo _l('fleet_reference'); ?></th><th><?php echo _l('fleet_supplier'); ?></th><th><?php echo _l('fleet_quantity'); ?></th><th><?php echo _l('fleet_total'); ?></th><th><?php echo _l('fleet_purchase_date'); ?></th></tr></thead>
+                                    <tbody>
+                                    <?php foreach ($parts as $p) : ?>
+                                        <tr>
+                                            <td><?php echo html_escape($p['name']); ?></td>
+                                            <td><?php echo html_escape($p['reference']); ?></td>
+                                            <td><?php echo $p['supplier_name'] ? html_escape($p['supplier_name']) : '-'; ?></td>
+                                            <td><?php echo (int) $p['quantity']; ?></td>
+                                            <td><?php echo app_format_money($p['total_price'], get_base_currency()); ?></td>
+                                            <td><?php echo $p['purchase_date'] ? _d($p['purchase_date']) : '-'; ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                     </tbody>
