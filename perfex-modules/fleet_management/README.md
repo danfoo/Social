@@ -16,8 +16,13 @@ Compatible **Perfex CRM ≥ 2.3** (testé pour la lignée 3.4.x).
   **compagnie d'assurance** provient des **fournisseurs de type « assurance »**.
 - **Configuration (catalogue)** : gestion des **catégories**, **marques** et
   **modèles** de véhicules (un modèle appartient à une marque).
+- **Historique du véhicule** : chaque fiche véhicule expose un onglet
+  **Historique** retraçant toutes les actions (création, affectation de
+  chauffeur, pleins de carburant, mises à jour du kilométrage, entretiens,
+  pièces changées, rappels, locations, factures) avec date et auteur.
 - **Entretiens** : historique par véhicule (vidange, révision, pneus, freins,
-  réparation, carrosserie…), coût, kilométrage, prochain entretien, fournisseur.
+  réparation, carrosserie…), coût, kilométrage, prochain entretien, fournisseur,
+  **pièces changées** et **photos jointes** (chacune avec sa date de prise).
 - **Carburant** : suivi des pleins (litres, prix/litre, coût total calculé auto,
   kilométrage, station-service, chauffeur, plein complet) + statistiques
   (nombre de pleins, litres et coût cumulés). Le km met à jour l'odomètre du

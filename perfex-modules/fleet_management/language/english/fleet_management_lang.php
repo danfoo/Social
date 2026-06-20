@@ -158,6 +158,41 @@ $lang['fleet_fuel_electric']          = 'Electric';
 $lang['fleet_fuel_hybrid']            = 'Hybrid';
 $lang['fleet_fuel_other']             = 'Other';
 
+# Vehicle history (activity timeline)
+$lang['fleet_history']                = 'History';
+$lang['fleet_history_empty']          = 'No activity recorded yet for this vehicle.';
+$lang['fleet_atype_vehicle']          = 'Vehicle';
+$lang['fleet_atype_assignment']       = 'Driver';
+$lang['fleet_atype_maintenance']      = 'Maintenance';
+$lang['fleet_atype_photo']            = 'Photo';
+$lang['fleet_atype_reminder']         = 'Reminder';
+$lang['fleet_atype_fuel']             = 'Fuel';
+$lang['fleet_atype_odometer']         = 'Odometer';
+$lang['fleet_atype_rental']           = 'Rental';
+$lang['fleet_atype_invoice']          = 'Invoice';
+$lang['fleet_atype_other']            = 'Activity';
+
+$lang['fleet_log_vehicle_created']    = 'Vehicle created';
+$lang['fleet_log_odometer']           = 'Odometer updated from %s to %s km';
+$lang['fleet_log_driver_assigned']    = 'Driver %s assigned';
+$lang['fleet_log_assignment_ended']   = 'Assignment of %s ended';
+$lang['fleet_log_maintenance']        = 'Maintenance: %s';
+$lang['fleet_log_reminder_added']     = 'Reminder added: %s';
+$lang['fleet_log_fuel']               = 'Refuel: %s L';
+$lang['fleet_log_rental_created']     = 'Rental created (#%s)';
+$lang['fleet_log_invoice_created']    = 'Invoice %s created';
+$lang['fleet_log_photo_added']        = 'Photo added (%s)';
+
+# Maintenance parts & photos
+$lang['fleet_parts']                  = 'Replaced parts';
+$lang['fleet_parts_hint']             = 'List the parts replaced (one per line)';
+$lang['fleet_maintenance_photos']     = 'Maintenance photos';
+$lang['fleet_photo']                  = 'Photo';
+$lang['fleet_photo_taken_date']       = 'Date taken';
+$lang['fleet_photo_upload']           = 'Upload';
+$lang['fleet_photo_uploaded']         = 'Photo uploaded successfully';
+$lang['fleet_no_photos']              = 'No photo attached yet.';
+
 # Assignments
 $lang['fleet_driver_assigned']        = 'Driver assigned to the vehicle';
 $lang['fleet_assignment_ended']       = 'Assignment ended';

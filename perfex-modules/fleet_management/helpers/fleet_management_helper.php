@@ -80,6 +80,43 @@ function fleet_fuel_types()
 }
 
 /**
+ * Activity log types and their icon / colour for the vehicle timeline.
+ */
+function fleet_activity_icon($type)
+{
+    $map = [
+        'vehicle'    => 'fa-car',
+        'assignment' => 'fa-user',
+        'maintenance'=> 'fa-wrench',
+        'photo'      => 'fa-camera',
+        'reminder'   => 'fa-bell',
+        'fuel'       => 'fa-tint',
+        'odometer'   => 'fa-tachometer',
+        'rental'     => 'fa-calendar',
+        'invoice'    => 'fa-file-text-o',
+    ];
+
+    return $map[$type] ?? 'fa-circle';
+}
+
+function fleet_activity_color($type)
+{
+    $map = [
+        'vehicle'    => 'default',
+        'assignment' => 'info',
+        'maintenance'=> 'warning',
+        'photo'      => 'warning',
+        'reminder'   => 'danger',
+        'fuel'       => 'success',
+        'odometer'   => 'primary',
+        'rental'     => 'info',
+        'invoice'    => 'success',
+    ];
+
+    return $map[$type] ?? 'default';
+}
+
+/**
  * Due-date badge for a reminder, based on how close the due date is.
  */
 function fleet_reminder_due_badge($due_date, $notify_days = 7)

@@ -5,6 +5,8 @@ defined('BASEPATH') or exit('No direct script access allowed');
 $CI = &get_instance();
 
 $tables = [
+    'fleet_maintenance_files',
+    'fleet_activity',
     'fleet_fuel_logs',
     'fleet_rentals',
     'fleet_assignments',

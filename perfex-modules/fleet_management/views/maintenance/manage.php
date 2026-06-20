@@ -48,6 +48,7 @@ foreach ($suppliers as $sup) {
                                             <td><?php echo $m['odometer'] ? (int) $m['odometer'] . ' km' : '-'; ?></td>
                                             <td><?php echo $m['next_service_date'] ? _d($m['next_service_date']) : '-'; ?></td>
                                             <td>
+                                                <a href="<?php echo admin_url('fleet_management/maintenance/files/' . $m['id']); ?>" class="btn btn-info btn-icon" title="<?php echo _l('fleet_maintenance_photos'); ?>"><i class="fa fa-camera"></i></a>
                                                 <?php if (staff_can('edit', 'fleet')) : ?>
                                                     <a href="#" class="btn btn-default btn-icon" onclick="fleet_maintenance_modal(<?php echo $m['id']; ?>); return false;"><i class="fa fa-pencil-square-o"></i></a>
                                                 <?php endif; ?>
@@ -92,6 +93,7 @@ foreach ($suppliers as $sup) {
                     <div class="col-md-6"><?php echo render_date_input('next_service_date', 'fleet_next_service_date', ''); ?></div>
                     <div class="col-md-6"><?php echo render_input('next_service_odometer', 'fleet_next_service_odometer', '', 'number'); ?></div>
                 </div>
+                <?php echo render_textarea('parts', 'fleet_parts', '', ['placeholder' => _l('fleet_parts_hint')]); ?>
                 <?php echo render_textarea('description', 'fleet_description', ''); ?>
             </div>
             <div class="modal-footer">
@@ -119,6 +121,7 @@ function fleet_maintenance_modal(id) {
             modal.find('[name="odometer"]').val(rec.odometer);
             modal.find('[name="provider"]').val(rec.provider);
             modal.find('[name="supplier_id"]').val(rec.supplier_id);
+            modal.find('[name="parts"]').val(rec.parts);
             modal.find('[name="next_service_odometer"]').val(rec.next_service_odometer);
             modal.find('[name="description"]').val(rec.description);
             if (modal.find('[name="vehicle_id"]').hasClass('selectpicker')) {

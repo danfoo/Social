@@ -32,12 +32,31 @@ foreach ($drivers as $d) {
                 <div class="panel_s">
                     <div class="panel-body">
                         <ul class="nav nav-tabs" role="tablist">
-                            <li role="presentation" class="active"><a href="#tab_assign" role="tab" data-toggle="tab"><?php echo _l('fleet_drivers'); ?></a></li>
+                            <li role="presentation" class="active"><a href="#tab_history" role="tab" data-toggle="tab"><?php echo _l('fleet_history'); ?></a></li>
+                            <li role="presentation"><a href="#tab_assign" role="tab" data-toggle="tab"><?php echo _l('fleet_drivers'); ?></a></li>
                             <li role="presentation"><a href="#tab_maintenance" role="tab" data-toggle="tab"><?php echo _l('fleet_maintenance'); ?></a></li>
                             <li role="presentation"><a href="#tab_reminders" role="tab" data-toggle="tab"><?php echo _l('fleet_reminders'); ?></a></li>
                         </ul>
                         <div class="tab-content mtop15">
-                            <div role="tabpanel" class="tab-pane active" id="tab_assign">
+                            <div role="tabpanel" class="tab-pane active" id="tab_history">
+                                <?php if (empty($activity)) : ?>
+                                    <p class="text-muted"><?php echo _l('fleet_history_empty'); ?></p>
+                                <?php else : ?>
+                                    <ul class="fleet-timeline">
+                                        <?php foreach ($activity as $act) : ?>
+                                            <li class="fleet-timeline-item">
+                                                <span class="label label-<?php echo fleet_activity_color($act['type']); ?>"><i class="fa <?php echo fleet_activity_icon($act['type']); ?>"></i> <?php echo _l('fleet_atype_' . $act['type']); ?></span>
+                                                <span class="fleet-timeline-text"><?php echo html_escape($act['description']); ?></span>
+                                                <small class="text-muted">
+                                                    <?php echo _dt($act['date_created']); ?>
+                                                    <?php if (!empty($act['staff_name'])) : ?>· <?php echo html_escape($act['staff_name']); ?><?php endif; ?>
+                                                </small>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                <?php endif; ?>
+                            </div>
+                            <div role="tabpanel" class="tab-pane" id="tab_assign">
                                 <?php if (staff_can('edit', 'fleet')) : ?>
                                     <?php echo form_open(admin_url('fleet_management/vehicles/assign_driver')); ?>
                                     <input type="hidden" name="vehicle_id" value="<?php echo $vehicle->id; ?>">
@@ -109,6 +128,12 @@ foreach ($drivers as $d) {
         </div>
     </div>
 </div>
+<style>
+.fleet-timeline { list-style: none; margin: 0; padding: 0; }
+.fleet-timeline-item { padding: 10px 0; border-bottom: 1px solid #eee; }
+.fleet-timeline-item:last-child { border-bottom: 0; }
+.fleet-timeline-item .fleet-timeline-text { display: block; margin: 4px 0; }
+</style>
 <?php init_tail(); ?>
 </body>
 </html>

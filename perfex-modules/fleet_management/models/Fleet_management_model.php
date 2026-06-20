@@ -34,8 +34,13 @@ class Fleet_management_model extends App_Model
         $data                 = $this->_clean_dates($data, ['purchase_date']);
 
         $this->db->insert(db_prefix() . 'fleet_vehicles', $data);
+        $id = $this->db->insert_id();
 
-        return $this->db->insert_id();
+        if ($id) {
+            $this->log_activity($id, 'vehicle', _l('fleet_log_vehicle_created'));
+        }
+
+        return $id;
     }
 
     public function update_vehicle($id, $data)
@@ -43,8 +48,15 @@ class Fleet_management_model extends App_Model
         $data = $this->_clean_numeric($data, ['daily_rate', 'daily_rate_with_driver', 'purchase_price', 'odometer', 'year', 'seats']);
         $data = $this->_clean_dates($data, ['purchase_date']);
 
+        $previous = $this->get_vehicle($id);
+
         $this->db->where('id', $id);
         $this->db->update(db_prefix() . 'fleet_vehicles', $data);
+
+        // Track odometer changes explicitly in the history.
+        if ($previous && isset($data['odometer']) && (int) $data['odometer'] !== (int) $previous->odometer) {
+            $this->log_activity($id, 'odometer', _l('fleet_log_odometer', [(int) $previous->odometer, (int) $data['odometer']]));
+        }
 
         return $this->db->affected_rows() > 0;
     }
@@ -120,6 +132,8 @@ class Fleet_management_model extends App_Model
         $this->db->where('id', $data['vehicle_id']);
         $this->db->update(db_prefix() . 'fleet_vehicles', ['current_driver_id' => $data['staff_id']]);
 
+        $this->log_activity($data['vehicle_id'], 'assignment', _l('fleet_log_driver_assigned', get_staff_full_name($data['staff_id'])));
+
         return $id;
     }
 
@@ -141,6 +155,8 @@ class Fleet_management_model extends App_Model
         $this->db->where('current_driver_id', $assignment->staff_id);
         $this->db->update(db_prefix() . 'fleet_vehicles', ['current_driver_id' => null]);
 
+        $this->log_activity($assignment->vehicle_id, 'assignment', _l('fleet_log_assignment_ended', get_staff_full_name($assignment->staff_id)));
+
         return true;
     }
 
@@ -151,9 +167,12 @@ class Fleet_management_model extends App_Model
     public function get_maintenance($id = '', $vehicle_id = '')
     {
         if (is_numeric($id)) {
-            $this->db->where('id', $id);
+            $this->db->select('m.*, v.name as vehicle_name, v.plate as vehicle_plate');
+            $this->db->from(db_prefix() . 'fleet_maintenance m');
+            $this->db->join(db_prefix() . 'fleet_vehicles v', 'v.id = m.vehicle_id', 'left');
+            $this->db->where('m.id', $id);
 
-            return $this->db->get(db_prefix() . 'fleet_maintenance')->row();
+            return $this->db->get()->row();
         }
 
         $this->db->select('m.*, v.name as vehicle_name, v.plate as vehicle_plate');
@@ -177,8 +196,18 @@ class Fleet_management_model extends App_Model
         $data                 = $this->_clean_dates($data, ['service_date', 'next_service_date']);
 
         $this->db->insert(db_prefix() . 'fleet_maintenance', $data);
+        $id = $this->db->insert_id();
 
-        return $this->db->insert_id();
+        if ($id && !empty($data['vehicle_id'])) {
+            $label = isset($data['type']) ? _l('fleet_mtype_' . $data['type']) : '';
+            $desc  = _l('fleet_log_maintenance', $label);
+            if (!empty($data['parts'])) {
+                $desc .= ' — ' . _l('fleet_parts') . ': ' . $data['parts'];
+            }
+            $this->log_activity($data['vehicle_id'], 'maintenance', $desc);
+        }
+
+        return $id;
     }
 
     public function update_maintenance($id, $data)
@@ -233,8 +262,13 @@ class Fleet_management_model extends App_Model
         $data                 = $this->_clean_dates($data, ['due_date']);
 
         $this->db->insert(db_prefix() . 'fleet_reminders', $data);
+        $id = $this->db->insert_id();
 
-        return $this->db->insert_id();
+        if ($id && !empty($data['vehicle_id'])) {
+            $this->log_activity($data['vehicle_id'], 'reminder', _l('fleet_log_reminder_added', $data['title'] ?? ''));
+        }
+
+        return $id;
     }
 
     public function update_reminder($id, $data)
@@ -346,6 +380,10 @@ class Fleet_management_model extends App_Model
             $this->_set_vehicle_status($data['vehicle_id'], 'rented');
         }
 
+        if ($id && !empty($data['vehicle_id'])) {
+            $this->log_activity($data['vehicle_id'], 'rental', _l('fleet_log_rental_created', $id));
+        }
+
         return $id;
     }
 
@@ -433,6 +471,8 @@ class Fleet_management_model extends App_Model
         if ($invoice_id) {
             $this->db->where('id', $rental_id);
             $this->db->update(db_prefix() . 'fleet_rentals', ['invoice_id' => $invoice_id]);
+
+            $this->log_activity($rental->vehicle_id, 'invoice', _l('fleet_log_invoice_created', format_invoice_number($invoice_id)));
         }
 
         return $invoice_id;
@@ -646,6 +686,15 @@ class Fleet_management_model extends App_Model
             $this->db->update(db_prefix() . 'fleet_vehicles', ['odometer' => $data['odometer']]);
         }
 
+        if ($id && !empty($data['vehicle_id'])) {
+            $liters = isset($data['liters']) ? (float) $data['liters'] : 0;
+            $desc   = _l('fleet_log_fuel', $liters);
+            if (!empty($data['odometer'])) {
+                $desc .= ' — ' . (int) $data['odometer'] . ' km';
+            }
+            $this->log_activity($data['vehicle_id'], 'fuel', $desc);
+        }
+
         return $id;
     }
 
@@ -679,6 +728,87 @@ class Fleet_management_model extends App_Model
         $this->db->select('COUNT(*) as entries, COALESCE(SUM(liters),0) as total_liters, COALESCE(SUM(total_cost),0) as total_cost');
 
         return $this->db->get(db_prefix() . 'fleet_fuel_logs')->row();
+    }
+
+    /* ----------------------------------------------------------------- *
+     * Activity log (per-vehicle history)
+     * ----------------------------------------------------------------- */
+
+    /**
+     * Record an action performed on a vehicle. Safe to call before the table
+     * exists (e.g. right after an upgrade) thanks to the guard.
+     */
+    public function log_activity($vehicle_id, $type, $description)
+    {
+        if (!$vehicle_id || !$this->db->table_exists(db_prefix() . 'fleet_activity')) {
+            return;
+        }
+
+        $this->db->insert(db_prefix() . 'fleet_activity', [
+            'vehicle_id'   => $vehicle_id,
+            'staff_id'     => get_staff_user_id(),
+            'type'         => $type,
+            'description'  => $description,
+            'date_created' => date('Y-m-d H:i:s'),
+        ]);
+    }
+
+    public function get_activity($vehicle_id)
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_activity')) {
+            return [];
+        }
+
+        $this->db->select('a.*, CONCAT(s.firstname, " ", s.lastname) as staff_name');
+        $this->db->from(db_prefix() . 'fleet_activity a');
+        $this->db->join(db_prefix() . 'staff s', 's.staffid = a.staff_id', 'left');
+        $this->db->where('a.vehicle_id', $vehicle_id);
+        $this->db->order_by('a.date_created', 'desc');
+        $this->db->order_by('a.id', 'desc');
+
+        return $this->db->get()->result_array();
+    }
+
+    /* ----------------------------------------------------------------- *
+     * Maintenance attachments (photos with the date they were taken)
+     * ----------------------------------------------------------------- */
+
+    public function get_maintenance_files($maintenance_id)
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_maintenance_files')) {
+            return [];
+        }
+
+        $this->db->where('maintenance_id', $maintenance_id);
+        $this->db->order_by('taken_date', 'desc');
+
+        return $this->db->get(db_prefix() . 'fleet_maintenance_files')->result_array();
+    }
+
+    public function add_maintenance_file($data)
+    {
+        $data['date_created'] = date('Y-m-d H:i:s');
+        $data['created_by']   = get_staff_user_id();
+        $data                 = $this->_clean_dates($data, ['taken_date']);
+
+        $this->db->insert(db_prefix() . 'fleet_maintenance_files', $data);
+
+        return $this->db->insert_id();
+    }
+
+    public function get_maintenance_file($id)
+    {
+        $this->db->where('id', $id);
+
+        return $this->db->get(db_prefix() . 'fleet_maintenance_files')->row();
+    }
+
+    public function delete_maintenance_file($id)
+    {
+        $this->db->where('id', $id);
+        $this->db->delete(db_prefix() . 'fleet_maintenance_files');
+
+        return $this->db->affected_rows() > 0;
     }
 
     /* ----------------------------------------------------------------- *

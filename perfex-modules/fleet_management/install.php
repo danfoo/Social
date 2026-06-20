@@ -193,6 +193,38 @@ if (!$CI->db->table_exists(db_prefix() . 'fleet_models')) {
     ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
 }
 
+if (!$CI->db->table_exists(db_prefix() . 'fleet_activity')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_activity` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `vehicle_id` INT(11) NOT NULL,
+        `staff_id` INT(11) NULL,
+        `type` VARCHAR(50) NOT NULL DEFAULT 'other',
+        `description` TEXT NULL,
+        `date_created` DATETIME NULL,
+        PRIMARY KEY (`id`),
+        KEY `vehicle_id` (`vehicle_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
+if (!$CI->db->table_exists(db_prefix() . 'fleet_maintenance_files')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_maintenance_files` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `maintenance_id` INT(11) NOT NULL,
+        `file_name` VARCHAR(191) NOT NULL,
+        `original_name` VARCHAR(191) NULL,
+        `taken_date` DATE NULL,
+        `created_by` INT(11) NULL,
+        `date_created` DATETIME NULL,
+        PRIMARY KEY (`id`),
+        KEY `maintenance_id` (`maintenance_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
+// Parts replaced during a maintenance operation (idempotent upgrade).
+if (!$CI->db->field_exists('parts', db_prefix() . 'fleet_maintenance')) {
+    $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_maintenance` ADD `parts` TEXT NULL AFTER `description`');
+}
+
 /**
  * Create a dedicated "Driver" staff role once, and remember its id.
  * Drivers are simply staff members holding this role.

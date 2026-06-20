@@ -158,6 +158,41 @@ $lang['fleet_fuel_electric']          = 'Électrique';
 $lang['fleet_fuel_hybrid']            = 'Hybride';
 $lang['fleet_fuel_other']             = 'Autre';
 
+# Vehicle history (activity timeline)
+$lang['fleet_history']                = 'Historique';
+$lang['fleet_history_empty']          = 'Aucune activité enregistrée pour ce véhicule.';
+$lang['fleet_atype_vehicle']          = 'Véhicule';
+$lang['fleet_atype_assignment']       = 'Chauffeur';
+$lang['fleet_atype_maintenance']      = 'Entretien';
+$lang['fleet_atype_photo']            = 'Photo';
+$lang['fleet_atype_reminder']         = 'Rappel';
+$lang['fleet_atype_fuel']             = 'Carburant';
+$lang['fleet_atype_odometer']         = 'Kilométrage';
+$lang['fleet_atype_rental']           = 'Location';
+$lang['fleet_atype_invoice']          = 'Facture';
+$lang['fleet_atype_other']            = 'Activité';
+
+$lang['fleet_log_vehicle_created']    = 'Véhicule créé';
+$lang['fleet_log_odometer']           = 'Kilométrage mis à jour de %s à %s km';
+$lang['fleet_log_driver_assigned']    = 'Chauffeur %s affecté';
+$lang['fleet_log_assignment_ended']   = 'Affectation de %s terminée';
+$lang['fleet_log_maintenance']        = 'Entretien : %s';
+$lang['fleet_log_reminder_added']     = 'Rappel ajouté : %s';
+$lang['fleet_log_fuel']               = 'Plein : %s L';
+$lang['fleet_log_rental_created']     = 'Location créée (#%s)';
+$lang['fleet_log_invoice_created']    = 'Facture %s créée';
+$lang['fleet_log_photo_added']        = 'Photo ajoutée (%s)';
+
+# Maintenance parts & photos
+$lang['fleet_parts']                  = 'Pièces changées';
+$lang['fleet_parts_hint']             = 'Listez les pièces remplacées (une par ligne)';
+$lang['fleet_maintenance_photos']     = 'Photos de l\'entretien';
+$lang['fleet_photo']                  = 'Photo';
+$lang['fleet_photo_taken_date']       = 'Date de la photo';
+$lang['fleet_photo_upload']           = 'Téléverser';
+$lang['fleet_photo_uploaded']         = 'Photo téléversée avec succès';
+$lang['fleet_no_photos']              = 'Aucune photo jointe pour le moment.';
+
 # Assignments
 $lang['fleet_driver_assigned']        = 'Chauffeur affecté au véhicule';
 $lang['fleet_assignment_ended']       = 'Affectation terminée';
