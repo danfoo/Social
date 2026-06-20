@@ -1,19 +1,22 @@
 <?php defined('BASEPATH') or exit('No direct script access allowed'); ?>
 <?php init_head(); ?>
 <div id="wrapper">
-    <div class="content">
+    <div class="content fleet-list-page">
+        <div class="fleet-toolbar">
+            <h3><i class="fa fa-id-card-o text-info"></i> <?php echo _l('fleet_drivers'); ?></h3>
+            <div class="fleet-tools">
+                <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
+                <?php if (has_permission('staff', '', 'create')) : ?>
+                    <a href="<?php echo admin_url('staff/member'); ?>" class="btn btn-primary btn-sm"><i class="fa fa-plus"></i> <?php echo _l('fleet_add_staff_member'); ?></a>
+                <?php endif; ?>
+            </div>
+        </div>
         <div class="row">
             <div class="col-md-12">
                 <div class="panel_s">
                     <div class="panel-body">
                         <div class="alert alert-info">
                             <?php echo _l('fleet_drivers_help'); ?>
-                            <?php if (has_permission('staff', '', 'create')) : ?>
-                                <a href="<?php echo admin_url('staff/member'); ?>" class="btn btn-info btn-xs pull-right"><?php echo _l('fleet_add_staff_member'); ?></a>
-                            <?php endif; ?>
-                        </div>
-                        <div class="text-right mbot15">
-                            <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
                         </div>
                         <div class="table-responsive">
                             <table class="table fleet-list">
