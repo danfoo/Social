@@ -12,6 +12,8 @@ $lang['pdf_footer_manager_global_html']     = 'Pied de page global (HTML)';
 $lang['pdf_footer_manager_per_type']        = 'Pieds de page par document';
 $lang['pdf_footer_manager_per_type_help']   = 'Définissez un pied de page spécifique par type de document. Utilisé uniquement si « Utiliser le pied de page global » est décoché et que la case du type ci-dessous est cochée.';
 $lang['pdf_footer_manager_use_custom']      = 'Utiliser un pied de page personnalisé pour ce type de document';
+$lang['pdf_footer_manager_insert_hint']     = 'Cliquez sur un champ pour l\'insérer dans l\'éditeur (bouton &lt;/&gt; = code source HTML).';
+$lang['pdf_footer_manager_pagination']      = 'Pagination';
 
 $lang['pdf_footer_manager_type_invoice']      = 'Factures';
 $lang['pdf_footer_manager_type_estimate']     = 'Devis';

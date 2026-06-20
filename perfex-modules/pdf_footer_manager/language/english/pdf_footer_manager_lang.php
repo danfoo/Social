@@ -12,6 +12,8 @@ $lang['pdf_footer_manager_global_html']     = 'Global footer (HTML)';
 $lang['pdf_footer_manager_per_type']        = 'Per-document footers';
 $lang['pdf_footer_manager_per_type_help']   = 'Define a specific footer per document type. Used only when "Use the global footer for all documents" is unchecked and the type checkbox below is enabled.';
 $lang['pdf_footer_manager_use_custom']      = 'Use a custom footer for this document type';
+$lang['pdf_footer_manager_insert_hint']     = 'Click a field to insert it into the editor (&lt;/&gt; button = HTML source code).';
+$lang['pdf_footer_manager_pagination']      = 'Pagination';
 
 $lang['pdf_footer_manager_type_invoice']      = 'Invoices';
 $lang['pdf_footer_manager_type_estimate']     = 'Estimates';

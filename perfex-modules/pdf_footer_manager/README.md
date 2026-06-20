@@ -28,8 +28,11 @@ mPDF de Perfex (`SetHTMLFooter`).
 ## Utilisation
 
 - **Activer le pied de page PDF** : interrupteur général.
-- **Pied de page global (HTML)** : appliqué à tous les documents. Vous pouvez
-  coller du HTML simple (mPDF supporte un sous-ensemble de CSS *inline*).
+- **Pied de page global (HTML)** : appliqué à tous les documents. Édition via un
+  **éditeur de texte enrichi** (TinyMCE) avec bouton **code source `</>`** pour
+  garder la main sur le HTML/CSS inline. Les champs de fusion sont **cliquables**
+  et s'insèrent à la position du curseur. Si TinyMCE n'est pas chargé sur la
+  page, l'éditeur retombe automatiquement sur un simple champ texte.
 - **Utiliser le pied de page global pour tous les documents** : si décoché, vous
   pouvez définir un pied de page **par type de document** (factures, devis…).
 - **Marge basse** : espace réservé en bas de page pour le footer (en mm).
