@@ -12,6 +12,10 @@ Author: PERSO
 
 define('FLEET_MANAGEMENT_MODULE', 'fleet_management');
 
+// Bump this whenever the database schema changes so the auto-migration below
+// recreates any missing table/column without a manual deactivate/reactivate.
+define('FLEET_MANAGEMENT_DB_VERSION', '1.0.3');
+
 $CI = &get_instance();
 
 register_activation_hook(FLEET_MANAGEMENT_MODULE, 'fleet_management_activation_hook');
@@ -26,7 +30,21 @@ require_once __DIR__ . '/helpers/fleet_management_helper.php';
 
 function fleet_management_activation_hook()
 {
-    require_once __DIR__ . '/install.php';
+    require __DIR__ . '/install.php';
+}
+
+/**
+ * Self-healing schema: run the idempotent installer whenever the stored schema
+ * version is behind the code, so new tables/columns appear without forcing a
+ * manual module reactivation.
+ */
+hooks()->add_action('admin_init', 'fleet_management_maybe_upgrade_schema', 1);
+
+function fleet_management_maybe_upgrade_schema()
+{
+    if (get_option('fleet_management_db_version') != FLEET_MANAGEMENT_DB_VERSION) {
+        require __DIR__ . '/install.php';
+    }
 }
 
 function fleet_management_deactivation_hook()
