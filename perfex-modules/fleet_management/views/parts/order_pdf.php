@@ -2,17 +2,23 @@
 <?php
 $bc        = get_base_currency();
 $remaining = max(0, (float) $order->total_price - (float) $paid);
+$logo_file = get_option('company_logo_dark') ?: get_option('company_logo');
+$logo_path = $logo_file ? FCPATH . 'uploads/company/' . $logo_file : '';
+$has_logo  = $logo_path && is_file($logo_path);
 ?>
 <table style="width:100%; font-size:11px;">
     <tr>
         <td style="width:55%; vertical-align:top;">
-            <span style="font-size:16px; font-weight:bold;"><?php echo html_escape(get_option('invoice_company_name')); ?></span><br>
+            <?php if ($has_logo) : ?>
+                <img src="<?php echo $logo_path; ?>" style="height:48px;"><br><br>
+            <?php endif; ?>
+            <span style="font-size:15px; font-weight:bold;"><?php echo html_escape(get_option('invoice_company_name')); ?></span><br>
             <span style="color:#777777;"><?php echo nl2br(html_escape(get_option('invoice_company_address'))); ?></span><br>
             <?php if (get_option('invoice_company_phonenumber')) : ?><span style="color:#777777;"><?php echo html_escape(get_option('invoice_company_phonenumber')); ?></span><br><?php endif; ?>
             <?php if (get_option('company_vat')) : ?><span style="color:#777777;">TVA: <?php echo html_escape(get_option('company_vat')); ?></span><?php endif; ?>
         </td>
         <td style="width:45%; vertical-align:top; text-align:right;">
-            <span style="font-size:20px; font-weight:bold; color:#444444;"><?php echo _l('fleet_purchase_order'); ?></span><br>
+            <span style="font-size:20px; font-weight:bold; color:#4f5fff;"><?php echo _l('fleet_purchase_order'); ?></span><br>
             <span style="color:#777777;">N° PO-<?php echo $order->id; ?></span><br>
             <span style="color:#777777;"><?php echo _l('fleet_order_date'); ?>: <?php echo $order->order_date ? _d($order->order_date) : '-'; ?></span><br>
             <?php if ($order->invoice_no) : ?><span style="color:#777777;"><?php echo _l('fleet_supplier_invoice_no'); ?>: <?php echo html_escape($order->invoice_no); ?></span><?php endif; ?>

@@ -1277,16 +1277,17 @@ class Fleet_management_model extends App_Model
             return is_numeric($id) ? null : [];
         }
 
-        if (is_numeric($id)) {
-            $this->db->where('id', $id);
-
-            return $this->db->get(db_prefix() . 'fleet_part_orders')->row();
-        }
-
         $this->db->select('o.*, i.name as item_name, i.reference as item_reference, s.name as supplier_name');
         $this->db->from(db_prefix() . 'fleet_part_orders o');
         $this->db->join(db_prefix() . 'fleet_part_items i', 'i.id = o.item_id', 'left');
         $this->db->join(db_prefix() . 'fleet_suppliers s', 's.id = o.supplier_id', 'left');
+
+        if (is_numeric($id)) {
+            $this->db->where('o.id', $id);
+
+            return $this->db->get()->row();
+        }
+
         $this->db->order_by('o.date_created', 'desc');
 
         return $this->db->get()->result_array();
