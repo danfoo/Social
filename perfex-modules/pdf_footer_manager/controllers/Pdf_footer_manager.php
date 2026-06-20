@@ -34,7 +34,6 @@ class Pdf_footer_manager extends AdminController
         $post = $this->input->post(null, false); // false: keep raw HTML
 
         update_option('pdf_footer_manager_enabled', isset($post['pdf_footer_manager_enabled']) ? 1 : 0);
-        update_option('pdf_footer_manager_apply_all', isset($post['pdf_footer_manager_apply_all']) ? 1 : 0);
         update_option('pdf_footer_manager_margin', (int) ($post['pdf_footer_manager_margin'] ?? 9));
         update_option('pdf_footer_manager_global_html', $post['pdf_footer_manager_global_html'] ?? '');
 

@@ -33,8 +33,11 @@ mPDF de Perfex (`SetHTMLFooter`).
   garder la main sur le HTML/CSS inline. Les champs de fusion sont **cliquables**
   et s'insèrent à la position du curseur. Si TinyMCE n'est pas chargé sur la
   page, l'éditeur retombe automatiquement sur un simple champ texte.
-- **Utiliser le pied de page global pour tous les documents** : si décoché, vous
-  pouvez définir un pied de page **par type de document** (factures, devis…).
+- **Pieds de page par type** : pour chaque type de document (factures, devis,
+  propositions, avoirs…), cochez « Utiliser un pied de page personnalisé » et
+  saisissez son contenu. **Ce pied de page remplace alors le global pour ce
+  type** ; les types non personnalisés continuent d'utiliser le pied de page
+  global.
 - **Marge basse** : espace réservé en bas de page pour le footer (en mm).
 
 ### Champs de fusion

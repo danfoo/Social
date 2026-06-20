@@ -13,7 +13,6 @@ $pdf_footer_manager_default_html = '<div style="border-top:1px solid #cccccc;pad
     . '</div>';
 
 add_option('pdf_footer_manager_enabled', 1);
-add_option('pdf_footer_manager_apply_all', 1);
 add_option('pdf_footer_manager_margin', 9);
 add_option('pdf_footer_manager_global_html', $pdf_footer_manager_default_html);
 

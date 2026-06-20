@@ -29,14 +29,14 @@ function pdf_footer_manager_on_construct($data)
         return $data;
     }
 
-    [$pdf, $type] = pdf_footer_manager_extract($data);
+    [$pdf, $candidates] = pdf_footer_manager_extract($data);
 
     // Only mPDF exposes SetHTMLFooter; TCPDF is handled by the footer hook.
     if (!is_object($pdf) || !method_exists($pdf, 'SetHTMLFooter')) {
         return $data;
     }
 
-    $html = pdf_footer_manager_get_html($type);
+    $html = pdf_footer_manager_get_html($candidates);
     if ($html === '') {
         return $data;
     }
@@ -61,7 +61,7 @@ function pdf_footer_manager_on_footer($data)
         return $data;
     }
 
-    [$pdf, $type] = pdf_footer_manager_extract($data);
+    [$pdf, $candidates] = pdf_footer_manager_extract($data);
 
     // Skip when running on mPDF (already handled at construction) or when the
     // object cannot render HTML cells.
@@ -71,7 +71,7 @@ function pdf_footer_manager_on_footer($data)
         return $data;
     }
 
-    $html = pdf_footer_manager_get_html($type);
+    $html = pdf_footer_manager_get_html($candidates);
     if ($html === '') {
         return $data;
     }
@@ -97,7 +97,12 @@ function pdf_footer_manager_on_footer($data)
 }
 
 /**
- * Normalise the hook payload into [pdf_instance, type].
+ * Normalise the hook payload into [pdf_instance, candidate_types].
+ *
+ * We keep *several* candidate type keys: the one provided by the hook AND the one
+ * derived from the concrete PDF class name (Invoice_pdf -> invoice). This way the
+ * per-type footer resolves correctly whether or not Perfex's type() string
+ * matches our option keys exactly.
  */
 function pdf_footer_manager_extract($data)
 {
@@ -109,16 +114,22 @@ function pdf_footer_manager_extract($data)
         $type = '';
     }
 
-    if (is_object($pdf) && $type === '') {
-        $type = pdf_footer_manager_detect_type($pdf);
+    $candidates = [];
+    if ($type !== '') {
+        $candidates[] = $type;
+    }
+    if (is_object($pdf)) {
+        $byClass = pdf_footer_manager_detect_type($pdf);
+        if ($byClass !== '') {
+            $candidates[] = $byClass;
+        }
     }
 
-    return [$pdf, $type];
+    return [$pdf, array_values(array_unique($candidates))];
 }
 
 /**
- * Resolve the internal document type from the concrete PDF class name, used only
- * as a fallback when the hook payload does not carry the type.
+ * Resolve the internal document type from the concrete PDF class name.
  */
 function pdf_footer_manager_detect_type($pdf)
 {
@@ -134,23 +145,29 @@ function pdf_footer_manager_detect_type($pdf)
 }
 
 /**
- * Return the final footer HTML for a given document type, with company merge
- * fields already replaced. Page-number tokens ({PAGENO}/{nbpg}) are kept intact
- * so each engine can resolve them. Falls back to the global footer.
+ * Return the final footer HTML, with company merge fields already replaced.
+ * A per-type footer wins whenever its checkbox is enabled and it is not empty;
+ * otherwise the global footer is used. Page-number tokens ({PAGENO}/{nbpg}) are
+ * kept intact so each engine can resolve them.
  *
+ * @param array $candidates Ordered candidate type keys for this document.
  * @return string Empty string when nothing should be rendered.
  */
-function pdf_footer_manager_get_html($type)
+function pdf_footer_manager_get_html($candidates)
 {
-    $apply_all = get_option('pdf_footer_manager_apply_all') == '1';
-
     $html = '';
 
-    if (!$apply_all && $type !== ''
-        && get_option('pdf_footer_manager_' . $type . '_enabled') == '1') {
-        $html = (string) get_option('pdf_footer_manager_' . $type . '_html');
+    foreach ((array) $candidates as $type) {
+        if ($type !== '' && get_option('pdf_footer_manager_' . $type . '_enabled') == '1') {
+            $candidate_html = trim((string) get_option('pdf_footer_manager_' . $type . '_html'));
+            if ($candidate_html !== '') {
+                $html = $candidate_html;
+                break;
+            }
+        }
     }
 
+    // No enabled, non-empty per-type override: fall back to the global footer.
     if ($html === '') {
         $html = (string) get_option('pdf_footer_manager_global_html');
     }

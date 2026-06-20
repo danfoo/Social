@@ -11,20 +11,13 @@
                         <?php echo form_open(admin_url('pdf_footer_manager/settings'), ['id' => 'pdf-footer-manager-form']); ?>
 
                         <div class="row">
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <div class="checkbox checkbox-primary">
                                     <input type="checkbox" name="pdf_footer_manager_enabled" id="pdf_footer_manager_enabled" value="1" <?php echo get_option('pdf_footer_manager_enabled') == '1' ? 'checked' : ''; ?> />
                                     <label for="pdf_footer_manager_enabled"><?php echo _l('pdf_footer_manager_enabled'); ?></label>
                                 </div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="checkbox checkbox-primary">
-                                    <input type="checkbox" name="pdf_footer_manager_apply_all" id="pdf_footer_manager_apply_all" value="1" <?php echo get_option('pdf_footer_manager_apply_all') == '1' ? 'checked' : ''; ?> />
-                                    <label for="pdf_footer_manager_apply_all"><?php echo _l('pdf_footer_manager_apply_all'); ?></label>
-                                </div>
-                                <p class="text-muted tw-text-xs"><?php echo _l('pdf_footer_manager_apply_all_help'); ?></p>
-                            </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <?php echo render_input('pdf_footer_manager_margin', 'pdf_footer_manager_margin', get_option('pdf_footer_manager_margin'), 'number'); ?>
                             </div>
                         </div>
