@@ -176,7 +176,27 @@ hooks()->add_action('app_admin_footer', 'fleet_management_admin_footer');
 
 function fleet_management_admin_footer()
 {
-    echo '<script>
+    echo '<style>
+.fleet-list-page .panel_s{border:0;border-radius:10px;box-shadow:0 2px 10px rgba(20,30,60,.05);}
+.fleet-list-page .fleet-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px;}
+.fleet-list-page .fleet-toolbar h3{margin:0;font-weight:700;font-size:20px;}
+.fleet-list-page .fleet-tools{display:flex;align-items:center;flex-wrap:wrap;}
+.fleet-list-page .fleet-tools>*{margin-left:8px;margin-top:4px;}
+.fleet-list-page .fleet-stat{display:flex;align-items:center;}
+.fleet-list-page .fleet-stat .ic{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;margin-right:12px;flex:0 0 46px;}
+.fleet-list-page .fleet-stat h2{margin:0;font-size:20px;font-weight:700;line-height:1.1;}
+.fleet-list-page .fleet-stat span{color:#97a1b3;font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
+.fleet-list-page table.fleet-list{margin-bottom:0;}
+.fleet-list-page table.fleet-list>thead>tr>th{border-bottom:1px solid #e6e9f0;color:#97a1b3;font-size:11px;text-transform:uppercase;letter-spacing:.4px;font-weight:600;}
+.fleet-list-page table.fleet-list>tbody>tr>td{vertical-align:middle;border-top:1px solid #f0f2f5;}
+.fleet-list-page table.fleet-list>tbody>tr:hover{background:#f8f9fc;}
+.fleet-list-page .fleet-search{border-radius:20px;}
+.fleet-list-page .fleet-veh{display:flex;align-items:center;}
+.fleet-list-page .fleet-veh .av{width:38px;height:38px;border-radius:10px;background:#eef1ff;color:#6571ff;display:flex;align-items:center;justify-content:center;margin-right:10px;flex:0 0 38px;}
+.fleet-list-page .fleet-plate{display:inline-block;background:#f0f2f5;border-radius:6px;padding:2px 8px;font-weight:600;font-size:12px;letter-spacing:.5px;}
+.fleet-list-page .fleet-list .label{border-radius:20px;padding:.4em .85em;font-weight:600;font-size:11px;}
+</style>
+<script>
 (function($){
     $(document).on("keyup", ".fleet-search", function(){
         var q = $(this).val().toLowerCase();
