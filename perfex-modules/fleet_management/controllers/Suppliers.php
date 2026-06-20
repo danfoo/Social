@@ -21,6 +21,35 @@ class Suppliers extends AdminController
         $this->load->view('fleet_management/suppliers/manage', $data);
     }
 
+    public function view($id)
+    {
+        if (!staff_can('view', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $supplier = $this->fleet->get_supplier($id);
+        if (!$supplier) {
+            show_404();
+        }
+
+        $data['supplier'] = $supplier;
+        $data['orders']   = $this->fleet->get_supplier_orders($id);
+        $data['costs']    = $this->fleet->get_supplier_costs($id);
+        $data['summary']  = $this->fleet->supplier_accounting($id);
+        $data['title']    = $supplier->name;
+        $this->load->view('fleet_management/suppliers/view', $data);
+    }
+
+    public function mark_paid($table, $id, $paid)
+    {
+        if (!staff_can('edit', 'fleet')) {
+            access_denied('fleet');
+        }
+        $this->fleet->mark_paid($table, $id, (int) $paid);
+        set_alert('success', _l('fleet_payment_updated'));
+        redirect($this->input->server('HTTP_REFERER') ?: admin_url('fleet_management/suppliers'));
+    }
+
     public function save()
     {
         if (!$this->input->post()) {

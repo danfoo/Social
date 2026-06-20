@@ -721,6 +721,116 @@ class Fleet_management_model extends App_Model
         return $this->db->affected_rows() > 0;
     }
 
+    /**
+     * Part orders placed with a supplier (for the supplier ledger).
+     */
+    public function get_supplier_orders($supplier_id)
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_part_orders')) {
+            return [];
+        }
+
+        $this->db->select('o.*, i.name as item_name');
+        $this->db->from(db_prefix() . 'fleet_part_orders o');
+        $this->db->join(db_prefix() . 'fleet_part_items i', 'i.id = o.item_id', 'left');
+        $this->db->where('o.supplier_id', $supplier_id);
+        $this->db->where('o.status !=', 'cancelled');
+        $this->db->order_by('o.date_created', 'desc');
+
+        return $this->db->get()->result_array();
+    }
+
+    /**
+     * Other costed records linked to a supplier (maintenance / fuel / reminders),
+     * normalised into a single ledger list.
+     */
+    public function get_supplier_costs($supplier_id)
+    {
+        $ledger = [];
+
+        $sources = [
+            'fleet_maintenance' => ['cost', 'service_date', 'type', true],
+            'fleet_fuel_logs'   => ['total_cost', 'date', null, false],
+            'fleet_reminders'   => ['cost', 'due_date', 'title', false],
+        ];
+
+        foreach ($sources as $table => $meta) {
+            if (!$this->db->table_exists(db_prefix() . $table) || !$this->db->field_exists('supplier_id', db_prefix() . $table)) {
+                continue;
+            }
+            list($amountCol, $dateCol, $labelCol, $isMaintenanceType) = $meta;
+
+            $this->db->select('t.*, v.name as vehicle_name, v.plate as vehicle_plate');
+            $this->db->from(db_prefix() . $table . ' t');
+            $this->db->join(db_prefix() . 'fleet_vehicles v', 'v.id = t.vehicle_id', 'left');
+            $this->db->where('t.supplier_id', $supplier_id);
+            $this->db->where('t.' . $amountCol . ' >', 0);
+            $this->db->order_by('t.' . $dateCol, 'desc');
+
+            foreach ($this->db->get()->result_array() as $row) {
+                if ($table === 'fleet_maintenance') {
+                    $label = _l('fleet_maintenance') . ' · ' . _l('fleet_mtype_' . $row['type']);
+                } elseif ($table === 'fleet_fuel_logs') {
+                    $label = _l('fleet_fuel');
+                } else {
+                    $label = _l('fleet_rtype_' . $row['type']) . ' · ' . $row['title'];
+                }
+
+                $ledger[] = [
+                    'table'        => $table,
+                    'id'           => $row['id'],
+                    'label'        => $label,
+                    'vehicle'      => trim(($row['vehicle_name'] ?? '') . ' ' . ($row['vehicle_plate'] ? '(' . $row['vehicle_plate'] . ')' : '')),
+                    'date'         => $row[$dateCol],
+                    'amount'       => (float) $row[$amountCol],
+                    'paid'         => (int) ($row['paid'] ?? 0),
+                    'expense_id'   => $row['expense_id'] ?? null,
+                ];
+            }
+        }
+
+        return $ledger;
+    }
+
+    public function supplier_accounting($supplier_id)
+    {
+        $total = $paid = 0;
+
+        foreach ($this->get_supplier_orders($supplier_id) as $o) {
+            $total += (float) $o['total_price'];
+            if (!empty($o['paid'])) {
+                $paid += (float) $o['total_price'];
+            }
+        }
+        foreach ($this->get_supplier_costs($supplier_id) as $c) {
+            $total += $c['amount'];
+            if (!empty($c['paid'])) {
+                $paid += $c['amount'];
+            }
+        }
+
+        return (object) ['total' => $total, 'paid' => $paid, 'unpaid' => $total - $paid];
+    }
+
+    /**
+     * Toggle the paid flag of a costed record (supplier accounting).
+     */
+    public function mark_paid($table, $id, $paid)
+    {
+        $allowed = ['fleet_part_orders', 'fleet_maintenance', 'fleet_fuel_logs', 'fleet_reminders'];
+        if (!in_array($table, $allowed, true) || !$this->db->field_exists('paid', db_prefix() . $table)) {
+            return false;
+        }
+
+        $this->db->where('id', $id);
+        $this->db->update(db_prefix() . $table, [
+            'paid'      => $paid ? 1 : 0,
+            'paid_date' => $paid ? date('Y-m-d') : null,
+        ]);
+
+        return true;
+    }
+
     /* ----------------------------------------------------------------- *
      * Fuel logs
      * ----------------------------------------------------------------- */
@@ -1003,6 +1113,62 @@ class Fleet_management_model extends App_Model
         return $row ? (float) $row->unit_price : 0;
     }
 
+    public function get_part_categories()
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_part_categories')) {
+            return [];
+        }
+        $this->db->order_by('name', 'asc');
+
+        return $this->db->get(db_prefix() . 'fleet_part_categories')->result_array();
+    }
+
+    public function add_part_category($name)
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return false;
+        }
+        $this->db->insert(db_prefix() . 'fleet_part_categories', ['name' => $name]);
+
+        return $this->db->insert_id();
+    }
+
+    public function delete_part_category($id)
+    {
+        $this->db->where('id', $id)->delete(db_prefix() . 'fleet_part_categories');
+
+        return true;
+    }
+
+    public function get_part_units()
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_part_units')) {
+            return [];
+        }
+        $this->db->order_by('name', 'asc');
+
+        return $this->db->get(db_prefix() . 'fleet_part_units')->result_array();
+    }
+
+    public function add_part_unit($name)
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return false;
+        }
+        $this->db->insert(db_prefix() . 'fleet_part_units', ['name' => $name]);
+
+        return $this->db->insert_id();
+    }
+
+    public function delete_part_unit($id)
+    {
+        $this->db->where('id', $id)->delete(db_prefix() . 'fleet_part_units');
+
+        return true;
+    }
+
     public function part_items_stats()
     {
         $items = $this->get_part_item();
@@ -1127,6 +1293,7 @@ class Fleet_management_model extends App_Model
 
     private function _prepare_order_data($data)
     {
+        unset($data['order_total']); // display-only field, not a column
         $data = $this->_clean_numeric($data, ['item_id', 'supplier_id', 'quantity', 'unit_price']);
         $data = $this->_clean_dates($data, ['order_date']);
 

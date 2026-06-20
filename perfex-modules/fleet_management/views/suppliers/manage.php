@@ -38,13 +38,14 @@ foreach (fleet_supplier_types() as $t) {
                                 <tbody>
                                     <?php foreach ($suppliers as $s) : ?>
                                         <tr>
-                                            <td><?php echo html_escape($s['name']); ?></td>
+                                            <td><a href="<?php echo admin_url('fleet_management/suppliers/view/' . $s['id']); ?>" class="bold"><?php echo html_escape($s['name']); ?></a></td>
                                             <td><?php echo _l('fleet_stype_' . $s['type']); ?></td>
                                             <td><?php echo html_escape($s['contact_name']); ?></td>
                                             <td><?php echo html_escape($s['phone']); ?></td>
                                             <td><?php echo html_escape($s['email']); ?></td>
                                             <td><?php echo $s['active'] ? '<span class="label label-success">' . _l('active') . '</span>' : '<span class="label label-default">' . _l('inactive') . '</span>'; ?></td>
                                             <td>
+                                                <a href="<?php echo admin_url('fleet_management/suppliers/view/' . $s['id']); ?>" class="btn btn-default btn-icon"><i class="fa fa-eye"></i></a>
                                                 <?php if (staff_can('edit', 'fleet')) : ?>
                                                     <a href="#" class="btn btn-default btn-icon" onclick="fleet_supplier_modal(<?php echo $s['id']; ?>); return false;"><i class="fa fa-pencil-square-o"></i></a>
                                                 <?php endif; ?>

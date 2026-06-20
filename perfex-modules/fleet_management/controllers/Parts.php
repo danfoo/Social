@@ -22,8 +22,10 @@ class Parts extends AdminController
         $data['stats']        = $this->fleet->part_items_stats();
         $data['suppliers']    = $this->fleet->get_supplier();
         $data['vehicles']     = $this->fleet->get_vehicle();
-        $data['maintenances'] = $this->fleet->get_maintenance();
-        $data['title']        = _l('fleet_parts_articles');
+        $data['maintenances']    = $this->fleet->get_maintenance();
+        $data['part_categories'] = $this->fleet->get_part_categories();
+        $data['part_units']      = $this->fleet->get_part_units();
+        $data['title']           = _l('fleet_parts_articles');
         $this->load->view('fleet_management/parts/manage', $data);
     }
 

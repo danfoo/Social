@@ -102,6 +102,46 @@
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="panel_s"><div class="panel-body">
+                    <h4 class="bold"><?php echo _l('fleet_part_categories'); ?></h4>
+                    <?php if (staff_can('create', 'fleet')) : ?>
+                        <?php echo form_open(admin_url('fleet_management/library/part_category_save')); ?>
+                        <div class="input-group mbot15">
+                            <input type="text" name="name" class="form-control" placeholder="<?php echo _l('fleet_category'); ?>" required>
+                            <span class="input-group-btn"><button class="btn btn-primary" type="submit"><i class="fa fa-plus"></i></button></span>
+                        </div>
+                        <?php echo form_close(); ?>
+                    <?php endif; ?>
+                    <table class="table"><tbody>
+                        <?php foreach ($part_categories as $c) : ?>
+                            <tr><td><?php echo html_escape($c['name']); ?></td>
+                            <td class="text-right"><?php if (staff_can('delete', 'fleet')) : ?><a href="<?php echo admin_url('fleet_management/library/part_category_delete/' . $c['id']); ?>" class="btn btn-danger btn-xs _delete"><i class="fa fa-remove"></i></a><?php endif; ?></td></tr>
+                        <?php endforeach; ?>
+                    </tbody></table>
+                </div></div>
+            </div>
+            <div class="col-md-6">
+                <div class="panel_s"><div class="panel-body">
+                    <h4 class="bold"><?php echo _l('fleet_part_units'); ?></h4>
+                    <?php if (staff_can('create', 'fleet')) : ?>
+                        <?php echo form_open(admin_url('fleet_management/library/part_unit_save')); ?>
+                        <div class="input-group mbot15">
+                            <input type="text" name="name" class="form-control" placeholder="<?php echo _l('fleet_unit'); ?>" required>
+                            <span class="input-group-btn"><button class="btn btn-primary" type="submit"><i class="fa fa-plus"></i></button></span>
+                        </div>
+                        <?php echo form_close(); ?>
+                    <?php endif; ?>
+                    <table class="table"><tbody>
+                        <?php foreach ($part_units as $u) : ?>
+                            <tr><td><?php echo html_escape($u['name']); ?></td>
+                            <td class="text-right"><?php if (staff_can('delete', 'fleet')) : ?><a href="<?php echo admin_url('fleet_management/library/part_unit_delete/' . $u['id']); ?>" class="btn btn-danger btn-xs _delete"><i class="fa fa-remove"></i></a><?php endif; ?></td></tr>
+                        <?php endforeach; ?>
+                    </tbody></table>
+                </div></div>
+            </div>
+        </div>
     </div>
 </div>
 <?php init_tail(); ?>

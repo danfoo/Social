@@ -237,6 +237,24 @@ $lang['fleet_log_part_added']         = 'Pièce achetée : %s';
 $lang['fleet_log_part_assigned']      = 'Pièce affectée : %s (x%s)';
 $lang['fleet_atype_part']             = 'Pièce';
 
+# Parts catalog configuration
+$lang['fleet_part_categories']        = 'Catégories de pièces';
+$lang['fleet_part_units']             = 'Unités de pièces';
+
+# Supplier accounting
+$lang['fleet_supplier_invoice_no']    = 'N° facture fournisseur';
+$lang['fleet_payment']                = 'Paiement';
+$lang['fleet_paid']                   = 'Payé';
+$lang['fleet_unpaid']                 = 'Non payé';
+$lang['fleet_mark_paid']              = 'Marquer payé';
+$lang['fleet_mark_unpaid']            = 'Marquer non payé';
+$lang['fleet_payment_updated']        = 'Statut de paiement mis à jour';
+$lang['fleet_acc_total']              = 'Total des achats';
+$lang['fleet_acc_paid']               = 'Payé';
+$lang['fleet_acc_unpaid']             = 'Restant dû';
+$lang['fleet_supplier_orders']        = 'Commandes de pièces';
+$lang['fleet_supplier_other_costs']   = 'Autres coûts liés';
+
 # Parts inventory workflow
 $lang['fleet_unit']                   = 'Unité';
 $lang['fleet_min_stock']              = 'Stock minimum';

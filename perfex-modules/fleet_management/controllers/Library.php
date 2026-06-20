@@ -16,11 +16,53 @@ class Library extends AdminController
             access_denied('fleet');
         }
 
-        $data['categories'] = $this->fleet->get_categories();
-        $data['brands']     = $this->fleet->get_brands();
-        $data['models']     = $this->fleet->get_models();
-        $data['title']      = _l('fleet_library');
+        $data['categories']      = $this->fleet->get_categories();
+        $data['brands']          = $this->fleet->get_brands();
+        $data['models']          = $this->fleet->get_models();
+        $data['part_categories'] = $this->fleet->get_part_categories();
+        $data['part_units']      = $this->fleet->get_part_units();
+        $data['title']           = _l('fleet_library');
         $this->load->view('fleet_management/library/manage', $data);
+    }
+
+    public function part_category_save()
+    {
+        if (!staff_can('create', 'fleet')) {
+            access_denied('fleet');
+        }
+        $this->fleet->add_part_category($this->input->post('name'));
+        set_alert('success', _l('added_successfully', _l('fleet_category')));
+        redirect(admin_url('fleet_management/library'));
+    }
+
+    public function part_category_delete($id)
+    {
+        if (!staff_can('delete', 'fleet')) {
+            access_denied('fleet');
+        }
+        $this->fleet->delete_part_category($id);
+        set_alert('success', _l('deleted', _l('fleet_category')));
+        redirect(admin_url('fleet_management/library'));
+    }
+
+    public function part_unit_save()
+    {
+        if (!staff_can('create', 'fleet')) {
+            access_denied('fleet');
+        }
+        $this->fleet->add_part_unit($this->input->post('name'));
+        set_alert('success', _l('added_successfully', _l('fleet_unit')));
+        redirect(admin_url('fleet_management/library'));
+    }
+
+    public function part_unit_delete($id)
+    {
+        if (!staff_can('delete', 'fleet')) {
+            access_denied('fleet');
+        }
+        $this->fleet->delete_part_unit($id);
+        set_alert('success', _l('deleted', _l('fleet_unit')));
+        redirect(admin_url('fleet_management/library'));
     }
 
     public function category_save()

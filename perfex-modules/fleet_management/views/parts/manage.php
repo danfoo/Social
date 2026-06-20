@@ -17,6 +17,15 @@ foreach ($vehicles as $v) {
 }
 
 $order_status = ['ordered' => 'warning', 'received' => 'success', 'cancelled' => 'default'];
+
+$pcat_options = [];
+foreach ($part_categories as $c) {
+    $pcat_options[] = ['id' => $c['name'], 'name' => $c['name']];
+}
+$punit_options = [];
+foreach ($part_units as $u) {
+    $punit_options[] = ['id' => $u['name'], 'name' => $u['name']];
+}
 ?>
 <?php init_head(); ?>
 <div id="wrapper">
@@ -200,8 +209,8 @@ $order_status = ['ordered' => 'warning', 'received' => 'success', 'cancelled' =>
             <div class="col-md-4"><?php echo render_input('reference', 'fleet_reference', ''); ?></div>
         </div>
         <div class="row">
-            <div class="col-md-5"><?php echo render_input('category', 'fleet_category', ''); ?></div>
-            <div class="col-md-3"><?php echo render_input('unit', 'fleet_unit', ''); ?></div>
+            <div class="col-md-5"><?php echo render_select('category', $pcat_options, ['id', 'name'], 'fleet_category'); ?></div>
+            <div class="col-md-3"><?php echo render_select('unit', $punit_options, ['id', 'name'], 'fleet_unit'); ?></div>
             <div class="col-md-4"><?php echo render_input('min_stock', 'fleet_min_stock', 0, 'number'); ?></div>
         </div>
         <?php echo render_textarea('notes', 'fleet_notes', ''); ?>
@@ -223,7 +232,10 @@ $order_status = ['ordered' => 'warning', 'received' => 'success', 'cancelled' =>
             <div class="col-md-4"><?php echo render_input('unit_price', 'fleet_unit_price', '', 'number'); ?></div>
             <div class="col-md-4"><?php echo render_input('order_total', 'fleet_total', '', 'number', ['readonly' => true]); ?></div>
         </div>
-        <?php echo render_date_input('order_date', 'fleet_order_date', _d(date('Y-m-d'))); ?>
+        <div class="row">
+            <div class="col-md-6"><?php echo render_date_input('order_date', 'fleet_order_date', _d(date('Y-m-d'))); ?></div>
+            <div class="col-md-6"><?php echo render_input('invoice_no', 'fleet_supplier_invoice_no', ''); ?></div>
+        </div>
         <?php echo render_textarea('notes', 'fleet_notes', ''); ?>
     </div>
     <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal"><?php echo _l('close'); ?></button><button type="submit" class="btn btn-primary"><?php echo _l('fleet_place_order'); ?></button></div>
@@ -300,6 +312,7 @@ function fleet_part_item_modal(id) {
             modal.find('[name="unit"]').val(rec.unit);
             modal.find('[name="min_stock"]').val(rec.min_stock);
             modal.find('[name="notes"]').val(rec.notes);
+            if (modal.find('.selectpicker').length) { modal.find('.selectpicker').selectpicker('refresh'); }
         });
     }
     modal.modal('show');
@@ -318,6 +331,7 @@ function fleet_part_order_modal(id, itemId) {
             modal.find('[name="quantity"]').val(rec.quantity);
             modal.find('[name="unit_price"]').val(rec.unit_price);
             modal.find('[name="order_total"]').val(rec.total_price);
+            modal.find('[name="invoice_no"]').val(rec.invoice_no);
             modal.find('[name="notes"]').val(rec.notes);
             if (modal.find('.selectpicker').length) { modal.find('.selectpicker').selectpicker('refresh'); }
         });

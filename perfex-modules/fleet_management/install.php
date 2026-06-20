@@ -311,6 +311,38 @@ foreach (['fleet_maintenance', 'fleet_fuel_logs', 'fleet_reminders'] as $fleet_t
     }
 }
 
+// Configurable part categories and units.
+if (!$CI->db->table_exists(db_prefix() . 'fleet_part_categories')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_part_categories` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(150) NOT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+if (!$CI->db->table_exists(db_prefix() . 'fleet_part_units')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_part_units` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(80) NOT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
+// Payment tracking (supplier accounting) + supplier invoice reference.
+foreach (['fleet_part_orders', 'fleet_maintenance', 'fleet_fuel_logs', 'fleet_reminders'] as $fleet_table) {
+    if (!$CI->db->table_exists(db_prefix() . $fleet_table)) {
+        continue;
+    }
+    if (!$CI->db->field_exists('paid', db_prefix() . $fleet_table)) {
+        $CI->db->query('ALTER TABLE `' . db_prefix() . $fleet_table . '` ADD `paid` TINYINT(1) NOT NULL DEFAULT 0');
+    }
+    if (!$CI->db->field_exists('paid_date', db_prefix() . $fleet_table)) {
+        $CI->db->query('ALTER TABLE `' . db_prefix() . $fleet_table . '` ADD `paid_date` DATE NULL');
+    }
+}
+if ($CI->db->table_exists(db_prefix() . 'fleet_part_orders') && !$CI->db->field_exists('invoice_no', db_prefix() . 'fleet_part_orders')) {
+    $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_part_orders` ADD `invoice_no` VARCHAR(100) NULL');
+}
+
 // Dedicated expense category so fleet costs are grouped in the Expenses module.
 if (get_option('fleet_expense_category_id') == '' && $CI->db->table_exists(db_prefix() . 'expenses_categories')) {
     $CI->db->insert(db_prefix() . 'expenses_categories', [
