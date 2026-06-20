@@ -15,30 +15,30 @@ foreach (fleet_part_statuses() as $st) {
 ?>
 <?php init_head(); ?>
 <div id="wrapper">
-    <div class="content">
+    <div class="content fleet-list-page">
+        <div class="fleet-toolbar">
+            <h3><i class="fa fa-cog text-info"></i> <?php echo _l('fleet_parts_articles'); ?></h3>
+            <div class="fleet-tools">
+                <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
+                <?php if (staff_can('create', 'fleet')) : ?>
+                    <a href="#" class="btn btn-primary btn-sm" onclick="fleet_part_modal(); return false;"><i class="fa fa-plus"></i> <?php echo _l('fleet_add_part'); ?></a>
+                <?php endif; ?>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-sm-6"><div class="panel_s"><div class="panel-body fleet-stat">
+                <div class="ic" style="background:#337ab7;"><i class="fa fa-cog"></i></div>
+                <div><h2><?php echo (int) $stats->entries; ?></h2><span><?php echo _l('fleet_parts_count'); ?></span></div>
+            </div></div></div>
+            <div class="col-md-6 col-sm-6"><div class="panel_s"><div class="panel-body fleet-stat">
+                <div class="ic" style="background:#71dd37;"><i class="fa fa-money"></i></div>
+                <div><h2><?php echo app_format_money($stats->total_cost, get_base_currency()); ?></h2><span><?php echo _l('fleet_parts_total_cost'); ?></span></div>
+            </div></div></div>
+        </div>
         <div class="row">
             <div class="col-md-12">
                 <div class="panel_s">
                     <div class="panel-body">
-                        <div class="row mbot15">
-                            <div class="col-md-6 text-center">
-                                <h2 class="bold no-margin"><?php echo (int) $stats->entries; ?></h2>
-                                <span class="text-muted"><?php echo _l('fleet_parts_count'); ?></span>
-                            </div>
-                            <div class="col-md-6 text-center">
-                                <h2 class="bold no-margin"><?php echo app_format_money($stats->total_cost, get_base_currency()); ?></h2>
-                                <span class="text-muted"><?php echo _l('fleet_parts_total_cost'); ?></span>
-                            </div>
-                        </div>
-                        <hr />
-                        <?php if (staff_can('create', 'fleet')) : ?>
-                            <a href="#" class="btn btn-primary mbot15" onclick="fleet_part_modal(); return false;">
-                                <i class="fa fa-plus"></i> <?php echo _l('fleet_add_part'); ?>
-                            </a>
-                        <?php endif; ?>
-                        <div class="text-right mbot15">
-                            <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
-                        </div>
                         <div class="table-responsive">
                             <table class="table fleet-list">
                                 <thead>

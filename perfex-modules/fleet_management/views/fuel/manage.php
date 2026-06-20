@@ -19,34 +19,34 @@ foreach (fleet_fuel_types() as $t) {
 ?>
 <?php init_head(); ?>
 <div id="wrapper">
-    <div class="content">
+    <div class="content fleet-list-page">
+        <div class="fleet-toolbar">
+            <h3><i class="fa fa-tint text-info"></i> <?php echo _l('fleet_fuel'); ?></h3>
+            <div class="fleet-tools">
+                <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
+                <?php if (staff_can('create', 'fleet')) : ?>
+                    <a href="#" class="btn btn-primary btn-sm" onclick="fleet_fuel_modal(); return false;"><i class="fa fa-plus"></i> <?php echo _l('fleet_add_fuel'); ?></a>
+                <?php endif; ?>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 col-sm-6"><div class="panel_s"><div class="panel-body fleet-stat">
+                <div class="ic" style="background:#6571ff;"><i class="fa fa-tint"></i></div>
+                <div><h2><?php echo (int) $stats->entries; ?></h2><span><?php echo _l('fleet_fuel_entries'); ?></span></div>
+            </div></div></div>
+            <div class="col-md-4 col-sm-6"><div class="panel_s"><div class="panel-body fleet-stat">
+                <div class="ic" style="background:#03c3ec;"><i class="fa fa-flask"></i></div>
+                <div><h2><?php echo (float) $stats->total_liters; ?> L</h2><span><?php echo _l('fleet_fuel_total_liters'); ?></span></div>
+            </div></div></div>
+            <div class="col-md-4 col-sm-6"><div class="panel_s"><div class="panel-body fleet-stat">
+                <div class="ic" style="background:#71dd37;"><i class="fa fa-money"></i></div>
+                <div><h2><?php echo app_format_money($stats->total_cost, get_base_currency()); ?></h2><span><?php echo _l('fleet_fuel_total_cost'); ?></span></div>
+            </div></div></div>
+        </div>
         <div class="row">
             <div class="col-md-12">
                 <div class="panel_s">
                     <div class="panel-body">
-                        <div class="row mbot15">
-                            <div class="col-md-4 text-center">
-                                <h2 class="bold no-margin"><?php echo (int) $stats->entries; ?></h2>
-                                <span class="text-muted"><?php echo _l('fleet_fuel_entries'); ?></span>
-                            </div>
-                            <div class="col-md-4 text-center">
-                                <h2 class="bold no-margin"><?php echo (float) $stats->total_liters; ?> L</h2>
-                                <span class="text-muted"><?php echo _l('fleet_fuel_total_liters'); ?></span>
-                            </div>
-                            <div class="col-md-4 text-center">
-                                <h2 class="bold no-margin"><?php echo app_format_money($stats->total_cost, get_base_currency()); ?></h2>
-                                <span class="text-muted"><?php echo _l('fleet_fuel_total_cost'); ?></span>
-                            </div>
-                        </div>
-                        <hr />
-                        <?php if (staff_can('create', 'fleet')) : ?>
-                            <a href="#" class="btn btn-primary mbot15" onclick="fleet_fuel_modal(); return false;">
-                                <i class="fa fa-plus"></i> <?php echo _l('fleet_add_fuel'); ?>
-                            </a>
-                        <?php endif; ?>
-                        <div class="text-right mbot15">
-                            <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
-                        </div>
                         <div class="table-responsive">
                             <table class="table fleet-list">
                                 <thead>

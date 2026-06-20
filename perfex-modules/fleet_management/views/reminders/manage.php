@@ -15,19 +15,20 @@ foreach ($suppliers as $sup) {
 ?>
 <?php init_head(); ?>
 <div id="wrapper">
-    <div class="content">
+    <div class="content fleet-list-page">
+        <div class="fleet-toolbar">
+            <h3><i class="fa fa-bell text-info"></i> <?php echo _l('fleet_reminders'); ?></h3>
+            <div class="fleet-tools">
+                <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
+                <?php if (staff_can('create', 'fleet')) : ?>
+                    <a href="#" class="btn btn-primary btn-sm" onclick="fleet_reminder_modal(); return false;"><i class="fa fa-plus"></i> <?php echo _l('fleet_add_reminder'); ?></a>
+                <?php endif; ?>
+            </div>
+        </div>
         <div class="row">
             <div class="col-md-12">
                 <div class="panel_s">
                     <div class="panel-body">
-                        <?php if (staff_can('create', 'fleet')) : ?>
-                            <a href="#" class="btn btn-primary mbot15" onclick="fleet_reminder_modal(); return false;">
-                                <i class="fa fa-plus"></i> <?php echo _l('fleet_add_reminder'); ?>
-                            </a>
-                        <?php endif; ?>
-                        <div class="text-right mbot15">
-                            <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
-                        </div>
                         <div class="table-responsive">
                             <table class="table fleet-list">
                                 <thead>
