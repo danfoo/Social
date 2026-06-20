@@ -299,6 +299,36 @@ if (!$CI->db->table_exists(db_prefix() . 'fleet_part_assignments')) {
     ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
 }
 
+// Multiple line items per part order.
+if (!$CI->db->table_exists(db_prefix() . 'fleet_part_order_items')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_part_order_items` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `order_id` INT(11) NOT NULL,
+        `item_id` INT(11) NOT NULL,
+        `quantity` INT(11) NOT NULL DEFAULT 1,
+        `unit_price` DECIMAL(15,2) NOT NULL DEFAULT 0,
+        `total_price` DECIMAL(15,2) NOT NULL DEFAULT 0,
+        PRIMARY KEY (`id`),
+        KEY `order_id` (`order_id`),
+        KEY `item_id` (`item_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+
+    // Migrate existing single-item orders into their first line item.
+    if ($CI->db->table_exists(db_prefix() . 'fleet_part_orders') && $CI->db->field_exists('item_id', db_prefix() . 'fleet_part_orders')) {
+        foreach ($CI->db->get(db_prefix() . 'fleet_part_orders')->result_array() as $o) {
+            if (!empty($o['item_id'])) {
+                $CI->db->insert(db_prefix() . 'fleet_part_order_items', [
+                    'order_id'    => $o['id'],
+                    'item_id'     => $o['item_id'],
+                    'quantity'    => $o['quantity'],
+                    'unit_price'  => $o['unit_price'],
+                    'total_price' => $o['total_price'],
+                ]);
+            }
+        }
+    }
+}
+
 // Parts replaced during a maintenance operation (idempotent upgrade).
 if (!$CI->db->field_exists('parts', db_prefix() . 'fleet_maintenance')) {
     $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_maintenance` ADD `parts` TEXT NULL AFTER `description`');

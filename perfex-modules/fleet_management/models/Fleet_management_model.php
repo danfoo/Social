@@ -730,9 +730,8 @@ class Fleet_management_model extends App_Model
             return [];
         }
 
-        $this->db->select('o.*, i.name as item_name');
+        $this->db->select('o.*');
         $this->db->from(db_prefix() . 'fleet_part_orders o');
-        $this->db->join(db_prefix() . 'fleet_part_items i', 'i.id = o.item_id', 'left');
         $this->db->where('o.supplier_id', $supplier_id);
         $this->db->where('o.status !=', 'cancelled');
         if ($start && $end) {
@@ -743,8 +742,10 @@ class Fleet_management_model extends App_Model
 
         $orders = $this->db->get()->result_array();
         foreach ($orders as &$o) {
-            $o['paid_amount'] = $this->record_paid('fleet_part_orders', $o['id']);
-            $o['remaining']   = max(0, (float) $o['total_price'] - $o['paid_amount']);
+            $names               = array_column($this->get_order_items($o['id']), 'item_name');
+            $o['items_summary']  = implode(', ', array_slice($names, 0, 3)) . (count($names) > 3 ? '…' : '');
+            $o['paid_amount']    = $this->record_paid('fleet_part_orders', $o['id']);
+            $o['remaining']      = max(0, (float) $o['total_price'] - $o['paid_amount']);
         }
 
         return $orders;
@@ -1173,13 +1174,15 @@ class Fleet_management_model extends App_Model
      */
     public function item_stock($item_id)
     {
-        if (!$this->db->table_exists(db_prefix() . 'fleet_part_orders')) {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_part_order_items')) {
             return 0;
         }
 
-        $rec = $this->db->select('COALESCE(SUM(quantity),0) q')
-            ->where('item_id', $item_id)->where('status', 'received')
-            ->get(db_prefix() . 'fleet_part_orders')->row();
+        $rec = $this->db->select('COALESCE(SUM(li.quantity),0) q')
+            ->from(db_prefix() . 'fleet_part_order_items li')
+            ->join(db_prefix() . 'fleet_part_orders o', 'o.id = li.order_id')
+            ->where('li.item_id', $item_id)->where('o.status', 'received')
+            ->get()->row();
         $asg = $this->db->select('COALESCE(SUM(quantity),0) q')
             ->where('item_id', $item_id)
             ->get(db_prefix() . 'fleet_part_assignments')->row();
@@ -1189,9 +1192,12 @@ class Fleet_management_model extends App_Model
 
     public function item_last_unit_price($item_id)
     {
-        $row = $this->db->where('item_id', $item_id)->where('status', 'received')
-            ->order_by('received_date', 'desc')->order_by('id', 'desc')->limit(1)
-            ->get(db_prefix() . 'fleet_part_orders')->row();
+        $row = $this->db->select('li.unit_price')
+            ->from(db_prefix() . 'fleet_part_order_items li')
+            ->join(db_prefix() . 'fleet_part_orders o', 'o.id = li.order_id')
+            ->where('li.item_id', $item_id)->where('o.status', 'received')
+            ->order_by('o.received_date', 'desc')->order_by('li.id', 'desc')->limit(1)
+            ->get()->row();
 
         return $row ? (float) $row->unit_price : 0;
     }
@@ -1277,9 +1283,8 @@ class Fleet_management_model extends App_Model
             return is_numeric($id) ? null : [];
         }
 
-        $this->db->select('o.*, i.name as item_name, i.reference as item_reference, s.name as supplier_name');
+        $this->db->select('o.*, s.name as supplier_name');
         $this->db->from(db_prefix() . 'fleet_part_orders o');
-        $this->db->join(db_prefix() . 'fleet_part_items i', 'i.id = o.item_id', 'left');
         $this->db->join(db_prefix() . 'fleet_suppliers s', 's.id = o.supplier_id', 'left');
 
         if (is_numeric($id)) {
@@ -1289,11 +1294,34 @@ class Fleet_management_model extends App_Model
         }
 
         $this->db->order_by('o.date_created', 'desc');
+        $orders = $this->db->get()->result_array();
+
+        foreach ($orders as &$o) {
+            $lines             = $this->get_order_items($o['id']);
+            $names             = array_column($lines, 'item_name');
+            $o['items_count']  = count($lines);
+            $o['items_summary'] = implode(', ', array_slice($names, 0, 2)) . (count($names) > 2 ? ' +' . (count($names) - 2) : '');
+        }
+
+        return $orders;
+    }
+
+    public function get_order_items($order_id)
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_part_order_items')) {
+            return [];
+        }
+
+        $this->db->select('li.*, i.name as item_name, i.reference as item_reference');
+        $this->db->from(db_prefix() . 'fleet_part_order_items li');
+        $this->db->join(db_prefix() . 'fleet_part_items i', 'i.id = li.item_id', 'left');
+        $this->db->where('li.order_id', $order_id);
+        $this->db->order_by('li.id', 'asc');
 
         return $this->db->get()->result_array();
     }
 
-    public function add_part_order($data)
+    public function add_part_order($data, $lines = [])
     {
         $data = $this->_prepare_order_data($data);
         $data['status']       = $data['status'] ?? 'ordered';
@@ -1302,8 +1330,14 @@ class Fleet_management_model extends App_Model
 
         $this->db->insert(db_prefix() . 'fleet_part_orders', $data);
         $id = $this->db->insert_id();
+        if (!$id) {
+            return false;
+        }
 
-        if ($id && $data['status'] === 'received') {
+        $total = $this->_save_order_lines($id, $lines);
+        $this->db->where('id', $id)->update(db_prefix() . 'fleet_part_orders', ['total_price' => $total]);
+
+        if ($data['status'] === 'received') {
             $this->db->where('id', $id)->update(db_prefix() . 'fleet_part_orders', ['received_date' => date('Y-m-d')]);
             $this->_receive_sync($id);
         }
@@ -1311,7 +1345,7 @@ class Fleet_management_model extends App_Model
         return $id;
     }
 
-    public function update_part_order($id, $data)
+    public function update_part_order($id, $data, $lines = [])
     {
         $data = $this->_prepare_order_data($data);
         unset($data['status']); // status changes go through receive/cancel
@@ -1319,9 +1353,42 @@ class Fleet_management_model extends App_Model
         $this->db->where('id', $id);
         $this->db->update(db_prefix() . 'fleet_part_orders', $data);
 
+        $total = $this->_save_order_lines($id, $lines);
+        $this->db->where('id', $id)->update(db_prefix() . 'fleet_part_orders', ['total_price' => $total]);
+
         $this->_receive_sync($id);
 
         return true;
+    }
+
+    /**
+     * Replace an order's line items and return the recomputed grand total.
+     */
+    private function _save_order_lines($order_id, $lines)
+    {
+        $this->db->where('order_id', $order_id)->delete(db_prefix() . 'fleet_part_order_items');
+
+        $total = 0;
+        foreach ((array) $lines as $line) {
+            $item_id = (int) ($line['item_id'] ?? 0);
+            if (!$item_id) {
+                continue;
+            }
+            $qty   = max(1, (int) ($line['quantity'] ?? 1));
+            $price = (float) ($line['unit_price'] ?? 0);
+            $lt    = round($qty * $price, 2);
+            $total += $lt;
+
+            $this->db->insert(db_prefix() . 'fleet_part_order_items', [
+                'order_id'    => $order_id,
+                'item_id'     => $item_id,
+                'quantity'    => $qty,
+                'unit_price'  => $price,
+                'total_price' => $lt,
+            ]);
+        }
+
+        return $total;
     }
 
     public function receive_part_order($id)
@@ -1354,6 +1421,7 @@ class Fleet_management_model extends App_Model
     public function delete_part_order($id)
     {
         $this->_delete_record_expense('fleet_part_orders', $id);
+        $this->db->where('order_id', $id)->delete(db_prefix() . 'fleet_part_order_items');
         $this->db->where('id', $id)->delete(db_prefix() . 'fleet_part_orders');
 
         return true;
@@ -1369,8 +1437,10 @@ class Fleet_management_model extends App_Model
             return;
         }
 
-        $amount = ($order->status === 'received') ? $order->total_price : 0;
-        $name   = _l('fleet_part') . ' - ' . $order->item_name . ($order->supplier_name ? ' - ' . $order->supplier_name : '');
+        $amount  = ($order->status === 'received') ? $order->total_price : 0;
+        $names   = array_column($this->get_order_items($id), 'item_name');
+        $summary = implode(', ', array_slice($names, 0, 3)) . (count($names) > 3 ? '…' : '');
+        $name    = _l('fleet_order') . ' #' . $id . ($order->supplier_name ? ' - ' . $order->supplier_name : '');
 
         $extra = [
             'reference_no' => $order->invoice_no ?? '',
@@ -1378,19 +1448,16 @@ class Fleet_management_model extends App_Model
             'clientid'     => !empty($order->clientid) ? $order->clientid : null,
         ];
 
-        $this->_sync_record_expense('fleet_part_orders', $id, $amount, $name, $order->item_reference, $order->received_date ?: $order->order_date, $extra);
+        $this->_sync_record_expense('fleet_part_orders', $id, $amount, $name, $summary, $order->received_date ?: $order->order_date, $extra);
     }
 
     private function _prepare_order_data($data)
     {
-        unset($data['order_total']); // display-only field, not a column
-        $data = $this->_clean_numeric($data, ['item_id', 'supplier_id', 'quantity', 'unit_price', 'clientid']);
+        unset($data['order_total'], $data['line_item'], $data['line_qty'], $data['line_price']);
+        $data = $this->_clean_numeric($data, ['supplier_id', 'clientid']);
         $data = $this->_clean_dates($data, ['order_date']);
 
-        $qty = max(1, (int) ($data['quantity'] ?? 1));
-        $data['quantity']    = $qty;
-        $data['total_price'] = round((float) ($data['unit_price'] ?? 0) * $qty, 2);
-        $data['billable']    = isset($data['billable']) && $data['billable'] ? 1 : 0;
+        $data['billable'] = isset($data['billable']) && $data['billable'] ? 1 : 0;
 
         if (empty($data['supplier_id'])) {
             $data['supplier_id'] = null;

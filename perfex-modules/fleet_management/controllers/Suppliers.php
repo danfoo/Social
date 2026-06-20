@@ -65,7 +65,7 @@ class Suppliers extends AdminController
         foreach ($this->fleet->get_supplier_orders($id, $start, $end) as $o) {
             $rows[] = [
                 $o['order_date'] ? _d($o['order_date']) : '',
-                $o['item_name'] . ' [' . _l('fleet_ostatus_' . $o['status']) . ']',
+                $o['items_summary'] . ' [' . _l('fleet_ostatus_' . $o['status']) . ']',
                 '', $o['quantity'], $o['total_price'], $o['invoice_no'],
                 $o['paid'] ? _l('fleet_paid') : _l('fleet_unpaid'),
             ];

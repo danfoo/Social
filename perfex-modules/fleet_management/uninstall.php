@@ -8,6 +8,7 @@ $tables = [
     'fleet_payments',
     'fleet_maintenance_files',
     'fleet_part_assignments',
+    'fleet_part_order_items',
     'fleet_part_orders',
     'fleet_part_units',
     'fleet_part_categories',

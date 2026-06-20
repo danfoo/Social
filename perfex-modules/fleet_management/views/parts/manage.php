@@ -30,6 +30,11 @@ $client_options = [];
 foreach ($clients as $cl) {
     $client_options[] = ['id' => $cl['userid'], 'name' => $cl['company']];
 }
+$item_options_html = '<option value=""></option>';
+foreach ($items as $it) {
+    $label              = $it['name'] . ($it['reference'] ? ' (' . $it['reference'] . ')' : '');
+    $item_options_html .= '<option value="' . $it['id'] . '">' . html_escape($label) . '</option>';
+}
 ?>
 <?php init_head(); ?>
 <div id="wrapper">
@@ -118,10 +123,10 @@ foreach ($clients as $cl) {
                             <div class="table-responsive">
                                 <table class="table fleet-list">
                                     <thead><tr>
+                                        <th>#</th>
                                         <th><?php echo _l('fleet_part'); ?></th>
                                         <th><?php echo _l('fleet_supplier'); ?></th>
                                         <th><?php echo _l('fleet_quantity'); ?></th>
-                                        <th><?php echo _l('fleet_unit_price'); ?></th>
                                         <th><?php echo _l('fleet_total'); ?></th>
                                         <th><?php echo _l('fleet_order_date'); ?></th>
                                         <th><?php echo _l('fleet_status'); ?></th>
@@ -130,10 +135,10 @@ foreach ($clients as $cl) {
                                     <tbody>
                                         <?php foreach ($orders as $o) : ?>
                                             <tr>
-                                                <td class="bold"><?php echo html_escape($o['item_name']); ?></td>
+                                                <td class="text-muted">PO-<?php echo $o['id']; ?></td>
+                                                <td class="bold"><?php echo html_escape($o['items_summary']); ?></td>
                                                 <td><?php echo $o['supplier_name'] ? html_escape($o['supplier_name']) : '<span class="text-muted">—</span>'; ?></td>
-                                                <td><?php echo (int) $o['quantity']; ?></td>
-                                                <td><?php echo app_format_money($o['unit_price'], $bc); ?></td>
+                                                <td><span class="label label-default"><?php echo (int) $o['items_count']; ?></span></td>
                                                 <td class="bold"><?php echo app_format_money($o['total_price'], $bc); ?></td>
                                                 <td><?php echo $o['order_date'] ? _d($o['order_date']) : '-'; ?></td>
                                                 <td><span class="label label-<?php echo $order_status[$o['status']] ?? 'default'; ?>"><?php echo _l('fleet_ostatus_' . $o['status']); ?></span></td>
@@ -225,18 +230,35 @@ foreach ($clients as $cl) {
 </div></div></div>
 
 <!-- Order modal -->
-<div class="modal fade" id="fleet_part_order_modal" tabindex="-1" role="dialog"><div class="modal-dialog"><div class="modal-content">
+<div class="modal fade" id="fleet_part_order_modal" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg"><div class="modal-content">
     <?php echo form_open(admin_url('fleet_management/parts/order_save')); ?>
     <input type="hidden" name="id" id="order_id" value="">
     <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title"><?php echo _l('fleet_buy'); ?></h4></div>
     <div class="modal-body">
-        <?php echo render_select('item_id', $item_options, ['id', 'name'], 'fleet_part'); ?>
+        <label class="control-label"><?php echo _l('fleet_orders'); ?></label>
+        <table class="table" id="order_lines_table" style="margin-bottom:6px;">
+            <thead><tr>
+                <th style="width:45%;"><?php echo _l('fleet_part'); ?></th>
+                <th style="width:14%;"><?php echo _l('fleet_quantity'); ?></th>
+                <th style="width:20%;"><?php echo _l('fleet_unit_price'); ?></th>
+                <th style="width:16%;"><?php echo _l('fleet_total'); ?></th>
+                <th style="width:5%;"></th>
+            </tr></thead>
+            <tbody id="order_lines_body">
+                <tr class="order-line">
+                    <td><select name="line_item[]" class="form-control"><?php echo $item_options_html; ?></select></td>
+                    <td><input type="number" name="line_qty[]" class="form-control line-qty" value="1" min="1"></td>
+                    <td><input type="number" name="line_price[]" class="form-control line-price" step="0.01"></td>
+                    <td class="line-total" style="vertical-align:middle;">0.00</td>
+                    <td style="vertical-align:middle;"><a href="#" class="text-danger line-remove"><i class="fa fa-remove"></i></a></td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="button" class="btn btn-default btn-sm" id="order_add_line"><i class="fa fa-plus"></i> <?php echo _l('fleet_add_line'); ?></button>
+        <span class="pull-right bold" style="margin-top:6px;"><?php echo _l('fleet_total'); ?>: <span id="order_grand_total">0.00</span></span>
+        <div class="clearfix"></div>
+        <hr>
         <?php echo render_select('supplier_id', $supplier_options, ['id', 'name'], 'fleet_supplier'); ?>
-        <div class="row">
-            <div class="col-md-4"><?php echo render_input('quantity', 'fleet_quantity', 1, 'number'); ?></div>
-            <div class="col-md-4"><?php echo render_input('unit_price', 'fleet_unit_price', '', 'number'); ?></div>
-            <div class="col-md-4"><?php echo render_input('order_total', 'fleet_total', '', 'number', ['readonly' => true]); ?></div>
-        </div>
         <div class="row">
             <div class="col-md-6"><?php echo render_date_input('order_date', 'fleet_order_date', _d(date('Y-m-d'))); ?></div>
             <div class="col-md-6"><?php echo render_input('invoice_no', 'fleet_supplier_invoice_no', ''); ?></div>
@@ -286,10 +308,17 @@ foreach ($clients as $cl) {
 <?php init_tail(); ?>
 <script>
 $(function() {
-    $('#fleet_part_order_modal').on('input', '[name="quantity"], [name="unit_price"]', function() {
-        var q = parseFloat($('#fleet_part_order_modal [name="quantity"]').val());
-        var u = parseFloat($('#fleet_part_order_modal [name="unit_price"]').val());
-        if (!isNaN(q) && !isNaN(u)) { $('#fleet_part_order_modal [name="order_total"]').val((q * u).toFixed(2)); }
+    $('#fleet_part_order_modal').on('input', '.line-qty, .line-price', fleetOrderRecalc);
+    $('#order_add_line').on('click', function() { fleetOrderAddLine(); });
+    $('#fleet_part_order_modal').on('click', '.line-remove', function(e) {
+        e.preventDefault();
+        if ($('#order_lines_body tr.order-line').length > 1) {
+            $(this).closest('tr').remove();
+        } else {
+            var $r = $(this).closest('tr');
+            $r.find('select').val(''); $r.find('.line-qty').val(1); $r.find('.line-price').val('');
+        }
+        fleetOrderRecalc();
     });
     $('#fleet_part_order_modal').on('change', '#order_billable', function() {
         $('#order_client_wrap').toggle($(this).is(':checked'));
@@ -333,29 +362,73 @@ function fleet_part_item_modal(id) {
     modal.modal('show');
 }
 
+function fleetOrderRecalc() {
+    var grand = 0;
+    $('#order_lines_body tr.order-line').each(function() {
+        var q = parseFloat($(this).find('.line-qty').val());
+        var p = parseFloat($(this).find('.line-price').val());
+        var t = (!isNaN(q) && !isNaN(p)) ? q * p : 0;
+        $(this).find('.line-total').text(t.toFixed(2));
+        grand += t;
+    });
+    $('#order_grand_total').text(grand.toFixed(2));
+}
+
+function fleetOrderAddLine(item_id, qty, price) {
+    var $row = $('#order_lines_body tr.order-line:first').clone();
+    $row.find('select').val(item_id || '');
+    $row.find('.line-qty').val(qty || 1);
+    $row.find('.line-price').val(typeof price !== 'undefined' && price !== null ? price : '');
+    $row.find('.line-total').text('0.00');
+    $('#order_lines_body').append($row);
+    fleetOrderRecalc();
+    return $row;
+}
+
+function fleetOrderResetLines() {
+    $('#order_lines_body tr.order-line:gt(0)').remove();
+    var $f = $('#order_lines_body tr.order-line:first');
+    $f.find('select').val('');
+    $f.find('.line-qty').val(1);
+    $f.find('.line-price').val('');
+    $f.find('.line-total').text('0.00');
+    $('#order_grand_total').text('0.00');
+}
+
 function fleet_part_order_modal(id, itemId) {
     var modal = $('#fleet_part_order_modal');
     modal.find('form')[0].reset();
     $('#order_id').val('');
     $('#order_client_wrap').hide();
+    fleetOrderResetLines();
     if (typeof id !== 'undefined' && id !== null) {
-        $.getJSON('<?php echo admin_url('fleet_management/parts/order_get'); ?>/' + id, function(rec) {
+        $.getJSON('<?php echo admin_url('fleet_management/parts/order_get'); ?>/' + id, function(resp) {
+            var rec = resp.order, lines = resp.items || [];
             if (!rec) { return; }
             $('#order_id').val(rec.id);
-            modal.find('[name="item_id"]').val(rec.item_id);
             modal.find('[name="supplier_id"]').val(rec.supplier_id);
-            modal.find('[name="quantity"]').val(rec.quantity);
-            modal.find('[name="unit_price"]').val(rec.unit_price);
-            modal.find('[name="order_total"]').val(rec.total_price);
+            if (rec.order_date) { modal.find('[name="order_date"]').val(rec.order_date); }
             modal.find('[name="invoice_no"]').val(rec.invoice_no);
             modal.find('[name="notes"]').val(rec.notes);
             $('#order_billable').prop('checked', rec.billable == 1);
             $('#order_client_wrap').toggle(rec.billable == 1);
             modal.find('[name="clientid"]').val(rec.clientid);
+            fleetOrderResetLines();
+            lines.forEach(function(l, idx) {
+                if (idx === 0) {
+                    var $f = $('#order_lines_body tr.order-line:first');
+                    $f.find('select').val(l.item_id);
+                    $f.find('.line-qty').val(l.quantity);
+                    $f.find('.line-price').val(l.unit_price);
+                } else {
+                    fleetOrderAddLine(l.item_id, l.quantity, l.unit_price);
+                }
+            });
+            fleetOrderRecalc();
             if (modal.find('.selectpicker').length) { modal.find('.selectpicker').selectpicker('refresh'); }
         });
     } else if (typeof itemId !== 'undefined') {
-        modal.find('[name="item_id"]').val(itemId);
+        $('#order_lines_body tr.order-line:first select').val(itemId);
         if (modal.find('.selectpicker').length) { modal.find('.selectpicker').selectpicker('refresh'); }
     }
     modal.modal('show');

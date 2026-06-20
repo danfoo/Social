@@ -87,17 +87,35 @@ class Parts extends AdminController
         $id   = $data['id'] ?? '';
         unset($data['id']);
 
+        $lines  = [];
+        $items  = $this->input->post('line_item');
+        $qtys   = $this->input->post('line_qty');
+        $prices = $this->input->post('line_price');
+        if (is_array($items)) {
+            foreach ($items as $k => $it) {
+                if (!$it) {
+                    continue;
+                }
+                $lines[] = ['item_id' => $it, 'quantity' => $qtys[$k] ?? 1, 'unit_price' => $prices[$k] ?? 0];
+            }
+        }
+
+        if (empty($lines)) {
+            set_alert('warning', _l('fleet_order_no_lines'));
+            redirect(admin_url('fleet_management/parts#orders'));
+        }
+
         if ($id == '') {
             if (!staff_can('create', 'fleet')) {
                 access_denied('fleet');
             }
-            $this->fleet->add_part_order($data);
+            $this->fleet->add_part_order($data, $lines);
             set_alert('success', _l('fleet_order_placed'));
         } else {
             if (!staff_can('edit', 'fleet')) {
                 access_denied('fleet');
             }
-            $this->fleet->update_part_order($id, $data);
+            $this->fleet->update_part_order($id, $data, $lines);
             set_alert('success', _l('updated_successfully', _l('fleet_order')));
         }
         redirect(admin_url('fleet_management/parts#orders'));
@@ -108,7 +126,10 @@ class Parts extends AdminController
         if (!staff_can('view', 'fleet')) {
             ajax_access_denied();
         }
-        echo json_encode($this->fleet->get_part_order($id));
+        echo json_encode([
+            'order' => $this->fleet->get_part_order($id),
+            'items' => $this->fleet->get_order_items($id),
+        ]);
     }
 
     public function order_receive($id)
@@ -190,6 +211,7 @@ class Parts extends AdminController
 
         $data = [
             'order'    => $order,
+            'items'    => $this->fleet->get_order_items($id),
             'supplier' => $order->supplier_id ? $this->fleet->get_supplier($order->supplier_id) : null,
             'paid'     => $this->fleet->record_paid('fleet_part_orders', $id),
         ];

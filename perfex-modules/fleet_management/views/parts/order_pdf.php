@@ -57,13 +57,15 @@ $has_logo  = $logo_path && is_file($logo_path);
         </tr>
     </thead>
     <tbody>
-        <tr>
-            <td style="text-align:center;">1</td>
-            <td><?php echo html_escape($order->item_name); ?><?php echo $order->item_reference ? ' (' . html_escape($order->item_reference) . ')' : ''; ?></td>
-            <td style="text-align:center;"><?php echo (int) $order->quantity; ?></td>
-            <td style="text-align:right;"><?php echo app_format_money($order->unit_price, $bc); ?></td>
-            <td style="text-align:right;"><?php echo app_format_money($order->total_price, $bc); ?></td>
-        </tr>
+        <?php $n = 0; foreach ($items as $li) : $n++; ?>
+            <tr>
+                <td style="text-align:center;"><?php echo $n; ?></td>
+                <td><?php echo html_escape($li['item_name']); ?><?php echo $li['item_reference'] ? ' (' . html_escape($li['item_reference']) . ')' : ''; ?></td>
+                <td style="text-align:center;"><?php echo (int) $li['quantity']; ?></td>
+                <td style="text-align:right;"><?php echo app_format_money($li['unit_price'], $bc); ?></td>
+                <td style="text-align:right;"><?php echo app_format_money($li['total_price'], $bc); ?></td>
+            </tr>
+        <?php endforeach; ?>
     </tbody>
 </table>
 

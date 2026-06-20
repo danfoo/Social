@@ -76,7 +76,7 @@ function fleet_pay_badge($total, $paid)
                             <tbody>
                             <?php foreach ($orders as $o) : ?>
                                 <tr>
-                                    <td class="bold"><?php echo html_escape($o['item_name']); ?>
+                                    <td class="bold">PO-<?php echo $o['id']; ?> <small class="text-muted"><?php echo html_escape($o['items_summary']); ?></small>
                                         <?php if ($o['invoice_no']) : ?><br><small class="text-muted"><?php echo _l('fleet_supplier_invoice_no'); ?>: <?php echo html_escape($o['invoice_no']); ?></small><?php endif; ?>
                                     </td>
                                     <td><?php echo app_format_money($o['total_price'], $bc); ?></td>
