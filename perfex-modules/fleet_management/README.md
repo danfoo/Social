@@ -16,6 +16,11 @@ Compatible **Perfex CRM ≥ 2.3** (testé pour la lignée 3.4.x).
   **compagnie d'assurance** provient des **fournisseurs de type « assurance »**.
 - **Configuration (catalogue)** : gestion des **catégories**, **marques** et
   **modèles** de véhicules (un modèle appartient à une marque).
+- **Dépenses automatiques** : tout coût lié à un véhicule (entretien, plein de
+  carburant, rappel chiffré comme l'assurance ou la vignette) est enregistré
+  automatiquement comme **dépense dans le module Dépenses natif de Perfex**,
+  dans une catégorie dédiée « Fleet management ». La dépense est **synchronisée**
+  (créée, mise à jour, supprimée) avec la fiche source via un lien `expense_id`.
 - **Historique du véhicule** : chaque fiche véhicule expose un onglet
   **Historique** retraçant toutes les actions (création, affectation de
   chauffeur, pleins de carburant, mises à jour du kilométrage, entretiens,

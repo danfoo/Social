@@ -27,3 +27,5 @@ foreach ($tables as $table) {
 
 delete_option('fleet_driver_role_id');
 delete_option('fleet_invoice_due_days');
+delete_option('fleet_expense_category_id');
+delete_option('fleet_management_db_version');

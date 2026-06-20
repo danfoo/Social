@@ -63,11 +63,24 @@ class Fleet_management_model extends App_Model
 
     public function delete_vehicle($id)
     {
+        // Remove the core expenses linked to this vehicle's costed records first.
+        foreach (['fleet_maintenance', 'fleet_fuel_logs', 'fleet_reminders'] as $table) {
+            if (!$this->db->field_exists('expense_id', db_prefix() . $table)) {
+                continue;
+            }
+            $this->load->model('expenses_model');
+            $this->db->where('vehicle_id', $id);
+            $this->db->where('expense_id IS NOT NULL', null, false);
+            foreach ($this->db->get(db_prefix() . $table)->result_array() as $row) {
+                $this->expenses_model->delete($row['expense_id']);
+            }
+        }
+
         $this->db->where('id', $id);
         $this->db->delete(db_prefix() . 'fleet_vehicles');
 
         if ($this->db->affected_rows() > 0) {
-            foreach (['fleet_maintenance', 'fleet_reminders', 'fleet_assignments', 'fleet_rentals'] as $table) {
+            foreach (['fleet_maintenance', 'fleet_reminders', 'fleet_assignments', 'fleet_rentals', 'fleet_fuel_logs', 'fleet_activity'] as $table) {
                 $this->db->where('vehicle_id', $id);
                 $this->db->delete(db_prefix() . $table);
             }
@@ -198,13 +211,25 @@ class Fleet_management_model extends App_Model
         $this->db->insert(db_prefix() . 'fleet_maintenance', $data);
         $id = $this->db->insert_id();
 
+        $type_label = isset($data['type']) ? _l('fleet_mtype_' . $data['type']) : '';
+
         if ($id && !empty($data['vehicle_id'])) {
-            $label = isset($data['type']) ? _l('fleet_mtype_' . $data['type']) : '';
-            $desc  = _l('fleet_log_maintenance', $label);
+            $desc = _l('fleet_log_maintenance', $type_label);
             if (!empty($data['parts'])) {
                 $desc .= ' — ' . _l('fleet_parts') . ': ' . $data['parts'];
             }
             $this->log_activity($data['vehicle_id'], 'maintenance', $desc);
+        }
+
+        if ($id) {
+            $this->_sync_record_expense(
+                'fleet_maintenance',
+                $id,
+                $data['cost'] ?? 0,
+                _l('fleet_maintenance') . ' - ' . $type_label . ' - ' . $this->_vehicle_label($data['vehicle_id'] ?? 0),
+                $data['parts'] ?? ($data['description'] ?? ''),
+                $data['service_date'] ?? null
+            );
         }
 
         return $id;
@@ -218,11 +243,26 @@ class Fleet_management_model extends App_Model
         $this->db->where('id', $id);
         $this->db->update(db_prefix() . 'fleet_maintenance', $data);
 
-        return $this->db->affected_rows() > 0;
+        $record = $this->get_maintenance($id);
+        if ($record) {
+            $type_label = _l('fleet_mtype_' . $record->type);
+            $this->_sync_record_expense(
+                'fleet_maintenance',
+                $id,
+                $record->cost,
+                _l('fleet_maintenance') . ' - ' . $type_label . ' - ' . $this->_vehicle_label($record->vehicle_id),
+                $record->parts ?? $record->description,
+                $record->service_date
+            );
+        }
+
+        return true;
     }
 
     public function delete_maintenance($id)
     {
+        $this->_delete_record_expense('fleet_maintenance', $id);
+
         $this->db->where('id', $id);
         $this->db->delete(db_prefix() . 'fleet_maintenance');
 
@@ -268,6 +308,18 @@ class Fleet_management_model extends App_Model
             $this->log_activity($data['vehicle_id'], 'reminder', _l('fleet_log_reminder_added', $data['title'] ?? ''));
         }
 
+        if ($id) {
+            $type_label = isset($data['type']) ? _l('fleet_rtype_' . $data['type']) : '';
+            $this->_sync_record_expense(
+                'fleet_reminders',
+                $id,
+                $data['cost'] ?? 0,
+                $type_label . ' - ' . $this->_vehicle_label($data['vehicle_id'] ?? 0),
+                $data['title'] ?? '',
+                $data['due_date'] ?? null
+            );
+        }
+
         return $id;
     }
 
@@ -282,11 +334,25 @@ class Fleet_management_model extends App_Model
         $this->db->where('id', $id);
         $this->db->update(db_prefix() . 'fleet_reminders', $data);
 
-        return $this->db->affected_rows() > 0;
+        $record = $this->get_reminders($id);
+        if ($record) {
+            $this->_sync_record_expense(
+                'fleet_reminders',
+                $id,
+                $record->cost,
+                _l('fleet_rtype_' . $record->type) . ' - ' . $this->_vehicle_label($record->vehicle_id),
+                $record->title,
+                $record->due_date
+            );
+        }
+
+        return true;
     }
 
     public function delete_reminder($id)
     {
+        $this->_delete_record_expense('fleet_reminders', $id);
+
         $this->db->where('id', $id);
         $this->db->delete(db_prefix() . 'fleet_reminders');
 
@@ -695,6 +761,17 @@ class Fleet_management_model extends App_Model
             $this->log_activity($data['vehicle_id'], 'fuel', $desc);
         }
 
+        if ($id) {
+            $this->_sync_record_expense(
+                'fleet_fuel_logs',
+                $id,
+                $data['total_cost'] ?? 0,
+                _l('fleet_fuel') . ' - ' . $this->_vehicle_label($data['vehicle_id'] ?? 0),
+                (isset($data['liters']) ? (float) $data['liters'] . ' L' : ''),
+                $data['date'] ?? null
+            );
+        }
+
         return $id;
     }
 
@@ -706,11 +783,25 @@ class Fleet_management_model extends App_Model
         $this->db->where('id', $id);
         $this->db->update(db_prefix() . 'fleet_fuel_logs', $data);
 
-        return $this->db->affected_rows() > 0;
+        $record = $this->get_fuel_log($id);
+        if ($record) {
+            $this->_sync_record_expense(
+                'fleet_fuel_logs',
+                $id,
+                $record->total_cost,
+                _l('fleet_fuel') . ' - ' . $this->_vehicle_label($record->vehicle_id),
+                (float) $record->liters . ' L',
+                $record->date
+            );
+        }
+
+        return true;
     }
 
     public function delete_fuel_log($id)
     {
+        $this->_delete_record_expense('fleet_fuel_logs', $id);
+
         $this->db->where('id', $id);
         $this->db->delete(db_prefix() . 'fleet_fuel_logs');
 
@@ -875,6 +966,75 @@ class Fleet_management_model extends App_Model
     {
         $this->db->where('id', $vehicle_id);
         $this->db->update(db_prefix() . 'fleet_vehicles', ['status' => $status]);
+    }
+
+    private function _vehicle_label($vehicle_id)
+    {
+        $vehicle = $vehicle_id ? $this->get_vehicle($vehicle_id) : null;
+
+        return $vehicle ? ($vehicle->name . ' (' . $vehicle->plate . ')') : ('#' . (int) $vehicle_id);
+    }
+
+    /**
+     * Create, update or remove the Perfex core expense linked to a fleet record
+     * (maintenance / fuel / reminder), keeping costs in sync with the Expenses
+     * module. The link is stored in the record's `expense_id` column.
+     */
+    private function _sync_record_expense($table, $record_id, $amount, $name, $note, $sql_date)
+    {
+        if (!$this->db->field_exists('expense_id', db_prefix() . $table)) {
+            return;
+        }
+
+        $category = get_option('fleet_expense_category_id');
+        $record   = $this->db->get_where(db_prefix() . $table, ['id' => $record_id])->row();
+        $existing = ($record && !empty($record->expense_id)) ? $record->expense_id : null;
+        $amount   = (float) $amount;
+
+        $this->load->model('expenses_model');
+
+        // No positive amount (or no category configured): drop any linked expense.
+        if ($amount <= 0 || !$category) {
+            if ($existing) {
+                $this->expenses_model->delete($existing);
+                $this->db->where('id', $record_id);
+                $this->db->update(db_prefix() . $table, ['expense_id' => null]);
+            }
+
+            return;
+        }
+
+        $payload = [
+            'category'     => $category,
+            'amount'       => $amount,
+            'expense_name' => $name,
+            'note'         => $note,
+            'date'         => _d($sql_date ?: date('Y-m-d')),
+            'currency'     => get_base_currency()->id,
+        ];
+
+        if ($existing) {
+            $this->expenses_model->update($payload, $existing);
+        } else {
+            $expense_id = $this->expenses_model->add($payload);
+            if ($expense_id) {
+                $this->db->where('id', $record_id);
+                $this->db->update(db_prefix() . $table, ['expense_id' => $expense_id]);
+            }
+        }
+    }
+
+    private function _delete_record_expense($table, $record_id)
+    {
+        if (!$this->db->field_exists('expense_id', db_prefix() . $table)) {
+            return;
+        }
+
+        $record = $this->db->get_where(db_prefix() . $table, ['id' => $record_id])->row();
+        if ($record && !empty($record->expense_id)) {
+            $this->load->model('expenses_model');
+            $this->expenses_model->delete($record->expense_id);
+        }
     }
 
     private function _clean_numeric($data, $fields)
