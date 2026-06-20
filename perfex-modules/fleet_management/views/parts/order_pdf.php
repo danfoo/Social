@@ -49,6 +49,7 @@ $has_logo  = $logo_path && is_file($logo_path);
 <table border="1" cellpadding="6" style="width:100%; font-size:11px; border-collapse:collapse;">
     <thead>
         <tr style="background-color:#000000; color:#dc9f2b;">
+            <th style="text-align:center; color:#dc9f2b; width:8%;">#</th>
             <th style="text-align:left; color:#dc9f2b;"><?php echo _l('fleet_part'); ?></th>
             <th style="text-align:center; color:#dc9f2b;"><?php echo _l('fleet_quantity'); ?></th>
             <th style="text-align:right; color:#dc9f2b;"><?php echo _l('fleet_unit_price'); ?></th>
@@ -57,6 +58,7 @@ $has_logo  = $logo_path && is_file($logo_path);
     </thead>
     <tbody>
         <tr>
+            <td style="text-align:center;">1</td>
             <td><?php echo html_escape($order->item_name); ?><?php echo $order->item_reference ? ' (' . html_escape($order->item_reference) . ')' : ''; ?></td>
             <td style="text-align:center;"><?php echo (int) $order->quantity; ?></td>
             <td style="text-align:right;"><?php echo app_format_money($order->unit_price, $bc); ?></td>
