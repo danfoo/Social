@@ -57,26 +57,29 @@ Exemple :
 
 ## Comment ça marche (technique)
 
-Testé pour **Perfex 3.4.1**. Le module s'accroche au hook fired par
-`application/libraries/pdf/App_pdf.php` lors de la construction du PDF :
+Testé pour **Perfex 3.4.1**. Selon l'install, `App_pdf`
+(`application/libraries/pdf/App_pdf.php`) étend **TCPDF** *ou* **mPDF**. Le
+module gère les deux via les hooks Perfex, sans éditer aucun fichier core :
 
 ```php
 hooks()->do_action('pdf_construct', ['pdf_instance' => $this, 'type' => $this->type()]);
+hooks()->do_action('pdf_footer',    ['pdf_instance' => $this, 'type' => $this->type()]);
 ```
 
-- On récupère l'instance mPDF (`pdf_instance`) et le **type de document**
-  (`type` : `invoice`, `estimate`, `proposal`, `credit_note`, …) directement
-  depuis le payload du hook, puis on appelle `SetHTMLFooter()`.
-- Si le type n'est pas fourni, on le déduit en secours du nom de la classe PDF
-  (`Invoice_pdf`, `Estimate_pdf`…).
-- Aucun fichier de `application/views` ni `application/libraries` n'est modifié.
+- **mPDF** : sur `pdf_construct`, on appelle `SetHTMLFooter()` une fois. Les
+  jetons `{PAGENO}` / `{nbpg}` sont natifs.
+- **TCPDF** : sur `pdf_footer` (appelé dans `Footer()`, à chaque page), on écrit
+  le HTML via `writeHTMLCell()` ; `{PAGENO}` / `{nbpg}` sont convertis en alias
+  TCPDF (`getAliasNumPage()` / `getAliasNbPages()`).
+- Le **type** (`invoice`, `estimate`, `proposal`, `credit_note`, …) vient du
+  payload du hook (sinon déduit du nom de classe `Invoice_pdf`, `Estimate_pdf`…).
 
 ## Compatibilité
 
-- **Perfex 3.x (dont 3.4.1)** — moteur mPDF : pied de page injecté
-  automatiquement via le hook `pdf_construct`.
-- **Anciennes versions sous TCPDF** (pas de `SetHTMLFooter`) : le module se
-  désactive proprement (aucune erreur).
+- **Perfex 3.x (dont 3.4.1)** — moteur **TCPDF** (par défaut) **ou mPDF** : pied
+  de page injecté automatiquement.
+- Si le moteur n'expose ni `SetHTMLFooter` (mPDF) ni `writeHTMLCell` (TCPDF), le
+  module se désactive proprement (aucune erreur).
 
 ## Désinstallation
 
