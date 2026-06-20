@@ -444,6 +444,9 @@ class Fleet_management_model extends App_Model
 
     public function get_categories()
     {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_categories')) {
+            return [];
+        }
         $this->db->order_by('name', 'asc');
 
         return $this->db->get(db_prefix() . 'fleet_categories')->result_array();
@@ -470,6 +473,9 @@ class Fleet_management_model extends App_Model
 
     public function get_brands()
     {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_brands')) {
+            return [];
+        }
         $this->db->order_by('name', 'asc');
 
         return $this->db->get(db_prefix() . 'fleet_brands')->result_array();
@@ -500,6 +506,9 @@ class Fleet_management_model extends App_Model
 
     public function get_models($brand_id = '')
     {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_models')) {
+            return [];
+        }
         $this->db->select('m.*, b.name as brand_name');
         $this->db->from(db_prefix() . 'fleet_models m');
         $this->db->join(db_prefix() . 'fleet_brands b', 'b.id = m.brand_id', 'left');
@@ -539,6 +548,10 @@ class Fleet_management_model extends App_Model
 
     public function get_supplier($id = '', $type = '')
     {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_suppliers')) {
+            return is_numeric($id) ? null : [];
+        }
+
         if (is_numeric($id)) {
             $this->db->where('id', $id);
 

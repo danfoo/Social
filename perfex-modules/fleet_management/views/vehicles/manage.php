@@ -23,7 +23,7 @@
                             </a>
                         <?php endif; ?>
                         <div class="table-responsive">
-                            <table class="table fleet-dt-table">
+                            <table class="table">
                                 <thead>
                                     <tr>
                                         <th><?php echo _l('fleet_vehicle'); ?></th>
@@ -71,11 +71,6 @@
 </div>
 <?php init_tail(); ?>
 <script>
-$(function() {
-    if ($.fn.DataTable) {
-        $('.fleet-dt-table').DataTable({ "order": [] });
-    }
-});
 </script>
 </body>
 </html>

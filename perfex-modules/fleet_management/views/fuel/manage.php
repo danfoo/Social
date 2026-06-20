@@ -45,7 +45,7 @@ foreach (fleet_fuel_types() as $t) {
                             </a>
                         <?php endif; ?>
                         <div class="table-responsive">
-                            <table class="table fleet-dt-table">
+                            <table class="table">
                                 <thead>
                                     <tr>
                                         <th><?php echo _l('fleet_date'); ?></th>
@@ -136,9 +136,6 @@ foreach (fleet_fuel_types() as $t) {
 <?php init_tail(); ?>
 <script>
 $(function() {
-    if ($.fn.DataTable) {
-        $('.fleet-dt-table').DataTable({ "order": [] });
-    }
     // Auto-compute total cost from liters * unit price when total is left blank.
     $('#fleet_fuel_modal').on('input', '[name="liters"], [name="price_per_liter"]', function() {
         var l = parseFloat($('#fleet_fuel_modal [name="liters"]').val());

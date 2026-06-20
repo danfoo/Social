@@ -26,7 +26,7 @@ foreach ($suppliers as $sup) {
                             </a>
                         <?php endif; ?>
                         <div class="table-responsive">
-                            <table class="table fleet-dt-table">
+                            <table class="table">
                                 <thead>
                                     <tr>
                                         <th><?php echo _l('fleet_vehicle'); ?></th>
@@ -100,11 +100,6 @@ foreach ($suppliers as $sup) {
 
 <?php init_tail(); ?>
 <script>
-$(function() {
-    if ($.fn.DataTable) {
-        $('.fleet-dt-table').DataTable({ "order": [] });
-    }
-});
 function fleet_reminder_modal(id) {
     var modal = $('#fleet_reminder_modal');
     modal.find('form')[0].reset();
