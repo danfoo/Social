@@ -223,26 +223,27 @@ class Parts extends AdminController
             return;
         }
 
-        $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8');
-        $pdf->SetCreator(get_option('companyname'));
-        $pdf->SetTitle('PO-' . $id);
-        $pdf->setPrintHeader(false);
-        $pdf->setPrintFooter(false);
-        $pdf->SetMargins(12, 12, 12);
-        $pdf->SetAutoPageBreak(true, 30);
-        $pdf->AddPage();
-        $pdf->writeHTML($html, true, false, true, false, '');
-
         // Company footer block (merge fields replaced with the company settings).
-        $footer = '<div style="padding-top: 6px; font-size: 8px; color: #777777; text-align: center; line-height: 1.4;"><strong>{company_name} ( LRC )</strong><br>T&eacute;l. {company_phone} &nbsp;&middot;&nbsp; {company_email} &nbsp;&middot;&nbsp; {website}<br>Si&egrave;ge Social Mamelle Cit&eacute; Mbackiyou Faye. DAKAR - SENEGAL - R.C SN.DKR.2024.B.37304 - N.I.N.E.A 011532480</div>';
+        $footer = '<div style="font-size: 8px; color: #777777; text-align: center; line-height: 1.4; border-top: 1px solid #dddddd; padding-top: 4px;"><strong>{company_name} ( LRC )</strong><br>T&eacute;l. {company_phone} &nbsp;&middot;&nbsp; {company_email} &nbsp;&middot;&nbsp; {website}<br>Si&egrave;ge Social Mamelle Cit&eacute; Mbackiyou Faye. DAKAR - SENEGAL - R.C SN.DKR.2024.B.37304 - N.I.N.E.A 011532480</div>';
         $footer = str_replace(
             ['{company_name}', '{company_phone}', '{company_email}', '{website}'],
             [get_option('invoice_company_name'), get_option('invoice_company_phonenumber'), get_option('smtp_email'), site_url()],
             $footer
         );
-        $pdf->SetAutoPageBreak(false);
-        $pdf->SetY(-30);
-        $pdf->writeHTML($footer, true, false, true, false, '');
+
+        require_once __DIR__ . '/../libraries/Fleet_po_pdf.php';
+
+        $pdf = new Fleet_po_pdf('P', 'mm', 'A4', true, 'UTF-8');
+        $pdf->footerHtml = $footer;
+        $pdf->SetCreator(get_option('companyname'));
+        $pdf->SetTitle('PO-' . $id);
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(true);
+        $pdf->setFooterMargin(18);
+        $pdf->SetMargins(12, 12, 12);
+        $pdf->SetAutoPageBreak(true, 28);
+        $pdf->AddPage();
+        $pdf->writeHTML($html, true, false, true, false, '');
 
         $pdf->Output('supplier-order-' . $id . '.pdf', 'I');
     }

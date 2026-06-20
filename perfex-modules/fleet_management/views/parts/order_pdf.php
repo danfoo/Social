@@ -49,21 +49,21 @@ $has_logo  = $logo_path && is_file($logo_path);
 <table border="1" cellpadding="6" style="width:100%; font-size:11px; border-collapse:collapse;">
     <thead>
         <tr style="background-color:#000000; color:#dc9f2b;">
-            <th style="text-align:center; color:#dc9f2b; width:8%;">#</th>
-            <th style="text-align:left; color:#dc9f2b;"><?php echo _l('fleet_part'); ?></th>
-            <th style="text-align:center; color:#dc9f2b;"><?php echo _l('fleet_quantity'); ?></th>
-            <th style="text-align:right; color:#dc9f2b;"><?php echo _l('fleet_unit_price'); ?></th>
-            <th style="text-align:right; color:#dc9f2b;"><?php echo _l('fleet_total'); ?></th>
+            <th width="7%" style="text-align:center; color:#dc9f2b;">#</th>
+            <th width="47%" style="text-align:left; color:#dc9f2b;"><?php echo _l('fleet_part'); ?></th>
+            <th width="13%" style="text-align:center; color:#dc9f2b;"><?php echo _l('fleet_quantity'); ?></th>
+            <th width="16%" style="text-align:right; color:#dc9f2b;"><?php echo _l('fleet_unit_price'); ?></th>
+            <th width="17%" style="text-align:right; color:#dc9f2b;"><?php echo _l('fleet_total'); ?></th>
         </tr>
     </thead>
     <tbody>
         <?php $n = 0; foreach ($items as $li) : $n++; ?>
             <tr>
-                <td style="text-align:center;"><?php echo $n; ?></td>
-                <td><?php echo html_escape($li['item_name']); ?><?php echo $li['item_reference'] ? ' (' . html_escape($li['item_reference']) . ')' : ''; ?></td>
-                <td style="text-align:center;"><?php echo (int) $li['quantity']; ?></td>
-                <td style="text-align:right;"><?php echo app_format_money($li['unit_price'], $bc); ?></td>
-                <td style="text-align:right;"><?php echo app_format_money($li['total_price'], $bc); ?></td>
+                <td width="7%" style="text-align:center;"><?php echo $n; ?></td>
+                <td width="47%"><?php echo html_escape($li['item_name']); ?><?php echo $li['item_reference'] ? ' (' . html_escape($li['item_reference']) . ')' : ''; ?></td>
+                <td width="13%" style="text-align:center;"><?php echo (int) $li['quantity']; ?></td>
+                <td width="16%" style="text-align:right;"><?php echo app_format_money($li['unit_price'], $bc); ?></td>
+                <td width="17%" style="text-align:right;"><?php echo app_format_money($li['total_price'], $bc); ?></td>
             </tr>
         <?php endforeach; ?>
     </tbody>
