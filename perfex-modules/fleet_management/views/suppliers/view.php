@@ -3,9 +3,18 @@
 <?php init_head(); ?>
 <div id="wrapper">
     <div class="content fleet-list-page">
-        <div class="mbot15">
+        <div class="mbot15 clearfix">
             <a href="<?php echo admin_url('fleet_management/suppliers'); ?>" class="btn btn-default btn-sm"><i class="fa fa-arrow-left"></i> <?php echo _l('fleet_suppliers'); ?></a>
-            <a href="<?php echo admin_url('fleet_management/suppliers/export_ledger/' . $supplier->id); ?>" class="btn btn-default btn-sm pull-right"><i class="fa fa-download"></i> <?php echo _l('fleet_export'); ?></a>
+            <div class="btn-group fleet-period pull-right" style="margin-left:8px;">
+                <?php
+                $periods = ['month' => _l('fleet_period_month'), 'quarter' => _l('fleet_period_quarter'), 'year' => _l('fleet_period_year'), 'all' => _l('fleet_period_all')];
+                foreach ($periods as $key => $label) :
+                    $active = $period === $key ? 'btn-primary' : 'btn-default';
+                    ?>
+                    <a href="<?php echo admin_url('fleet_management/suppliers/view/' . $supplier->id . '?period=' . $key); ?>" class="btn btn-sm <?php echo $active; ?>"><?php echo $label; ?></a>
+                <?php endforeach; ?>
+            </div>
+            <a href="<?php echo admin_url('fleet_management/suppliers/export_ledger/' . $supplier->id . '?period=' . $period); ?>" class="btn btn-default btn-sm pull-right"><i class="fa fa-download"></i> <?php echo _l('fleet_export'); ?></a>
         </div>
 
         <div class="row">

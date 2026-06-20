@@ -724,7 +724,7 @@ class Fleet_management_model extends App_Model
     /**
      * Part orders placed with a supplier (for the supplier ledger).
      */
-    public function get_supplier_orders($supplier_id)
+    public function get_supplier_orders($supplier_id, $start = null, $end = null)
     {
         if (!$this->db->table_exists(db_prefix() . 'fleet_part_orders')) {
             return [];
@@ -735,6 +735,10 @@ class Fleet_management_model extends App_Model
         $this->db->join(db_prefix() . 'fleet_part_items i', 'i.id = o.item_id', 'left');
         $this->db->where('o.supplier_id', $supplier_id);
         $this->db->where('o.status !=', 'cancelled');
+        if ($start && $end) {
+            $this->db->where('o.order_date >=', $start);
+            $this->db->where('o.order_date <=', $end);
+        }
         $this->db->order_by('o.date_created', 'desc');
 
         return $this->db->get()->result_array();
@@ -744,7 +748,7 @@ class Fleet_management_model extends App_Model
      * Other costed records linked to a supplier (maintenance / fuel / reminders),
      * normalised into a single ledger list.
      */
-    public function get_supplier_costs($supplier_id)
+    public function get_supplier_costs($supplier_id, $start = null, $end = null)
     {
         $ledger = [];
 
@@ -765,6 +769,10 @@ class Fleet_management_model extends App_Model
             $this->db->join(db_prefix() . 'fleet_vehicles v', 'v.id = t.vehicle_id', 'left');
             $this->db->where('t.supplier_id', $supplier_id);
             $this->db->where('t.' . $amountCol . ' >', 0);
+            if ($start && $end) {
+                $this->db->where('t.' . $dateCol . ' >=', $start);
+                $this->db->where('t.' . $dateCol . ' <=', $end);
+            }
             $this->db->order_by('t.' . $dateCol, 'desc');
 
             foreach ($this->db->get()->result_array() as $row) {
@@ -792,17 +800,17 @@ class Fleet_management_model extends App_Model
         return $ledger;
     }
 
-    public function supplier_accounting($supplier_id)
+    public function supplier_accounting($supplier_id, $start = null, $end = null)
     {
         $total = $paid = 0;
 
-        foreach ($this->get_supplier_orders($supplier_id) as $o) {
+        foreach ($this->get_supplier_orders($supplier_id, $start, $end) as $o) {
             $total += (float) $o['total_price'];
             if (!empty($o['paid'])) {
                 $paid += (float) $o['total_price'];
             }
         }
-        foreach ($this->get_supplier_costs($supplier_id) as $c) {
+        foreach ($this->get_supplier_costs($supplier_id, $start, $end) as $c) {
             $total += $c['amount'];
             if (!empty($c['paid'])) {
                 $paid += $c['amount'];

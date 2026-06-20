@@ -32,10 +32,14 @@ class Suppliers extends AdminController
             show_404();
         }
 
+        $period            = $this->input->get('period') ?: 'all';
+        list($start, $end) = fleet_period_range($period);
+
         $data['supplier'] = $supplier;
-        $data['orders']   = $this->fleet->get_supplier_orders($id);
-        $data['costs']    = $this->fleet->get_supplier_costs($id);
-        $data['summary']  = $this->fleet->supplier_accounting($id);
+        $data['orders']   = $this->fleet->get_supplier_orders($id, $start, $end);
+        $data['costs']    = $this->fleet->get_supplier_costs($id, $start, $end);
+        $data['summary']  = $this->fleet->supplier_accounting($id, $start, $end);
+        $data['period']   = $period;
         $data['title']    = $supplier->name;
         $this->load->view('fleet_management/suppliers/view', $data);
     }
@@ -50,13 +54,15 @@ class Suppliers extends AdminController
             show_404();
         }
 
+        list($start, $end) = fleet_period_range($this->input->get('period') ?: 'all');
+
         $headers = [
             _l('fleet_date'), _l('fleet_part') . ' / ' . _l('fleet_type'), _l('fleet_vehicle'),
             _l('fleet_quantity'), _l('fleet_total'), _l('fleet_supplier_invoice_no'), _l('fleet_payment'),
         ];
 
         $rows = [];
-        foreach ($this->fleet->get_supplier_orders($id) as $o) {
+        foreach ($this->fleet->get_supplier_orders($id, $start, $end) as $o) {
             $rows[] = [
                 $o['order_date'] ? _d($o['order_date']) : '',
                 $o['item_name'] . ' [' . _l('fleet_ostatus_' . $o['status']) . ']',
@@ -64,7 +70,7 @@ class Suppliers extends AdminController
                 $o['paid'] ? _l('fleet_paid') : _l('fleet_unpaid'),
             ];
         }
-        foreach ($this->fleet->get_supplier_costs($id) as $c) {
+        foreach ($this->fleet->get_supplier_costs($id, $start, $end) as $c) {
             $rows[] = [
                 $c['date'] ? _d($c['date']) : '', strip_tags($c['label']), $c['vehicle'],
                 '', $c['amount'], '', $c['paid'] ? _l('fleet_paid') : _l('fleet_unpaid'),
