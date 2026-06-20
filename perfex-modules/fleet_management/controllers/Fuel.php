@@ -52,6 +52,30 @@ class Fuel extends AdminController
         redirect(admin_url('fleet_management/fuel'));
     }
 
+    public function export()
+    {
+        if (!staff_can('view', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $headers = [
+            _l('fleet_date'), _l('fleet_vehicle'), _l('fleet_driver'), _l('fleet_odometer'),
+            _l('fleet_liters'), _l('fleet_price_per_liter'), _l('fleet_total_cost'),
+            _l('fleet_station'), _l('fleet_full_tank'),
+        ];
+
+        $rows = [];
+        foreach ($this->fleet->get_fuel_log() as $f) {
+            $rows[] = [
+                $f['date'] ? _d($f['date']) : '', $f['vehicle_name'], $f['driver_name'],
+                $f['odometer'], $f['liters'], $f['price_per_liter'], $f['total_cost'],
+                $f['supplier_name'], $f['full_tank'] ? _l('yes') : _l('no'),
+            ];
+        }
+
+        fleet_export_csv('fuel', $headers, $rows);
+    }
+
     public function get($id)
     {
         if (!staff_can('view', 'fleet')) {

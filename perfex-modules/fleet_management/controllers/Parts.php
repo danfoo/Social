@@ -52,6 +52,30 @@ class Parts extends AdminController
         redirect(admin_url('fleet_management/parts'));
     }
 
+    public function export()
+    {
+        if (!staff_can('view', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $headers = [
+            _l('fleet_part_name'), _l('fleet_reference'), _l('fleet_vehicle'), _l('fleet_supplier'),
+            _l('fleet_quantity'), _l('fleet_unit_price'), _l('fleet_total'), _l('fleet_purchase_date'),
+            _l('fleet_status'),
+        ];
+
+        $rows = [];
+        foreach ($this->fleet->get_part() as $p) {
+            $rows[] = [
+                $p['name'], $p['reference'], $p['vehicle_name'], $p['supplier_name'],
+                $p['quantity'], $p['unit_price'], $p['total_price'],
+                $p['purchase_date'] ? _d($p['purchase_date']) : '', _l('fleet_pstatus_' . $p['status']),
+            ];
+        }
+
+        fleet_export_csv('parts', $headers, $rows);
+    }
+
     public function get($id)
     {
         if (!staff_can('view', 'fleet')) {

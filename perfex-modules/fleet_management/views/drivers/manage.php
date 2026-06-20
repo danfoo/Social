@@ -6,6 +6,7 @@
             <h3><i class="fa fa-id-card-o text-info"></i> <?php echo _l('fleet_drivers'); ?></h3>
             <div class="fleet-tools">
                 <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
+                <a href="<?php echo admin_url('fleet_management/drivers/export'); ?>" class="btn btn-default btn-sm"><i class="fa fa-download"></i> <?php echo _l('fleet_export'); ?></a>
                 <?php if (has_permission('staff', '', 'create')) : ?>
                     <a href="<?php echo admin_url('staff/member'); ?>" class="btn btn-primary btn-sm"><i class="fa fa-plus"></i> <?php echo _l('fleet_add_staff_member'); ?></a>
                 <?php endif; ?>

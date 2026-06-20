@@ -80,6 +80,35 @@ function fleet_fuel_types()
 }
 
 /**
+ * Stream an array of rows as a downloadable CSV file and stop execution.
+ * Uses ";" as the separator and a UTF-8 BOM so Excel opens accents correctly.
+ *
+ * @param string $filename Base file name (date is appended).
+ * @param array  $headers  Column header labels.
+ * @param array  $rows     Array of rows (each an indexed array of scalar values).
+ */
+function fleet_export_csv($filename, $headers, $rows)
+{
+    if (ob_get_length()) {
+        ob_end_clean();
+    }
+
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="' . $filename . '-' . date('Y-m-d') . '.csv"');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+
+    $out = fopen('php://output', 'w');
+    fputs($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+    fputcsv($out, $headers, ';');
+    foreach ($rows as $row) {
+        fputcsv($out, $row, ';');
+    }
+    fclose($out);
+    exit;
+}
+
+/**
  * Part / article statuses.
  */
 function fleet_part_statuses()

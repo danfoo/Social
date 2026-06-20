@@ -50,6 +50,29 @@ class Reminders extends AdminController
         redirect($this->input->server('HTTP_REFERER') ?: admin_url('fleet_management/reminders'));
     }
 
+    public function export()
+    {
+        if (!staff_can('view', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $headers = [
+            _l('fleet_vehicle'), _l('fleet_type'), _l('fleet_reminder_title'), _l('fleet_due_date'),
+            _l('fleet_notify_days'), _l('fleet_cost'), _l('fleet_provider'), _l('fleet_status'),
+        ];
+
+        $rows = [];
+        foreach ($this->fleet->get_reminders() as $r) {
+            $rows[] = [
+                $r['vehicle_name'], _l('fleet_rtype_' . $r['type']), $r['title'],
+                $r['due_date'] ? _d($r['due_date']) : '', $r['notify_days'], $r['cost'],
+                $r['provider'] ?? '', $r['status'],
+            ];
+        }
+
+        fleet_export_csv('reminders', $headers, $rows);
+    }
+
     public function get($id)
     {
         if (!staff_can('view', 'fleet')) {

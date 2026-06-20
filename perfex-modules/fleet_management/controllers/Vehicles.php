@@ -99,6 +99,31 @@ class Vehicles extends AdminController
         redirect(admin_url('fleet_management/vehicles'));
     }
 
+    public function export()
+    {
+        if (!staff_can('view', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $headers = [
+            _l('fleet_vehicle_name'), _l('fleet_plate'), _l('fleet_brand'), _l('fleet_model'),
+            _l('fleet_year'), _l('fleet_category'), _l('fleet_fuel_type'), _l('fleet_seats'),
+            _l('fleet_odometer'), _l('fleet_daily_rate'), _l('fleet_daily_rate_with_driver'),
+            _l('fleet_insurance_company'), _l('fleet_status'),
+        ];
+
+        $rows = [];
+        foreach ($this->fleet->get_vehicle() as $v) {
+            $rows[] = [
+                $v['name'], $v['plate'], $v['brand'], $v['model'], $v['year'], $v['category'],
+                $v['fuel_type'], $v['seats'], $v['odometer'], $v['daily_rate'], $v['daily_rate_with_driver'],
+                $v['insurance_company'], _l('fleet_status_' . $v['status']),
+            ];
+        }
+
+        fleet_export_csv('vehicles', $headers, $rows);
+    }
+
     public function assign_driver()
     {
         if (!staff_can('edit', 'fleet')) {

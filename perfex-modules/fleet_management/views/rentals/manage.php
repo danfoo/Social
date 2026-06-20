@@ -22,6 +22,7 @@ foreach ($rentals as $r) {
             <h3><i class="fa fa-calendar text-info"></i> <?php echo _l('fleet_rentals'); ?></h3>
             <div class="fleet-tools">
                 <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
+                <a href="<?php echo admin_url('fleet_management/rentals/export'); ?>" class="btn btn-default btn-sm"><i class="fa fa-download"></i> <?php echo _l('fleet_export'); ?></a>
                 <?php if (staff_can('create', 'fleet')) : ?>
                     <a href="<?php echo admin_url('fleet_management/rentals/rental'); ?>" class="btn btn-primary btn-sm"><i class="fa fa-plus"></i> <?php echo _l('fleet_add_rental'); ?></a>
                 <?php endif; ?>

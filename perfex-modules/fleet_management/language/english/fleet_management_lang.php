@@ -54,6 +54,7 @@ $lang['fleet_dash_expense_evolution'] = 'Expense evolution (12 months)';
 $lang['fleet_dash_cost_split']        = 'Cost split';
 $lang['fleet_dash_recent_vehicles']   = 'Last 10 vehicles';
 $lang['fleet_search']                 = 'Search...';
+$lang['fleet_export']                 = 'Export CSV';
 
 # Settings
 $lang['fleet_settings']                     = 'Settings';

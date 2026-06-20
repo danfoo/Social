@@ -48,6 +48,28 @@ class Suppliers extends AdminController
         redirect(admin_url('fleet_management/suppliers'));
     }
 
+    public function export()
+    {
+        if (!staff_can('view', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $headers = [
+            _l('fleet_supplier_name'), _l('fleet_type'), _l('fleet_contact_name'), _l('fleet_phone'),
+            _l('email'), _l('fleet_website'), _l('fleet_vat'), _l('status'),
+        ];
+
+        $rows = [];
+        foreach ($this->fleet->get_supplier() as $s) {
+            $rows[] = [
+                $s['name'], _l('fleet_stype_' . $s['type']), $s['contact_name'], $s['phone'],
+                $s['email'], $s['website'], $s['vat'], $s['active'] ? _l('active') : _l('inactive'),
+            ];
+        }
+
+        fleet_export_csv('suppliers', $headers, $rows);
+    }
+
     public function get($id)
     {
         if (!staff_can('view', 'fleet')) {

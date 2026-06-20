@@ -70,6 +70,31 @@ class Maintenance extends AdminController
         redirect($this->input->server('HTTP_REFERER') ?: admin_url('fleet_management/maintenance'));
     }
 
+    public function export()
+    {
+        if (!staff_can('view', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $headers = [
+            _l('fleet_vehicle'), _l('fleet_type'), _l('fleet_service_date'), _l('fleet_cost'),
+            _l('fleet_odometer'), _l('fleet_provider'), _l('fleet_next_service_date'),
+            _l('fleet_next_service_odometer'), _l('fleet_parts'),
+        ];
+
+        $rows = [];
+        foreach ($this->fleet->get_maintenance() as $m) {
+            $rows[] = [
+                $m['vehicle_name'], _l('fleet_mtype_' . $m['type']),
+                $m['service_date'] ? _d($m['service_date']) : '', $m['cost'], $m['odometer'],
+                $m['provider'] ?? '', $m['next_service_date'] ? _d($m['next_service_date']) : '',
+                $m['next_service_odometer'], $m['parts'] ?? '',
+            ];
+        }
+
+        fleet_export_csv('maintenance', $headers, $rows);
+    }
+
     /**
      * Photos attached to a maintenance record (each with the date it was taken).
      */

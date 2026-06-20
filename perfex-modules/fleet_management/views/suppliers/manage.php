@@ -12,6 +12,7 @@ foreach (fleet_supplier_types() as $t) {
             <h3><i class="fa fa-truck text-info"></i> <?php echo _l('fleet_suppliers'); ?></h3>
             <div class="fleet-tools">
                 <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
+                <a href="<?php echo admin_url('fleet_management/suppliers/export'); ?>" class="btn btn-default btn-sm"><i class="fa fa-download"></i> <?php echo _l('fleet_export'); ?></a>
                 <?php if (staff_can('create', 'fleet')) : ?>
                     <a href="#" class="btn btn-primary btn-sm" onclick="fleet_supplier_modal(); return false;"><i class="fa fa-plus"></i> <?php echo _l('fleet_add_supplier'); ?></a>
                 <?php endif; ?>
