@@ -47,7 +47,7 @@ foreach (fleet_supplier_types() as $t) {
                                             <td>
                                                 <a href="<?php echo admin_url('fleet_management/suppliers/view/' . $s['id']); ?>" class="btn btn-default btn-icon"><i class="fa fa-eye"></i></a>
                                                 <?php if (staff_can('edit', 'fleet')) : ?>
-                                                    <a href="#" class="btn btn-default btn-icon" onclick="fleet_supplier_modal(<?php echo $s['id']; ?>); return false;"><i class="fa fa-pencil-square-o"></i></a>
+                                                    <a href="#" class="btn btn-default btn-icon" onclick="fleet_supplier_modal(<?php echo $s['id']; ?>); return false;"><i class="fa fa-pencil-square"></i></a>
                                                 <?php endif; ?>
                                                 <?php if (staff_can('delete', 'fleet')) : ?>
                                                     <a href="<?php echo admin_url('fleet_management/suppliers/delete/' . $s['id']); ?>" class="btn btn-danger btn-icon _delete"><i class="fa fa-remove"></i></a>

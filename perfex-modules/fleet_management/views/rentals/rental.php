@@ -58,7 +58,7 @@ foreach (fleet_rental_statuses() as $s) {
                         <div class="btn-bottom-toolbar text-right">
                             <a href="<?php echo admin_url('fleet_management/rentals'); ?>" class="btn btn-default"><?php echo _l('cancel'); ?></a>
                             <?php if ($rental && empty($rental->invoice_id) && staff_can('create', 'fleet')) : ?>
-                                <a href="<?php echo admin_url('fleet_management/rentals/create_invoice/' . $rental->id); ?>" class="btn btn-success"><i class="fa fa-file-text-o"></i> <?php echo _l('fleet_create_invoice'); ?></a>
+                                <a href="<?php echo admin_url('fleet_management/rentals/create_invoice/' . $rental->id); ?>" class="btn btn-success"><i class="fa fa-file-text"></i> <?php echo _l('fleet_create_invoice'); ?></a>
                             <?php endif; ?>
                             <button type="submit" class="btn btn-primary"><?php echo _l('submit'); ?></button>
                         </div>

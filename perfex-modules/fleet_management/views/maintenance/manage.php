@@ -55,7 +55,7 @@ foreach ($suppliers as $sup) {
                                             <td>
                                                 <a href="<?php echo admin_url('fleet_management/maintenance/files/' . $m['id']); ?>" class="btn btn-info btn-icon" title="<?php echo _l('fleet_maintenance_photos'); ?>"><i class="fa fa-camera"></i></a>
                                                 <?php if (staff_can('edit', 'fleet')) : ?>
-                                                    <a href="#" class="btn btn-default btn-icon" onclick="fleet_maintenance_modal(<?php echo $m['id']; ?>); return false;"><i class="fa fa-pencil-square-o"></i></a>
+                                                    <a href="#" class="btn btn-default btn-icon" onclick="fleet_maintenance_modal(<?php echo $m['id']; ?>); return false;"><i class="fa fa-pencil-square"></i></a>
                                                 <?php endif; ?>
                                                 <?php if (staff_can('delete', 'fleet')) : ?>
                                                     <a href="<?php echo admin_url('fleet_management/maintenance/delete/' . $m['id']); ?>" class="btn btn-danger btn-icon _delete"><i class="fa fa-remove"></i></a>

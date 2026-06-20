@@ -76,7 +76,7 @@ foreach (fleet_fuel_types() as $t) {
                                             <td><?php echo html_escape($f['supplier_name']); ?></td>
                                             <td>
                                                 <?php if (staff_can('edit', 'fleet')) : ?>
-                                                    <a href="#" class="btn btn-default btn-icon" onclick="fleet_fuel_modal(<?php echo $f['id']; ?>); return false;"><i class="fa fa-pencil-square-o"></i></a>
+                                                    <a href="#" class="btn btn-default btn-icon" onclick="fleet_fuel_modal(<?php echo $f['id']; ?>); return false;"><i class="fa fa-pencil-square"></i></a>
                                                 <?php endif; ?>
                                                 <?php if (staff_can('delete', 'fleet')) : ?>
                                                     <a href="<?php echo admin_url('fleet_management/fuel/delete/' . $f['id']); ?>" class="btn btn-danger btn-icon _delete"><i class="fa fa-remove"></i></a>

@@ -3,7 +3,7 @@
 <div id="wrapper">
     <div class="content fleet-list-page">
         <div class="fleet-toolbar">
-            <h3><i class="fa fa-id-card-o text-info"></i> <?php echo _l('fleet_drivers'); ?></h3>
+            <h3><i class="fa fa-id-card text-info"></i> <?php echo _l('fleet_drivers'); ?></h3>
             <div class="fleet-tools">
                 <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
                 <a href="<?php echo admin_url('fleet_management/drivers/export'); ?>" class="btn btn-default btn-sm"><i class="fa fa-download"></i> <?php echo _l('fleet_export'); ?></a>
@@ -39,7 +39,7 @@
                                             <td><?php echo $d['active'] ? '<span class="label label-success">' . _l('active') . '</span>' : '<span class="label label-default">' . _l('inactive') . '</span>'; ?></td>
                                             <td>
                                                 <?php if (has_permission('staff', '', 'edit')) : ?>
-                                                    <a href="<?php echo admin_url('staff/member/' . $d['staffid']); ?>" class="btn btn-default btn-icon"><i class="fa fa-pencil-square-o"></i></a>
+                                                    <a href="<?php echo admin_url('staff/member/' . $d['staffid']); ?>" class="btn btn-default btn-icon"><i class="fa fa-pencil-square"></i></a>
                                                 <?php endif; ?>
                                             </td>
                                         </tr>

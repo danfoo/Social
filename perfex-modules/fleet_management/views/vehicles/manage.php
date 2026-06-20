@@ -75,7 +75,7 @@ $status_meta = [
                                         <td class="text-right">
                                             <a href="<?php echo admin_url('fleet_management/vehicles/view/' . $vehicle['id']); ?>" class="btn btn-default btn-icon btn-sm"><i class="fa fa-eye"></i></a>
                                             <?php if (staff_can('edit', 'fleet')) : ?>
-                                                <a href="<?php echo admin_url('fleet_management/vehicles/vehicle/' . $vehicle['id']); ?>" class="btn btn-default btn-icon btn-sm"><i class="fa fa-pencil-square-o"></i></a>
+                                                <a href="<?php echo admin_url('fleet_management/vehicles/vehicle/' . $vehicle['id']); ?>" class="btn btn-default btn-icon btn-sm"><i class="fa fa-pencil-square"></i></a>
                                             <?php endif; ?>
                                             <?php if (staff_can('delete', 'fleet')) : ?>
                                                 <a href="<?php echo admin_url('fleet_management/vehicles/delete/' . $vehicle['id']); ?>" class="btn btn-danger btn-icon btn-sm _delete"><i class="fa fa-remove"></i></a>

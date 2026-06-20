@@ -40,7 +40,7 @@ foreach ($rentals as $r) {
                 <div><h2><?php echo (int) $counts['ongoing']; ?></h2><span><?php echo _l('fleet_status_ongoing'); ?></span></div>
             </div></div></div>
             <div class="col-md-3 col-sm-6"><div class="panel_s"><div class="panel-body fleet-stat">
-                <div class="ic" style="background:#ffab00;"><i class="fa fa-clock-o"></i></div>
+                <div class="ic" style="background:#ffab00;"><i class="fa fa-clock"></i></div>
                 <div><h2><?php echo (int) $counts['reserved']; ?></h2><span><?php echo _l('fleet_status_reserved'); ?></span></div>
             </div></div></div>
             <div class="col-md-3 col-sm-6"><div class="panel_s"><div class="panel-body fleet-stat">
@@ -82,7 +82,7 @@ foreach ($rentals as $r) {
                                             </div>
                                         </td>
                                         <td><?php echo $r['client_name'] ? html_escape($r['client_name']) : '<span class="text-muted">—</span>'; ?></td>
-                                        <td><i class="fa fa-calendar-o text-muted"></i> <?php echo _d($r['date_start']); ?> <span class="text-muted">&rarr;</span> <?php echo _d($r['date_end']); ?></td>
+                                        <td><i class="fa fa-calendar text-muted"></i> <?php echo _d($r['date_start']); ?> <span class="text-muted">&rarr;</span> <?php echo _d($r['date_end']); ?></td>
                                         <td><?php echo (int) $r['days']; ?></td>
                                         <td class="bold"><?php echo app_format_money($r['total'], $bc); ?></td>
                                         <td><?php echo fleet_rental_status_badge($r['status']); ?></td>
@@ -94,9 +94,9 @@ foreach ($rentals as $r) {
                                             <?php endif; ?>
                                         </td>
                                         <td class="text-right">
-                                            <a href="<?php echo admin_url('fleet_management/rentals/rental/' . $r['id']); ?>" class="btn btn-default btn-icon btn-sm"><i class="fa fa-pencil-square-o"></i></a>
+                                            <a href="<?php echo admin_url('fleet_management/rentals/rental/' . $r['id']); ?>" class="btn btn-default btn-icon btn-sm"><i class="fa fa-pencil-square"></i></a>
                                             <?php if (empty($r['invoice_id']) && staff_can('create', 'fleet')) : ?>
-                                                <a href="<?php echo admin_url('fleet_management/rentals/create_invoice/' . $r['id']); ?>" class="btn btn-success btn-icon btn-sm" title="<?php echo _l('fleet_create_invoice'); ?>"><i class="fa fa-file-text-o"></i></a>
+                                                <a href="<?php echo admin_url('fleet_management/rentals/create_invoice/' . $r['id']); ?>" class="btn btn-success btn-icon btn-sm" title="<?php echo _l('fleet_create_invoice'); ?>"><i class="fa fa-file-text"></i></a>
                                             <?php endif; ?>
                                             <?php if (staff_can('delete', 'fleet')) : ?>
                                                 <a href="<?php echo admin_url('fleet_management/rentals/delete/' . $r['id']); ?>" class="btn btn-danger btn-icon btn-sm _delete"><i class="fa fa-remove"></i></a>

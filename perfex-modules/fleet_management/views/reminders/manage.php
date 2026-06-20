@@ -52,7 +52,7 @@ foreach ($suppliers as $sup) {
                                             <td><?php echo fleet_reminder_due_badge($r['due_date'], $r['notify_days']); ?></td>
                                             <td>
                                                 <?php if (staff_can('edit', 'fleet')) : ?>
-                                                    <a href="#" class="btn btn-default btn-icon" onclick="fleet_reminder_modal(<?php echo $r['id']; ?>); return false;"><i class="fa fa-pencil-square-o"></i></a>
+                                                    <a href="#" class="btn btn-default btn-icon" onclick="fleet_reminder_modal(<?php echo $r['id']; ?>); return false;"><i class="fa fa-pencil-square"></i></a>
                                                 <?php endif; ?>
                                                 <?php if (staff_can('delete', 'fleet')) : ?>
                                                     <a href="<?php echo admin_url('fleet_management/reminders/delete/' . $r['id']); ?>" class="btn btn-danger btn-icon _delete"><i class="fa fa-remove"></i></a>
