@@ -18,7 +18,7 @@ $has_logo  = $logo_path && is_file($logo_path);
             <?php if (get_option('company_vat')) : ?><span style="color:#777777;">TVA: <?php echo html_escape(get_option('company_vat')); ?></span><?php endif; ?>
         </td>
         <td style="width:45%; vertical-align:top; text-align:right;">
-            <span style="font-size:20px; font-weight:bold; color:#4f5fff;"><?php echo _l('fleet_purchase_order'); ?></span><br>
+            <span style="font-size:15px; font-weight:bold; color:#000000;"><?php echo _l('fleet_purchase_order'); ?></span><br>
             <span style="color:#777777;">N° PO-<?php echo $order->id; ?></span><br>
             <span style="color:#777777;"><?php echo _l('fleet_order_date'); ?>: <?php echo $order->order_date ? _d($order->order_date) : '-'; ?></span><br>
             <?php if ($order->invoice_no) : ?><span style="color:#777777;"><?php echo _l('fleet_supplier_invoice_no'); ?>: <?php echo html_escape($order->invoice_no); ?></span><?php endif; ?>
@@ -48,11 +48,11 @@ $has_logo  = $logo_path && is_file($logo_path);
 <br>
 <table border="1" cellpadding="6" style="width:100%; font-size:11px; border-collapse:collapse;">
     <thead>
-        <tr style="background-color:#f2f3f7;">
-            <th style="text-align:left;"><?php echo _l('fleet_part'); ?></th>
-            <th style="text-align:center;"><?php echo _l('fleet_quantity'); ?></th>
-            <th style="text-align:right;"><?php echo _l('fleet_unit_price'); ?></th>
-            <th style="text-align:right;"><?php echo _l('fleet_total'); ?></th>
+        <tr style="background-color:#000000; color:#dc9f2b;">
+            <th style="text-align:left; color:#dc9f2b;"><?php echo _l('fleet_part'); ?></th>
+            <th style="text-align:center; color:#dc9f2b;"><?php echo _l('fleet_quantity'); ?></th>
+            <th style="text-align:right; color:#dc9f2b;"><?php echo _l('fleet_unit_price'); ?></th>
+            <th style="text-align:right; color:#dc9f2b;"><?php echo _l('fleet_total'); ?></th>
         </tr>
     </thead>
     <tbody>
