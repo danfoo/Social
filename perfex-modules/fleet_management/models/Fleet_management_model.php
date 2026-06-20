@@ -80,7 +80,7 @@ class Fleet_management_model extends App_Model
         $this->db->delete(db_prefix() . 'fleet_vehicles');
 
         if ($this->db->affected_rows() > 0) {
-            foreach (['fleet_maintenance', 'fleet_reminders', 'fleet_assignments', 'fleet_rentals', 'fleet_fuel_logs', 'fleet_parts', 'fleet_activity'] as $table) {
+            foreach (['fleet_maintenance', 'fleet_reminders', 'fleet_assignments', 'fleet_rentals', 'fleet_fuel_logs', 'fleet_parts', 'fleet_part_assignments', 'fleet_activity'] as $table) {
                 $this->db->where('vehicle_id', $id);
                 $this->db->delete(db_prefix() . $table);
             }
@@ -916,124 +916,298 @@ class Fleet_management_model extends App_Model
     }
 
     /* ----------------------------------------------------------------- *
-     * Parts / articles purchased for vehicles
+     * Parts catalog (items) with stock tracking
      * ----------------------------------------------------------------- */
 
-    public function get_part($id = '', $vehicle_id = '')
+    public function get_part_item($id = '')
     {
-        if (!$this->db->table_exists(db_prefix() . 'fleet_parts')) {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_part_items')) {
             return is_numeric($id) ? null : [];
         }
 
         if (is_numeric($id)) {
             $this->db->where('id', $id);
 
-            return $this->db->get(db_prefix() . 'fleet_parts')->row();
+            return $this->db->get(db_prefix() . 'fleet_part_items')->row();
         }
 
-        $this->db->select('p.*, v.name as vehicle_name, v.plate as vehicle_plate, s.name as supplier_name');
-        $this->db->from(db_prefix() . 'fleet_parts p');
-        $this->db->join(db_prefix() . 'fleet_vehicles v', 'v.id = p.vehicle_id', 'left');
-        $this->db->join(db_prefix() . 'fleet_suppliers s', 's.id = p.supplier_id', 'left');
-
-        if (is_numeric($vehicle_id)) {
-            $this->db->where('p.vehicle_id', $vehicle_id);
+        $this->db->order_by('name', 'asc');
+        $items = $this->db->get(db_prefix() . 'fleet_part_items')->result_array();
+        foreach ($items as &$item) {
+            $item['stock'] = $this->item_stock($item['id']);
         }
 
-        $this->db->order_by('p.purchase_date', 'desc');
-        $this->db->order_by('p.id', 'desc');
+        return $items;
+    }
+
+    public function add_part_item($data)
+    {
+        $data                 = $this->_clean_numeric($data, ['min_stock']);
+        $data['date_created'] = date('Y-m-d H:i:s');
+        $data['created_by']   = get_staff_user_id();
+
+        $this->db->insert(db_prefix() . 'fleet_part_items', $data);
+
+        return $this->db->insert_id();
+    }
+
+    public function update_part_item($id, $data)
+    {
+        $data = $this->_clean_numeric($data, ['min_stock']);
+        $this->db->where('id', $id);
+        $this->db->update(db_prefix() . 'fleet_part_items', $data);
+
+        return true;
+    }
+
+    public function delete_part_item($id)
+    {
+        foreach ($this->db->get_where(db_prefix() . 'fleet_part_orders', ['item_id' => $id])->result_array() as $o) {
+            if (!empty($o['expense_id'])) {
+                $this->load->model('expenses_model');
+                $this->expenses_model->delete($o['expense_id']);
+            }
+        }
+        $this->db->where('item_id', $id)->delete(db_prefix() . 'fleet_part_orders');
+        $this->db->where('item_id', $id)->delete(db_prefix() . 'fleet_part_assignments');
+        $this->db->where('id', $id)->delete(db_prefix() . 'fleet_part_items');
+
+        return true;
+    }
+
+    /**
+     * Available stock for an item = received quantities - assigned quantities.
+     */
+    public function item_stock($item_id)
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_part_orders')) {
+            return 0;
+        }
+
+        $rec = $this->db->select('COALESCE(SUM(quantity),0) q')
+            ->where('item_id', $item_id)->where('status', 'received')
+            ->get(db_prefix() . 'fleet_part_orders')->row();
+        $asg = $this->db->select('COALESCE(SUM(quantity),0) q')
+            ->where('item_id', $item_id)
+            ->get(db_prefix() . 'fleet_part_assignments')->row();
+
+        return (int) ($rec->q ?? 0) - (int) ($asg->q ?? 0);
+    }
+
+    public function item_last_unit_price($item_id)
+    {
+        $row = $this->db->where('item_id', $item_id)->where('status', 'received')
+            ->order_by('received_date', 'desc')->order_by('id', 'desc')->limit(1)
+            ->get(db_prefix() . 'fleet_part_orders')->row();
+
+        return $row ? (float) $row->unit_price : 0;
+    }
+
+    public function part_items_stats()
+    {
+        $items = $this->get_part_item();
+        $in_stock = 0;
+        $low      = 0;
+        foreach ($items as $it) {
+            $in_stock += max(0, (int) $it['stock']);
+            if ((int) $it['min_stock'] > 0 && (int) $it['stock'] <= (int) $it['min_stock']) {
+                $low++;
+            }
+        }
+
+        return (object) ['items' => count($items), 'in_stock' => $in_stock, 'low' => $low];
+    }
+
+    /* ----------------------------------------------------------------- *
+     * Part orders (purchases from suppliers)
+     * ----------------------------------------------------------------- */
+
+    public function get_part_order($id = '')
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_part_orders')) {
+            return is_numeric($id) ? null : [];
+        }
+
+        if (is_numeric($id)) {
+            $this->db->where('id', $id);
+
+            return $this->db->get(db_prefix() . 'fleet_part_orders')->row();
+        }
+
+        $this->db->select('o.*, i.name as item_name, i.reference as item_reference, s.name as supplier_name');
+        $this->db->from(db_prefix() . 'fleet_part_orders o');
+        $this->db->join(db_prefix() . 'fleet_part_items i', 'i.id = o.item_id', 'left');
+        $this->db->join(db_prefix() . 'fleet_suppliers s', 's.id = o.supplier_id', 'left');
+        $this->db->order_by('o.date_created', 'desc');
 
         return $this->db->get()->result_array();
     }
 
-    public function add_part($data)
+    public function add_part_order($data)
     {
+        $data = $this->_prepare_order_data($data);
+        $data['status']       = $data['status'] ?? 'ordered';
         $data['date_created'] = date('Y-m-d H:i:s');
         $data['created_by']   = get_staff_user_id();
-        $data                 = $this->_prepare_part_data($data);
 
-        $this->db->insert(db_prefix() . 'fleet_parts', $data);
+        $this->db->insert(db_prefix() . 'fleet_part_orders', $data);
         $id = $this->db->insert_id();
 
-        if ($id && !empty($data['vehicle_id'])) {
-            $this->log_activity($data['vehicle_id'], 'part', _l('fleet_log_part_added', $data['name'] ?? ''));
-        }
-
-        if ($id) {
-            $this->_sync_record_expense(
-                'fleet_parts',
-                $id,
-                $data['total_price'] ?? 0,
-                _l('fleet_part') . ' - ' . ($data['name'] ?? '') . ' - ' . $this->_vehicle_label($data['vehicle_id'] ?? 0),
-                $data['reference'] ?? '',
-                $data['purchase_date'] ?? null
-            );
+        if ($id && $data['status'] === 'received') {
+            $this->db->where('id', $id)->update(db_prefix() . 'fleet_part_orders', ['received_date' => date('Y-m-d')]);
+            $this->_receive_sync($id);
         }
 
         return $id;
     }
 
-    public function update_part($id, $data)
+    public function update_part_order($id, $data)
     {
-        $data = $this->_prepare_part_data($data);
+        $data = $this->_prepare_order_data($data);
+        unset($data['status']); // status changes go through receive/cancel
 
         $this->db->where('id', $id);
-        $this->db->update(db_prefix() . 'fleet_parts', $data);
+        $this->db->update(db_prefix() . 'fleet_part_orders', $data);
 
-        $record = $this->get_part($id);
-        if ($record) {
-            $this->_sync_record_expense(
-                'fleet_parts',
-                $id,
-                $record->total_price,
-                _l('fleet_part') . ' - ' . $record->name . ' - ' . $this->_vehicle_label($record->vehicle_id),
-                $record->reference,
-                $record->purchase_date
-            );
-        }
+        $this->_receive_sync($id);
 
         return true;
     }
 
-    public function delete_part($id)
+    public function receive_part_order($id)
     {
-        $this->_delete_record_expense('fleet_parts', $id);
+        $order = $this->get_part_order($id);
+        if (!$order || $order->status === 'received') {
+            return false;
+        }
 
         $this->db->where('id', $id);
-        $this->db->delete(db_prefix() . 'fleet_parts');
+        $this->db->update(db_prefix() . 'fleet_part_orders', [
+            'status'        => 'received',
+            'received_date' => date('Y-m-d'),
+        ]);
 
-        return $this->db->affected_rows() > 0;
+        $this->_receive_sync($id);
+
+        return true;
     }
 
-    public function parts_stats($vehicle_id = '')
+    public function cancel_part_order($id)
     {
-        if (!$this->db->table_exists(db_prefix() . 'fleet_parts')) {
-            return (object) ['entries' => 0, 'total_cost' => 0];
+        $this->_delete_record_expense('fleet_part_orders', $id);
+        $this->db->where('id', $id);
+        $this->db->update(db_prefix() . 'fleet_part_orders', ['status' => 'cancelled', 'expense_id' => null]);
+
+        return true;
+    }
+
+    public function delete_part_order($id)
+    {
+        $this->_delete_record_expense('fleet_part_orders', $id);
+        $this->db->where('id', $id)->delete(db_prefix() . 'fleet_part_orders');
+
+        return true;
+    }
+
+    /**
+     * Post (or remove) the expense matching a received order.
+     */
+    private function _receive_sync($id)
+    {
+        $order = $this->get_part_order($id);
+        if (!$order) {
+            return;
         }
+
+        $amount = ($order->status === 'received') ? $order->total_price : 0;
+        $name   = _l('fleet_part') . ' - ' . $order->item_name . ($order->supplier_name ? ' - ' . $order->supplier_name : '');
+
+        $this->_sync_record_expense('fleet_part_orders', $id, $amount, $name, $order->item_reference, $order->received_date ?: $order->order_date);
+    }
+
+    private function _prepare_order_data($data)
+    {
+        $data = $this->_clean_numeric($data, ['item_id', 'supplier_id', 'quantity', 'unit_price']);
+        $data = $this->_clean_dates($data, ['order_date']);
+
+        $qty = max(1, (int) ($data['quantity'] ?? 1));
+        $data['quantity']    = $qty;
+        $data['total_price'] = round((float) ($data['unit_price'] ?? 0) * $qty, 2);
+
+        if (empty($data['supplier_id'])) {
+            $data['supplier_id'] = null;
+        }
+
+        return $data;
+    }
+
+    /* ----------------------------------------------------------------- *
+     * Part assignments (consume stock; attach to a vehicle or anything else)
+     * ----------------------------------------------------------------- */
+
+    public function get_part_assignment($id = '', $vehicle_id = '')
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_part_assignments')) {
+            return is_numeric($id) ? null : [];
+        }
+
+        if (is_numeric($id)) {
+            $this->db->where('id', $id);
+
+            return $this->db->get(db_prefix() . 'fleet_part_assignments')->row();
+        }
+
+        $this->db->select('a.*, i.name as item_name, i.reference as item_reference, v.name as vehicle_name, v.plate as vehicle_plate');
+        $this->db->from(db_prefix() . 'fleet_part_assignments a');
+        $this->db->join(db_prefix() . 'fleet_part_items i', 'i.id = a.item_id', 'left');
+        $this->db->join(db_prefix() . 'fleet_vehicles v', 'v.id = a.vehicle_id', 'left');
+
         if (is_numeric($vehicle_id)) {
-            $this->db->where('vehicle_id', $vehicle_id);
+            $this->db->where('a.vehicle_id', $vehicle_id);
         }
-        $this->db->select('COUNT(*) as entries, COALESCE(SUM(total_price),0) as total_cost');
 
-        return $this->db->get(db_prefix() . 'fleet_parts')->row();
+        $this->db->order_by('a.assigned_date', 'desc');
+        $this->db->order_by('a.id', 'desc');
+
+        return $this->db->get()->result_array();
     }
 
-    private function _prepare_part_data($data)
+    public function add_part_assignment($data)
     {
-        $data = $this->_clean_numeric($data, ['vehicle_id', 'supplier_id', 'maintenance_id', 'quantity', 'unit_price', 'total_price']);
-        $data = $this->_clean_dates($data, ['purchase_date']);
+        $data = $this->_clean_numeric($data, ['item_id', 'vehicle_id', 'maintenance_id', 'quantity']);
+        $data = $this->_clean_dates($data, ['assigned_date']);
 
-        $qty = (isset($data['quantity']) && $data['quantity'] !== null) ? (int) $data['quantity'] : 1;
-        $data['quantity']    = $qty > 0 ? $qty : 1;
-        $data['total_price'] = round((float) ($data['unit_price'] ?? 0) * $data['quantity'], 2);
+        $qty               = max(1, (int) ($data['quantity'] ?? 1));
+        $unit              = $this->item_last_unit_price($data['item_id']);
+        $data['quantity']  = $qty;
+        $data['unit_cost'] = $unit;
+        $data['total_cost'] = round($unit * $qty, 2);
 
-        foreach (['vehicle_id', 'supplier_id', 'maintenance_id'] as $fk) {
+        foreach (['vehicle_id', 'maintenance_id'] as $fk) {
             if (empty($data[$fk])) {
                 $data[$fk] = null;
             }
         }
 
-        return $data;
+        $data['date_created'] = date('Y-m-d H:i:s');
+        $data['created_by']   = get_staff_user_id();
+
+        $this->db->insert(db_prefix() . 'fleet_part_assignments', $data);
+        $id = $this->db->insert_id();
+
+        if ($id && !empty($data['vehicle_id'])) {
+            $item = $this->get_part_item($data['item_id']);
+            $this->log_activity($data['vehicle_id'], 'part', _l('fleet_log_part_assigned', [($item ? $item->name : ''), $qty]));
+        }
+
+        return $id;
+    }
+
+    public function delete_part_assignment($id)
+    {
+        $this->db->where('id', $id)->delete(db_prefix() . 'fleet_part_assignments');
+
+        return $this->db->affected_rows() > 0;
     }
 
     /* ----------------------------------------------------------------- *
@@ -1073,7 +1247,10 @@ class Fleet_management_model extends App_Model
         $maint = $this->_sum_by_vehicle('fleet_maintenance', 'cost', 'service_date', $start, $end);
         $fuel  = $this->_sum_by_vehicle('fleet_fuel_logs', 'total_cost', 'date', $start, $end);
         $rem   = $this->_sum_by_vehicle('fleet_reminders', 'cost', 'due_date', $start, $end);
-        $parts = $this->_sum_by_vehicle('fleet_parts', 'total_price', 'purchase_date', $start, $end);
+        $parts = $this->_sum_by_vehicle('fleet_part_assignments', 'total_cost', 'assigned_date', $start, $end);
+        foreach ($this->_sum_by_vehicle('fleet_parts', 'total_price', 'purchase_date', $start, $end) as $vid => $amt) {
+            $parts[$vid] = ($parts[$vid] ?? 0) + $amt;
+        }
 
         list($occ, $window_days) = $this->_occupancy_by_vehicle($occupancy_days);
 
@@ -1164,7 +1341,7 @@ class Fleet_management_model extends App_Model
         $sources = [
             'maintenance' => ['fleet_maintenance', 'cost', 'service_date'],
             'fuel'        => ['fleet_fuel_logs', 'total_cost', 'date'],
-            'parts'       => ['fleet_parts', 'total_price', 'purchase_date'],
+            'parts'       => ['fleet_part_assignments', 'total_cost', 'assigned_date'],
             'reminders'   => ['fleet_reminders', 'cost', 'due_date'],
         ];
 

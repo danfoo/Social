@@ -6,6 +6,9 @@ $CI = &get_instance();
 
 $tables = [
     'fleet_maintenance_files',
+    'fleet_part_assignments',
+    'fleet_part_orders',
+    'fleet_part_items',
     'fleet_parts',
     'fleet_activity',
     'fleet_fuel_logs',

@@ -243,6 +243,62 @@ if (!$CI->db->table_exists(db_prefix() . 'fleet_parts')) {
     ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
 }
 
+// Parts inventory workflow: catalog items -> supplier orders -> stock -> assignments.
+if (!$CI->db->table_exists(db_prefix() . 'fleet_part_items')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_part_items` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `name` VARCHAR(191) NOT NULL,
+        `reference` VARCHAR(100) NULL,
+        `category` VARCHAR(150) NULL,
+        `unit` VARCHAR(50) NULL,
+        `min_stock` INT(11) NOT NULL DEFAULT 0,
+        `notes` TEXT NULL,
+        `created_by` INT(11) NULL,
+        `date_created` DATETIME NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
+if (!$CI->db->table_exists(db_prefix() . 'fleet_part_orders')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_part_orders` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `item_id` INT(11) NOT NULL,
+        `supplier_id` INT(11) NULL,
+        `quantity` INT(11) NOT NULL DEFAULT 1,
+        `unit_price` DECIMAL(15,2) NOT NULL DEFAULT 0,
+        `total_price` DECIMAL(15,2) NOT NULL DEFAULT 0,
+        `status` VARCHAR(30) NOT NULL DEFAULT 'ordered',
+        `order_date` DATE NULL,
+        `received_date` DATE NULL,
+        `expense_id` INT(11) NULL,
+        `notes` TEXT NULL,
+        `created_by` INT(11) NULL,
+        `date_created` DATETIME NULL,
+        PRIMARY KEY (`id`),
+        KEY `item_id` (`item_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
+if (!$CI->db->table_exists(db_prefix() . 'fleet_part_assignments')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_part_assignments` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `item_id` INT(11) NOT NULL,
+        `vehicle_id` INT(11) NULL,
+        `maintenance_id` INT(11) NULL,
+        `assigned_to` VARCHAR(191) NULL,
+        `quantity` INT(11) NOT NULL DEFAULT 1,
+        `unit_cost` DECIMAL(15,2) NOT NULL DEFAULT 0,
+        `total_cost` DECIMAL(15,2) NOT NULL DEFAULT 0,
+        `assigned_date` DATE NULL,
+        `notes` TEXT NULL,
+        `created_by` INT(11) NULL,
+        `date_created` DATETIME NULL,
+        PRIMARY KEY (`id`),
+        KEY `item_id` (`item_id`),
+        KEY `vehicle_id` (`vehicle_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
 // Parts replaced during a maintenance operation (idempotent upgrade).
 if (!$CI->db->field_exists('parts', db_prefix() . 'fleet_maintenance')) {
     $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_maintenance` ADD `parts` TEXT NULL AFTER `description`');

@@ -227,14 +227,46 @@ $lang['fleet_part_name']              = 'Nom de la pièce / article';
 $lang['fleet_reference']              = 'Référence';
 $lang['fleet_quantity']               = 'Quantité';
 $lang['fleet_unit_price']             = 'Prix d\'achat unitaire';
-$lang['fleet_parts_count']            = 'Pièces achetées';
+$lang['fleet_parts_count']            = 'Pièces (catalogue)';
 $lang['fleet_parts_total_cost']       = 'Coût d\'achat total';
 $lang['fleet_pstatus_installed']      = 'Montée';
 $lang['fleet_pstatus_in_stock']       = 'En stock';
 $lang['fleet_pstatus_ordered']        = 'Commandée';
 $lang['fleet_pstatus_returned']       = 'Retournée';
 $lang['fleet_log_part_added']         = 'Pièce achetée : %s';
+$lang['fleet_log_part_assigned']      = 'Pièce affectée : %s (x%s)';
 $lang['fleet_atype_part']             = 'Pièce';
+
+# Parts inventory workflow
+$lang['fleet_unit']                   = 'Unité';
+$lang['fleet_min_stock']              = 'Stock minimum';
+$lang['fleet_stock']                  = 'Stock';
+$lang['fleet_in_stock']               = 'En stock';
+$lang['fleet_low_stock']              = 'Stock faible';
+$lang['fleet_catalog']                = 'Catalogue';
+$lang['fleet_orders']                 = 'Commandes';
+$lang['fleet_assignments_tab']        = 'Stock & affectations';
+$lang['fleet_buy']                    = 'Acheter';
+$lang['fleet_place_order']            = 'Passer la commande';
+$lang['fleet_new_order']              = 'Nouvelle commande';
+$lang['fleet_new_assignment']         = 'Affecter depuis le stock';
+$lang['fleet_order']                  = 'Commande';
+$lang['fleet_order_date']             = 'Date de commande';
+$lang['fleet_receive']                = 'Réceptionner';
+$lang['fleet_cancel_order']           = 'Annuler';
+$lang['fleet_no_orders']              = 'Aucune commande pour le moment.';
+$lang['fleet_no_assignments']         = 'Aucune affectation pour le moment.';
+$lang['fleet_assigned_to']            = 'Affecté à';
+$lang['fleet_assigned_to_other']      = 'Ou affecté à (autre)';
+$lang['fleet_assignment_label']       = 'Affectation';
+$lang['fleet_ostatus_ordered']        = 'Commandée';
+$lang['fleet_ostatus_received']       = 'Reçue';
+$lang['fleet_ostatus_cancelled']      = 'Annulée';
+$lang['fleet_order_placed']           = 'Commande passée';
+$lang['fleet_order_received_done']    = 'Commande réceptionnée et ajoutée au stock';
+$lang['fleet_order_cancelled']        = 'Commande annulée';
+$lang['fleet_part_assigned_done']     = 'Pièce affectée depuis le stock';
+$lang['fleet_not_enough_stock']       = 'Stock insuffisant (disponible : %s)';
 
 # Maintenance parts & photos
 $lang['fleet_parts']                  = 'Pièces changées';

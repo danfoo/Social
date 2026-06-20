@@ -78,7 +78,7 @@ class Vehicles extends AdminController
         $data['reminders']   = $this->fleet->get_reminders('', $id);
         $data['assignments'] = $this->fleet->get_assignments($id);
         $data['activity']    = $this->fleet->get_activity($id);
-        $data['parts']       = $this->fleet->get_part('', $id);
+        $data['parts']       = $this->fleet->get_part_assignment('', $id);
         $data['drivers']     = $this->fleet->get_drivers();
         $data['title']       = $vehicle->name;
         $this->load->view('fleet_management/vehicles/view', $data);
