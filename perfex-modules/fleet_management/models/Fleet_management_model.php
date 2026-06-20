@@ -1057,26 +1057,27 @@ class Fleet_management_model extends App_Model
     /**
      * Cost breakdown and KPIs per vehicle for the dashboard.
      */
-    public function dashboard($occupancy_days = 30)
+    public function dashboard($start = null, $end = null)
     {
         $vehicles = $this->get_vehicle();
 
-        $maint = $this->_sum_by_vehicle('fleet_maintenance', 'cost');
-        $fuel  = $this->_sum_by_vehicle('fleet_fuel_logs', 'total_cost');
-        $rem   = $this->_sum_by_vehicle('fleet_reminders', 'cost');
-        $parts = $this->_sum_by_vehicle('fleet_parts', 'total_price');
-        $occ   = $this->_occupancy_by_vehicle($occupancy_days);
+        $maint = $this->_sum_by_vehicle('fleet_maintenance', 'cost', 'service_date', $start, $end);
+        $fuel  = $this->_sum_by_vehicle('fleet_fuel_logs', 'total_cost', 'date', $start, $end);
+        $rem   = $this->_sum_by_vehicle('fleet_reminders', 'cost', 'due_date', $start, $end);
+        $parts = $this->_sum_by_vehicle('fleet_parts', 'total_price', 'purchase_date', $start, $end);
+
+        list($occ, $window_days) = $this->_occupancy_by_vehicle($start, $end);
 
         $rows   = [];
         $totals = ['maintenance' => 0, 'fuel' => 0, 'parts' => 0, 'reminders' => 0, 'total' => 0];
 
         foreach ($vehicles as $v) {
-            $id = $v['id'];
-            $m  = $maint[$id] ?? 0;
-            $f  = $fuel[$id] ?? 0;
-            $p  = $parts[$id] ?? 0;
-            $r  = $rem[$id] ?? 0;
-            $t  = $m + $f + $p + $r;
+            $id  = $v['id'];
+            $m   = $maint[$id] ?? 0;
+            $f   = $fuel[$id] ?? 0;
+            $p   = $parts[$id] ?? 0;
+            $r   = $rem[$id] ?? 0;
+            $t   = $m + $f + $p + $r;
             $odo = (int) $v['odometer'];
 
             $rows[] = [
@@ -1097,6 +1098,23 @@ class Fleet_management_model extends App_Model
             $totals['total']       += $t;
         }
 
+        // Highlights: most expensive, most used and most fuel-hungry vehicle.
+        $top_cost = $top_used = $top_fuel = null;
+        foreach ($rows as $row) {
+            if ($top_cost === null || $row['total'] > $top_cost['total']) {
+                $top_cost = $row;
+            }
+            if ($row['occupancy'] > 0 && ($top_used === null || $row['occupancy'] > $top_used['occupancy'])) {
+                $top_used = $row;
+            }
+            if ($row['fuel'] > 0 && ($top_fuel === null || $row['fuel'] > $top_fuel['fuel'])) {
+                $top_fuel = $row;
+            }
+        }
+        if ($top_cost && $top_cost['total'] == 0) {
+            $top_cost = null;
+        }
+
         $fleet_occupancy = 0;
         if (!empty($rows)) {
             $fleet_occupancy = round(array_sum(array_column($rows, 'occupancy')) / count($rows));
@@ -1107,17 +1125,74 @@ class Fleet_management_model extends App_Model
             'totals'          => $totals,
             'status_counts'   => $this->vehicles_count_by_status(),
             'fleet_occupancy' => $fleet_occupancy,
-            'occupancy_days'  => $occupancy_days,
+            'occupancy_days'  => $window_days,
+            'highlights'      => ['top_cost' => $top_cost, 'top_used' => $top_used, 'top_fuel' => $top_fuel],
         ];
     }
 
-    private function _sum_by_vehicle($table, $column)
+    /**
+     * Monthly expense series (last N months) split by cost type, for the chart.
+     */
+    public function monthly_expense_series($months = 12)
+    {
+        $labels = [];
+        $index  = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $key            = date('Y-m', strtotime("first day of -$i month"));
+            $labels[]       = $key;
+            $index[$key]    = count($labels) - 1;
+        }
+        $since = date('Y-m-01', strtotime('first day of -' . ($months - 1) . ' month'));
+
+        $zero = array_fill(0, count($labels), 0);
+        $series = [
+            'maintenance' => $zero,
+            'fuel'        => $zero,
+            'parts'       => $zero,
+            'reminders'   => $zero,
+        ];
+
+        $sources = [
+            'maintenance' => ['fleet_maintenance', 'cost', 'service_date'],
+            'fuel'        => ['fleet_fuel_logs', 'total_cost', 'date'],
+            'parts'       => ['fleet_parts', 'total_price', 'purchase_date'],
+            'reminders'   => ['fleet_reminders', 'cost', 'due_date'],
+        ];
+
+        foreach ($sources as $key => $src) {
+            list($table, $col, $dateCol) = $src;
+            if (!$this->db->table_exists(db_prefix() . $table)) {
+                continue;
+            }
+            $this->db->select("DATE_FORMAT($dateCol, '%Y-%m') as ym, COALESCE(SUM($col), 0) as total");
+            $this->db->where("$dateCol >=", $since);
+            $this->db->where("$dateCol IS NOT NULL", null, false);
+            $this->db->group_by('ym');
+            foreach ($this->db->get(db_prefix() . $table)->result_array() as $row) {
+                if (isset($index[$row['ym']])) {
+                    $series[$key][$index[$row['ym']]] = (float) $row['total'];
+                }
+            }
+        }
+
+        $labels = array_map(function ($ym) {
+            return _d($ym . '-01');
+        }, $labels);
+
+        return ['labels' => $labels] + $series;
+    }
+
+    private function _sum_by_vehicle($table, $column, $date_col = null, $start = null, $end = null)
     {
         if (!$this->db->table_exists(db_prefix() . $table)) {
             return [];
         }
 
         $this->db->select('vehicle_id, COALESCE(SUM(' . $column . '), 0) as total');
+        if ($date_col && $start && $end) {
+            $this->db->where("$date_col >=", $start);
+            $this->db->where("$date_col <=", $end);
+        }
         $this->db->group_by('vehicle_id');
 
         $map = [];
@@ -1129,16 +1204,23 @@ class Fleet_management_model extends App_Model
     }
 
     /**
-     * Percentage of the last N days each vehicle was booked (reserved/ongoing/completed).
+     * Percentage each vehicle was booked over a window. Defaults to the last
+     * 30 days; uses the provided [start, end] range when given.
+     *
+     * @return array [occupancy_map, window_days]
      */
-    private function _occupancy_by_vehicle($days = 30)
+    private function _occupancy_by_vehicle($start = null, $end = null)
     {
-        if (!$this->db->table_exists(db_prefix() . 'fleet_rentals') || $days < 1) {
-            return [];
+        if (!$this->db->table_exists(db_prefix() . 'fleet_rentals')) {
+            return [[], 0];
         }
 
-        $end   = strtotime(date('Y-m-d'));
-        $start = $end - ($days - 1) * 86400;
+        $endTs   = $end ? strtotime($end) : strtotime(date('Y-m-d'));
+        $startTs = $start ? strtotime($start) : ($endTs - 29 * 86400);
+        $days    = (int) floor(($endTs - $startTs) / 86400) + 1;
+        if ($days < 1) {
+            return [[], 0];
+        }
 
         $this->db->where_in('status', ['reserved', 'ongoing', 'completed']);
         $rentals = $this->db->get(db_prefix() . 'fleet_rentals')->result_array();
@@ -1147,11 +1229,11 @@ class Fleet_management_model extends App_Model
         foreach ($rentals as $r) {
             $rs = strtotime($r['date_start']);
             $re = strtotime($r['date_end']);
-            if (!$rs || !$re || $re < $start || $rs > $end) {
+            if (!$rs || !$re || $re < $startTs || $rs > $endTs) {
                 continue;
             }
-            $os   = max($rs, $start);
-            $oe   = min($re, $end);
+            $os   = max($rs, $startTs);
+            $oe   = min($re, $endTs);
             $span = (int) floor(($oe - $os) / 86400) + 1;
             if ($span < 0) {
                 $span = 0;
@@ -1164,7 +1246,7 @@ class Fleet_management_model extends App_Model
             $occ[$vid] = min(100, (int) round($d / $days * 100));
         }
 
-        return $occ;
+        return [$occ, $days];
     }
 
     /* ----------------------------------------------------------------- *

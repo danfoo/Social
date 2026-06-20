@@ -50,6 +50,14 @@ $lang['fleet_dash_occupancy']         = 'Occupation (%s j)';
 $lang['fleet_dash_occupancy_short']   = 'Occupation';
 $lang['fleet_dash_per_vehicle']       = 'Coût par véhicule';
 $lang['fleet_dash_cost_per_km']       = 'Coût / km';
+$lang['fleet_dash_expense_evolution'] = 'Évolution des dépenses (12 mois)';
+$lang['fleet_dash_most_used']         = 'Véhicule le plus utilisé';
+$lang['fleet_dash_most_expensive']    = 'Véhicule le plus coûteux';
+$lang['fleet_dash_most_fuel']         = 'Plus gros budget carburant';
+$lang['fleet_period_month']           = 'Mois';
+$lang['fleet_period_quarter']         = 'Trimestre';
+$lang['fleet_period_year']            = 'Année';
+$lang['fleet_period_all']             = 'Tout';
 
 # Part <-> maintenance link
 $lang['fleet_link_maintenance']       = 'Rattacher à un entretien (facultatif)';

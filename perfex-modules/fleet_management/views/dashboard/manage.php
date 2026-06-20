@@ -3,6 +3,22 @@
 <?php init_head(); ?>
 <div id="wrapper">
     <div class="content">
+
+        <!-- Period filter -->
+        <div class="row mbot15">
+            <div class="col-md-12">
+                <div class="btn-group" role="group">
+                    <?php
+                    $periods = ['month' => _l('fleet_period_month'), 'quarter' => _l('fleet_period_quarter'), 'year' => _l('fleet_period_year'), 'all' => _l('fleet_period_all')];
+                    foreach ($periods as $key => $label) :
+                        $active = $period === $key ? 'btn-primary' : 'btn-default';
+                        ?>
+                        <a href="<?php echo admin_url('fleet_management/dashboard?period=' . $key); ?>" class="btn <?php echo $active; ?>"><?php echo $label; ?></a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+
         <!-- KPI cards -->
         <div class="row">
             <div class="col-md-3 col-sm-6">
@@ -27,6 +43,54 @@
                 <div class="panel_s"><div class="panel-body text-center">
                     <h2 class="bold no-margin"><?php echo (int) $fleet_occupancy; ?>%</h2>
                     <span class="text-muted"><?php echo _l('fleet_dash_occupancy', $occupancy_days); ?></span>
+                </div></div>
+            </div>
+        </div>
+
+        <!-- Highlights -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="panel_s"><div class="panel-body">
+                    <p class="text-muted no-margin"><i class="fa fa-trophy text-info"></i> <?php echo _l('fleet_dash_most_used'); ?></p>
+                    <?php if (!empty($highlights['top_used'])) : $tu = $highlights['top_used']; ?>
+                        <h4 class="bold no-margin"><a href="<?php echo admin_url('fleet_management/vehicles/view/' . $tu['vehicle']['id']); ?>"><?php echo html_escape($tu['vehicle']['name']); ?></a></h4>
+                        <span class="text-success bold"><?php echo (int) $tu['occupancy']; ?>%</span> <span class="text-muted"><?php echo _l('fleet_dash_occupancy_short'); ?></span>
+                    <?php else : ?>
+                        <h4 class="text-muted no-margin">—</h4>
+                    <?php endif; ?>
+                </div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="panel_s"><div class="panel-body">
+                    <p class="text-muted no-margin"><i class="fa fa-money text-danger"></i> <?php echo _l('fleet_dash_most_expensive'); ?></p>
+                    <?php if (!empty($highlights['top_cost'])) : $tc = $highlights['top_cost']; ?>
+                        <h4 class="bold no-margin"><a href="<?php echo admin_url('fleet_management/vehicles/view/' . $tc['vehicle']['id']); ?>"><?php echo html_escape($tc['vehicle']['name']); ?></a></h4>
+                        <span class="text-danger bold"><?php echo app_format_money($tc['total'], $bc); ?></span>
+                    <?php else : ?>
+                        <h4 class="text-muted no-margin">—</h4>
+                    <?php endif; ?>
+                </div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="panel_s"><div class="panel-body">
+                    <p class="text-muted no-margin"><i class="fa fa-tint text-success"></i> <?php echo _l('fleet_dash_most_fuel'); ?></p>
+                    <?php if (!empty($highlights['top_fuel'])) : $tf = $highlights['top_fuel']; ?>
+                        <h4 class="bold no-margin"><a href="<?php echo admin_url('fleet_management/vehicles/view/' . $tf['vehicle']['id']); ?>"><?php echo html_escape($tf['vehicle']['name']); ?></a></h4>
+                        <span class="text-success bold"><?php echo app_format_money($tf['fuel'], $bc); ?></span>
+                    <?php else : ?>
+                        <h4 class="text-muted no-margin">—</h4>
+                    <?php endif; ?>
+                </div></div>
+            </div>
+        </div>
+
+        <!-- Expense evolution chart -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel_s"><div class="panel-body">
+                    <h4 class="no-margin"><?php echo _l('fleet_dash_expense_evolution'); ?></h4>
+                    <hr class="hr-panel-heading" />
+                    <canvas id="fleetExpenseChart" height="90"></canvas>
                 </div></div>
             </div>
         </div>
@@ -104,5 +168,32 @@
     </div>
 </div>
 <?php init_tail(); ?>
+<script>
+$(function() {
+    if (typeof Chart === 'undefined') { return; }
+    var ctx = document.getElementById('fleetExpenseChart');
+    if (!ctx) { return; }
+
+    // Chart.js v2 and v3+ configure stacked axes differently.
+    var isV3 = !!(Chart.version && parseInt(Chart.version, 10) >= 3);
+    var scales = isV3
+        ? { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
+        : { xAxes: [{ stacked: true }], yAxes: [{ stacked: true, ticks: { beginAtZero: true } }] };
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: <?php echo json_encode($series['labels']); ?>,
+            datasets: [
+                { label: '<?php echo _l('fleet_maintenance'); ?>', backgroundColor: '#f0ad4e', data: <?php echo json_encode($series['maintenance']); ?> },
+                { label: '<?php echo _l('fleet_fuel'); ?>', backgroundColor: '#5cb85c', data: <?php echo json_encode($series['fuel']); ?> },
+                { label: '<?php echo _l('fleet_parts_articles'); ?>', backgroundColor: '#337ab7', data: <?php echo json_encode($series['parts']); ?> },
+                { label: '<?php echo _l('fleet_reminders'); ?>', backgroundColor: '#d9534f', data: <?php echo json_encode($series['reminders']); ?> }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: scales }
+    });
+});
+</script>
 </body>
 </html>
