@@ -347,6 +347,25 @@ if ($CI->db->table_exists(db_prefix() . 'fleet_part_orders') && !$CI->db->field_
     $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_part_orders` ADD `clientid` INT(11) NULL');
 }
 
+// Supplier payments ledger (supports partial payments against any costed record).
+if (!$CI->db->table_exists(db_prefix() . 'fleet_payments')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_payments` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `source_table` VARCHAR(50) NOT NULL,
+        `source_id` INT(11) NOT NULL,
+        `supplier_id` INT(11) NULL,
+        `amount` DECIMAL(15,2) NOT NULL DEFAULT 0,
+        `payment_date` DATE NULL,
+        `payment_mode` VARCHAR(100) NULL,
+        `note` TEXT NULL,
+        `created_by` INT(11) NULL,
+        `date_created` DATETIME NULL,
+        PRIMARY KEY (`id`),
+        KEY `source` (`source_table`, `source_id`),
+        KEY `supplier_id` (`supplier_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
 // Dedicated expense category so fleet costs are grouped in the Expenses module.
 if (get_option('fleet_expense_category_id') == '' && $CI->db->table_exists(db_prefix() . 'expenses_categories')) {
     $CI->db->insert(db_prefix() . 'expenses_categories', [

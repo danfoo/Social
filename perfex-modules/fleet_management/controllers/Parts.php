@@ -177,6 +177,41 @@ class Parts extends AdminController
         redirect(admin_url('fleet_management/parts#stock'));
     }
 
+    public function order_pdf($id)
+    {
+        if (!staff_can('view', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $order = $this->fleet->get_part_order($id);
+        if (!$order) {
+            show_404();
+        }
+
+        $data = [
+            'order'    => $order,
+            'supplier' => $order->supplier_id ? $this->fleet->get_supplier($order->supplier_id) : null,
+            'paid'     => $this->fleet->record_paid('fleet_part_orders', $id),
+        ];
+
+        $html = $this->load->view('fleet_management/parts/order_pdf', $data, true);
+
+        if (!class_exists('TCPDF')) {
+            echo $html; // graceful fallback (printable HTML) if the PDF engine is unavailable
+            return;
+        }
+
+        $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8');
+        $pdf->SetCreator(get_option('companyname'));
+        $pdf->SetTitle('PO-' . $id);
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+        $pdf->SetMargins(12, 12, 12);
+        $pdf->AddPage();
+        $pdf->writeHTML($html, true, false, true, false, '');
+        $pdf->Output('supplier-order-' . $id . '.pdf', 'I');
+    }
+
     /* ---------------- Export ---------------- */
 
     public function export()

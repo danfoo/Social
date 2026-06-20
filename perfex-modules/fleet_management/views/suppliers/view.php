@@ -1,5 +1,18 @@
 <?php defined('BASEPATH') or exit('No direct script access allowed'); ?>
-<?php $bc = get_base_currency(); ?>
+<?php
+$bc = get_base_currency();
+function fleet_pay_badge($total, $paid)
+{
+    if ($total > 0 && $paid >= $total - 0.001) {
+        return '<span class="label label-success">' . _l('fleet_paid') . '</span>';
+    }
+    if ($paid > 0) {
+        return '<span class="label label-warning">' . _l('fleet_partial') . '</span>';
+    }
+
+    return '<span class="label label-default">' . _l('fleet_unpaid') . '</span>';
+}
+?>
 <?php init_head(); ?>
 <div id="wrapper">
     <div class="content fleet-list-page">
@@ -18,7 +31,6 @@
         </div>
 
         <div class="row">
-            <!-- Supplier info -->
             <div class="col-md-4">
                 <div class="panel_s"><div class="panel-body">
                     <h3 class="bold no-margin"><?php echo html_escape($supplier->name); ?></h3>
@@ -31,7 +43,6 @@
                     </table>
                 </div></div>
             </div>
-            <!-- Accounting summary -->
             <div class="col-md-8">
                 <div class="row">
                     <div class="col-md-4"><div class="panel_s"><div class="panel-body fleet-stat">
@@ -56,35 +67,31 @@
                         <table class="table">
                             <thead><tr>
                                 <th><?php echo _l('fleet_part'); ?></th>
-                                <th><?php echo _l('fleet_quantity'); ?></th>
                                 <th><?php echo _l('fleet_total'); ?></th>
-                                <th><?php echo _l('fleet_status'); ?></th>
-                                <th><?php echo _l('fleet_supplier_invoice_no'); ?></th>
-                                <th><?php echo _l('expense'); ?></th>
+                                <th><?php echo _l('fleet_paid_amount'); ?></th>
+                                <th><?php echo _l('fleet_remaining'); ?></th>
                                 <th><?php echo _l('fleet_payment'); ?></th>
+                                <th class="text-right"><?php echo _l('options'); ?></th>
                             </tr></thead>
                             <tbody>
                             <?php foreach ($orders as $o) : ?>
                                 <tr>
-                                    <td class="bold"><?php echo html_escape($o['item_name']); ?></td>
-                                    <td><?php echo (int) $o['quantity']; ?></td>
+                                    <td class="bold"><?php echo html_escape($o['item_name']); ?>
+                                        <?php if ($o['invoice_no']) : ?><br><small class="text-muted"><?php echo _l('fleet_supplier_invoice_no'); ?>: <?php echo html_escape($o['invoice_no']); ?></small><?php endif; ?>
+                                    </td>
                                     <td><?php echo app_format_money($o['total_price'], $bc); ?></td>
-                                    <td><?php echo _l('fleet_ostatus_' . $o['status']); ?></td>
-                                    <td><?php echo html_escape($o['invoice_no']); ?></td>
-                                    <td><?php echo !empty($o['expense_id']) ? '<a href="' . admin_url('expenses/list_expenses/' . $o['expense_id']) . '"><i class="fa fa-external-link"></i></a>' : '<span class="text-muted">—</span>'; ?></td>
-                                    <td>
-                                        <?php if ($o['paid']) : ?>
-                                            <span class="label label-success"><?php echo _l('fleet_paid'); ?></span>
-                                            <?php if (staff_can('edit', 'fleet')) : ?><a href="<?php echo admin_url('fleet_management/suppliers/mark_paid/fleet_part_orders/' . $o['id'] . '/0'); ?>" class="text-muted" title="<?php echo _l('fleet_mark_unpaid'); ?>"><i class="fa fa-undo"></i></a><?php endif; ?>
-                                        <?php else : ?>
-                                            <?php if (staff_can('edit', 'fleet')) : ?>
-                                                <a href="<?php echo admin_url('fleet_management/suppliers/mark_paid/fleet_part_orders/' . $o['id'] . '/1'); ?>" class="btn btn-success btn-xs"><?php echo _l('fleet_mark_paid'); ?></a>
-                                            <?php else : ?><span class="label label-warning"><?php echo _l('fleet_unpaid'); ?></span><?php endif; ?>
+                                    <td class="text-success"><?php echo app_format_money($o['paid_amount'], $bc); ?></td>
+                                    <td class="text-danger"><?php echo app_format_money($o['remaining'], $bc); ?></td>
+                                    <td><?php echo fleet_pay_badge($o['total_price'], $o['paid_amount']); ?></td>
+                                    <td class="text-right">
+                                        <a href="<?php echo admin_url('fleet_management/parts/order_pdf/' . $o['id']); ?>" target="_blank" class="btn btn-default btn-icon btn-sm" title="PDF"><i class="fa fa-file-pdf-o"></i></a>
+                                        <?php if ($o['remaining'] > 0.001 && staff_can('edit', 'fleet')) : ?>
+                                            <a href="#" class="btn btn-success btn-sm" onclick="fleet_pay('fleet_part_orders', <?php echo $o['id']; ?>, <?php echo (float) $o['remaining']; ?>); return false;"><i class="fa fa-credit-card"></i> <?php echo _l('fleet_pay'); ?></a>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
-                            <?php if (empty($orders)) : ?><tr><td colspan="7" class="text-center text-muted"><?php echo _l('fleet_no_orders'); ?></td></tr><?php endif; ?>
+                            <?php if (empty($orders)) : ?><tr><td colspan="6" class="text-center text-muted"><?php echo _l('fleet_no_orders'); ?></td></tr><?php endif; ?>
                             </tbody>
                         </table>
                     </div>
@@ -99,27 +106,23 @@
                             <thead><tr>
                                 <th><?php echo _l('fleet_type'); ?></th>
                                 <th><?php echo _l('fleet_vehicle'); ?></th>
-                                <th><?php echo _l('fleet_date'); ?></th>
                                 <th><?php echo _l('fleet_total'); ?></th>
-                                <th><?php echo _l('expense'); ?></th>
-                                <th><?php echo _l('fleet_payment'); ?></th>
+                                <th><?php echo _l('fleet_paid_amount'); ?></th>
+                                <th><?php echo _l('fleet_remaining'); ?></th>
+                                <th class="text-right"><?php echo _l('options'); ?></th>
                             </tr></thead>
                             <tbody>
                             <?php foreach ($costs as $c) : ?>
                                 <tr>
                                     <td><?php echo $c['label']; ?></td>
                                     <td><?php echo html_escape($c['vehicle']); ?></td>
-                                    <td><?php echo $c['date'] ? _d($c['date']) : '-'; ?></td>
                                     <td><?php echo app_format_money($c['amount'], $bc); ?></td>
-                                    <td><?php echo !empty($c['expense_id']) ? '<a href="' . admin_url('expenses/list_expenses/' . $c['expense_id']) . '"><i class="fa fa-external-link"></i></a>' : '<span class="text-muted">—</span>'; ?></td>
-                                    <td>
-                                        <?php if ($c['paid']) : ?>
-                                            <span class="label label-success"><?php echo _l('fleet_paid'); ?></span>
-                                            <?php if (staff_can('edit', 'fleet')) : ?><a href="<?php echo admin_url('fleet_management/suppliers/mark_paid/' . $c['table'] . '/' . $c['id'] . '/0'); ?>" class="text-muted" title="<?php echo _l('fleet_mark_unpaid'); ?>"><i class="fa fa-undo"></i></a><?php endif; ?>
-                                        <?php else : ?>
-                                            <?php if (staff_can('edit', 'fleet')) : ?>
-                                                <a href="<?php echo admin_url('fleet_management/suppliers/mark_paid/' . $c['table'] . '/' . $c['id'] . '/1'); ?>" class="btn btn-success btn-xs"><?php echo _l('fleet_mark_paid'); ?></a>
-                                            <?php else : ?><span class="label label-warning"><?php echo _l('fleet_unpaid'); ?></span><?php endif; ?>
+                                    <td class="text-success"><?php echo app_format_money($c['paid_amount'], $bc); ?></td>
+                                    <td class="text-danger"><?php echo app_format_money($c['remaining'], $bc); ?></td>
+                                    <td class="text-right">
+                                        <?php echo fleet_pay_badge($c['amount'], $c['paid_amount']); ?>
+                                        <?php if ($c['remaining'] > 0.001 && staff_can('edit', 'fleet')) : ?>
+                                            <a href="#" class="btn btn-success btn-xs" onclick="fleet_pay('<?php echo $c['table']; ?>', <?php echo $c['id']; ?>, <?php echo (float) $c['remaining']; ?>); return false;"><?php echo _l('fleet_pay'); ?></a>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
@@ -133,6 +136,36 @@
         </div>
     </div>
 </div>
+
+<!-- Payment modal -->
+<div class="modal fade" id="fleet_pay_modal" tabindex="-1" role="dialog"><div class="modal-dialog"><div class="modal-content">
+    <?php echo form_open(admin_url('fleet_management/suppliers/pay')); ?>
+    <input type="hidden" name="source_table" id="pay_table">
+    <input type="hidden" name="source_id" id="pay_source_id">
+    <input type="hidden" name="supplier_id" value="<?php echo $supplier->id; ?>">
+    <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title"><?php echo _l('fleet_record_payment'); ?></h4></div>
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-md-6"><?php echo render_input('amount', 'fleet_payment_amount', '', 'number'); ?></div>
+            <div class="col-md-6"><?php echo render_date_input('payment_date', 'fleet_payment_date', _d(date('Y-m-d'))); ?></div>
+        </div>
+        <?php echo render_input('payment_mode', 'fleet_payment_mode', ''); ?>
+        <?php echo render_textarea('note', 'fleet_notes', ''); ?>
+        <p class="text-muted"><small><?php echo _l('fleet_remaining'); ?> : <span id="pay_remaining" class="bold"></span></small></p>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal"><?php echo _l('close'); ?></button><button type="submit" class="btn btn-primary"><?php echo _l('fleet_record_payment'); ?></button></div>
+    <?php echo form_close(); ?>
+</div></div></div>
+
 <?php init_tail(); ?>
+<script>
+function fleet_pay(table, id, remaining) {
+    $('#pay_table').val(table);
+    $('#pay_source_id').val(id);
+    $('#fleet_pay_modal [name="amount"]').val(remaining.toFixed(2));
+    $('#pay_remaining').text(remaining.toFixed(2));
+    $('#fleet_pay_modal').modal('show');
+}
+</script>
 </body>
 </html>

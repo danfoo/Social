@@ -256,6 +256,17 @@ $lang['fleet_supplier_orders']        = 'Commandes de pièces';
 $lang['fleet_supplier_other_costs']   = 'Autres coûts liés';
 $lang['fleet_billable']               = 'Refacturable à un client (dépense facturable)';
 $lang['fleet_reinvoice_client']       = 'Client à refacturer';
+$lang['fleet_paid_amount']            = 'Payé';
+$lang['fleet_remaining']              = 'Restant dû';
+$lang['fleet_partial']                = 'Partiel';
+$lang['fleet_pay']                    = 'Payer';
+$lang['fleet_record_payment']         = 'Enregistrer un paiement';
+$lang['fleet_payment_amount']         = 'Montant';
+$lang['fleet_payment_date']           = 'Date du paiement';
+$lang['fleet_payment_mode']           = 'Mode de paiement';
+$lang['fleet_payment_recorded']       = 'Paiement enregistré';
+$lang['fleet_payment_invalid']        = 'Montant de paiement invalide';
+$lang['fleet_purchase_order']         = 'BON DE COMMANDE';
 
 # Parts inventory workflow
 $lang['fleet_unit']                   = 'Unité';

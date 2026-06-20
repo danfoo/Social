@@ -256,6 +256,17 @@ $lang['fleet_supplier_orders']        = 'Part orders';
 $lang['fleet_supplier_other_costs']   = 'Other linked costs';
 $lang['fleet_billable']               = 'Re-billable to a client (billable expense)';
 $lang['fleet_reinvoice_client']       = 'Client to re-invoice';
+$lang['fleet_paid_amount']            = 'Paid';
+$lang['fleet_remaining']              = 'Outstanding';
+$lang['fleet_partial']                = 'Partial';
+$lang['fleet_pay']                    = 'Pay';
+$lang['fleet_record_payment']         = 'Record a payment';
+$lang['fleet_payment_amount']         = 'Amount';
+$lang['fleet_payment_date']           = 'Payment date';
+$lang['fleet_payment_mode']           = 'Payment mode';
+$lang['fleet_payment_recorded']       = 'Payment recorded';
+$lang['fleet_payment_invalid']        = 'Invalid payment amount';
+$lang['fleet_purchase_order']         = 'PURCHASE ORDER';
 
 # Parts inventory workflow
 $lang['fleet_unit']                   = 'Unit';

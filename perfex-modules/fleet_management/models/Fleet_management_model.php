@@ -741,7 +741,13 @@ class Fleet_management_model extends App_Model
         }
         $this->db->order_by('o.date_created', 'desc');
 
-        return $this->db->get()->result_array();
+        $orders = $this->db->get()->result_array();
+        foreach ($orders as &$o) {
+            $o['paid_amount'] = $this->record_paid('fleet_part_orders', $o['id']);
+            $o['remaining']   = max(0, (float) $o['total_price'] - $o['paid_amount']);
+        }
+
+        return $orders;
     }
 
     /**
@@ -784,14 +790,17 @@ class Fleet_management_model extends App_Model
                     $label = _l('fleet_rtype_' . $row['type']) . ' · ' . $row['title'];
                 }
 
+                $amount   = (float) $row[$amountCol];
+                $paidAmt  = $this->record_paid($table, $row['id']);
                 $ledger[] = [
                     'table'        => $table,
                     'id'           => $row['id'],
                     'label'        => $label,
                     'vehicle'      => trim(($row['vehicle_name'] ?? '') . ' ' . ($row['vehicle_plate'] ? '(' . $row['vehicle_plate'] . ')' : '')),
                     'date'         => $row[$dateCol],
-                    'amount'       => (float) $row[$amountCol],
-                    'paid'         => (int) ($row['paid'] ?? 0),
+                    'amount'       => $amount,
+                    'paid_amount'  => $paidAmt,
+                    'remaining'    => max(0, $amount - $paidAmt),
                     'expense_id'   => $row['expense_id'] ?? null,
                 ];
             }
@@ -806,18 +815,84 @@ class Fleet_management_model extends App_Model
 
         foreach ($this->get_supplier_orders($supplier_id, $start, $end) as $o) {
             $total += (float) $o['total_price'];
-            if (!empty($o['paid'])) {
-                $paid += (float) $o['total_price'];
-            }
+            $paid  += min((float) $o['total_price'], (float) $o['paid_amount']);
         }
         foreach ($this->get_supplier_costs($supplier_id, $start, $end) as $c) {
             $total += $c['amount'];
-            if (!empty($c['paid'])) {
-                $paid += $c['amount'];
-            }
+            $paid  += min($c['amount'], $c['paid_amount']);
         }
 
-        return (object) ['total' => $total, 'paid' => $paid, 'unpaid' => $total - $paid];
+        return (object) ['total' => $total, 'paid' => $paid, 'unpaid' => max(0, $total - $paid)];
+    }
+
+    /* ---------- Supplier payments (partial supported) ---------- */
+
+    public function add_payment($source_table, $source_id, $supplier_id, $amount, $date, $mode = null, $note = null)
+    {
+        $amount = (float) $amount;
+        if ($amount <= 0 || !$this->db->table_exists(db_prefix() . 'fleet_payments')) {
+            return false;
+        }
+
+        $this->db->insert(db_prefix() . 'fleet_payments', [
+            'source_table' => $source_table,
+            'source_id'    => $source_id,
+            'supplier_id'  => $supplier_id ?: null,
+            'amount'       => $amount,
+            'payment_date' => $date ? to_sql_date($date) : date('Y-m-d'),
+            'payment_mode' => $mode,
+            'note'         => $note,
+            'created_by'   => get_staff_user_id(),
+            'date_created' => date('Y-m-d H:i:s'),
+        ]);
+
+        return $this->db->insert_id();
+    }
+
+    public function record_paid($source_table, $source_id)
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_payments')) {
+            return 0;
+        }
+        $r = $this->db->select('COALESCE(SUM(amount),0) s')
+            ->where('source_table', $source_table)->where('source_id', $source_id)
+            ->get(db_prefix() . 'fleet_payments')->row();
+
+        return $r ? (float) $r->s : 0;
+    }
+
+    public function record_total($source_table, $source_id)
+    {
+        $map = [
+            'fleet_part_orders' => 'total_price',
+            'fleet_maintenance' => 'cost',
+            'fleet_fuel_logs'   => 'total_cost',
+            'fleet_reminders'   => 'cost',
+        ];
+        if (!isset($map[$source_table])) {
+            return 0;
+        }
+        $row = $this->db->where('id', $source_id)->get(db_prefix() . $source_table)->row();
+
+        return $row ? (float) $row->{$map[$source_table]} : 0;
+    }
+
+    public function get_payments($source_table, $source_id)
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_payments')) {
+            return [];
+        }
+        $this->db->where('source_table', $source_table)->where('source_id', $source_id);
+        $this->db->order_by('payment_date', 'desc')->order_by('id', 'desc');
+
+        return $this->db->get(db_prefix() . 'fleet_payments')->result_array();
+    }
+
+    public function delete_payment($id)
+    {
+        $this->db->where('id', $id)->delete(db_prefix() . 'fleet_payments');
+
+        return true;
     }
 
     /**

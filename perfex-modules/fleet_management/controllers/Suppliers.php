@@ -80,6 +80,31 @@ class Suppliers extends AdminController
         fleet_export_csv('supplier-' . $id . '-ledger', $headers, $rows);
     }
 
+    public function pay()
+    {
+        if (!staff_can('edit', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $table       = $this->input->post('source_table');
+        $sid         = (int) $this->input->post('source_id');
+        $supplier_id = (int) $this->input->post('supplier_id');
+        $amount      = (float) $this->input->post('amount');
+
+        $remaining = $this->fleet->record_total($table, $sid) - $this->fleet->record_paid($table, $sid);
+        if ($amount > $remaining + 0.001) {
+            $amount = $remaining;
+        }
+
+        if ($this->fleet->add_payment($table, $sid, $supplier_id, $amount, $this->input->post('payment_date'), $this->input->post('payment_mode'), $this->input->post('note'))) {
+            set_alert('success', _l('fleet_payment_recorded'));
+        } else {
+            set_alert('warning', _l('fleet_payment_invalid'));
+        }
+
+        redirect(admin_url('fleet_management/suppliers/view/' . $supplier_id));
+    }
+
     public function mark_paid($table, $id, $paid)
     {
         if (!staff_can('edit', 'fleet')) {
