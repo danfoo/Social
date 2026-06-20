@@ -26,6 +26,10 @@ $punit_options = [];
 foreach ($part_units as $u) {
     $punit_options[] = ['id' => $u['name'], 'name' => $u['name']];
 }
+$client_options = [];
+foreach ($clients as $cl) {
+    $client_options[] = ['id' => $cl['userid'], 'name' => $cl['company']];
+}
 ?>
 <?php init_head(); ?>
 <div id="wrapper">
@@ -236,6 +240,13 @@ foreach ($part_units as $u) {
             <div class="col-md-6"><?php echo render_date_input('order_date', 'fleet_order_date', _d(date('Y-m-d'))); ?></div>
             <div class="col-md-6"><?php echo render_input('invoice_no', 'fleet_supplier_invoice_no', ''); ?></div>
         </div>
+        <div class="checkbox checkbox-primary">
+            <input type="checkbox" name="billable" id="order_billable" value="1">
+            <label for="order_billable"><?php echo _l('fleet_billable'); ?></label>
+        </div>
+        <div id="order_client_wrap" style="display:none;">
+            <?php echo render_select('clientid', $client_options, ['id', 'name'], 'fleet_reinvoice_client'); ?>
+        </div>
         <?php echo render_textarea('notes', 'fleet_notes', ''); ?>
     </div>
     <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal"><?php echo _l('close'); ?></button><button type="submit" class="btn btn-primary"><?php echo _l('fleet_place_order'); ?></button></div>
@@ -278,6 +289,9 @@ $(function() {
         var q = parseFloat($('#fleet_part_order_modal [name="quantity"]').val());
         var u = parseFloat($('#fleet_part_order_modal [name="unit_price"]').val());
         if (!isNaN(q) && !isNaN(u)) { $('#fleet_part_order_modal [name="order_total"]').val((q * u).toFixed(2)); }
+    });
+    $('#fleet_part_order_modal').on('change', '#order_billable', function() {
+        $('#order_client_wrap').toggle($(this).is(':checked'));
     });
     $('#fleet_part_assign_modal').on('change', '[name="vehicle_id"]', fleetAssignFilterMaintenance);
     // open the tab referenced in the URL hash
@@ -322,6 +336,7 @@ function fleet_part_order_modal(id, itemId) {
     var modal = $('#fleet_part_order_modal');
     modal.find('form')[0].reset();
     $('#order_id').val('');
+    $('#order_client_wrap').hide();
     if (typeof id !== 'undefined' && id !== null) {
         $.getJSON('<?php echo admin_url('fleet_management/parts/order_get'); ?>/' + id, function(rec) {
             if (!rec) { return; }
@@ -333,6 +348,9 @@ function fleet_part_order_modal(id, itemId) {
             modal.find('[name="order_total"]').val(rec.total_price);
             modal.find('[name="invoice_no"]').val(rec.invoice_no);
             modal.find('[name="notes"]').val(rec.notes);
+            $('#order_billable').prop('checked', rec.billable == 1);
+            $('#order_client_wrap').toggle(rec.billable == 1);
+            modal.find('[name="clientid"]').val(rec.clientid);
             if (modal.find('.selectpicker').length) { modal.find('.selectpicker').selectpicker('refresh'); }
         });
     } else if (typeof itemId !== 'undefined') {

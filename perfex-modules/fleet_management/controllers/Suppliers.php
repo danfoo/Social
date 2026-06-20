@@ -40,6 +40,40 @@ class Suppliers extends AdminController
         $this->load->view('fleet_management/suppliers/view', $data);
     }
 
+    public function export_ledger($id)
+    {
+        if (!staff_can('view', 'fleet')) {
+            access_denied('fleet');
+        }
+        $supplier = $this->fleet->get_supplier($id);
+        if (!$supplier) {
+            show_404();
+        }
+
+        $headers = [
+            _l('fleet_date'), _l('fleet_part') . ' / ' . _l('fleet_type'), _l('fleet_vehicle'),
+            _l('fleet_quantity'), _l('fleet_total'), _l('fleet_supplier_invoice_no'), _l('fleet_payment'),
+        ];
+
+        $rows = [];
+        foreach ($this->fleet->get_supplier_orders($id) as $o) {
+            $rows[] = [
+                $o['order_date'] ? _d($o['order_date']) : '',
+                $o['item_name'] . ' [' . _l('fleet_ostatus_' . $o['status']) . ']',
+                '', $o['quantity'], $o['total_price'], $o['invoice_no'],
+                $o['paid'] ? _l('fleet_paid') : _l('fleet_unpaid'),
+            ];
+        }
+        foreach ($this->fleet->get_supplier_costs($id) as $c) {
+            $rows[] = [
+                $c['date'] ? _d($c['date']) : '', strip_tags($c['label']), $c['vehicle'],
+                '', $c['amount'], '', $c['paid'] ? _l('fleet_paid') : _l('fleet_unpaid'),
+            ];
+        }
+
+        fleet_export_csv('supplier-' . $id . '-ledger', $headers, $rows);
+    }
+
     public function mark_paid($table, $id, $paid)
     {
         if (!staff_can('edit', 'fleet')) {

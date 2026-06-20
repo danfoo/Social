@@ -254,6 +254,8 @@ $lang['fleet_acc_paid']               = 'Paid';
 $lang['fleet_acc_unpaid']             = 'Outstanding';
 $lang['fleet_supplier_orders']        = 'Part orders';
 $lang['fleet_supplier_other_costs']   = 'Other linked costs';
+$lang['fleet_billable']               = 'Re-billable to a client (billable expense)';
+$lang['fleet_reinvoice_client']       = 'Client to re-invoice';
 
 # Parts inventory workflow
 $lang['fleet_unit']                   = 'Unit';

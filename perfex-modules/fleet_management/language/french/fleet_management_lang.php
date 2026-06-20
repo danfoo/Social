@@ -254,6 +254,8 @@ $lang['fleet_acc_paid']               = 'Payé';
 $lang['fleet_acc_unpaid']             = 'Restant dû';
 $lang['fleet_supplier_orders']        = 'Commandes de pièces';
 $lang['fleet_supplier_other_costs']   = 'Autres coûts liés';
+$lang['fleet_billable']               = 'Refacturable à un client (dépense facturable)';
+$lang['fleet_reinvoice_client']       = 'Client à refacturer';
 
 # Parts inventory workflow
 $lang['fleet_unit']                   = 'Unité';

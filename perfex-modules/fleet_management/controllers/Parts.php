@@ -25,6 +25,8 @@ class Parts extends AdminController
         $data['maintenances']    = $this->fleet->get_maintenance();
         $data['part_categories'] = $this->fleet->get_part_categories();
         $data['part_units']      = $this->fleet->get_part_units();
+        $this->load->model('clients_model');
+        $data['clients']         = $this->clients_model->get();
         $data['title']           = _l('fleet_parts_articles');
         $this->load->view('fleet_management/parts/manage', $data);
     }

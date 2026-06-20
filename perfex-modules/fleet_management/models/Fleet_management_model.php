@@ -1288,21 +1288,31 @@ class Fleet_management_model extends App_Model
         $amount = ($order->status === 'received') ? $order->total_price : 0;
         $name   = _l('fleet_part') . ' - ' . $order->item_name . ($order->supplier_name ? ' - ' . $order->supplier_name : '');
 
-        $this->_sync_record_expense('fleet_part_orders', $id, $amount, $name, $order->item_reference, $order->received_date ?: $order->order_date);
+        $extra = [
+            'reference_no' => $order->invoice_no ?? '',
+            'billable'     => !empty($order->billable) ? 1 : 0,
+            'clientid'     => !empty($order->clientid) ? $order->clientid : null,
+        ];
+
+        $this->_sync_record_expense('fleet_part_orders', $id, $amount, $name, $order->item_reference, $order->received_date ?: $order->order_date, $extra);
     }
 
     private function _prepare_order_data($data)
     {
         unset($data['order_total']); // display-only field, not a column
-        $data = $this->_clean_numeric($data, ['item_id', 'supplier_id', 'quantity', 'unit_price']);
+        $data = $this->_clean_numeric($data, ['item_id', 'supplier_id', 'quantity', 'unit_price', 'clientid']);
         $data = $this->_clean_dates($data, ['order_date']);
 
         $qty = max(1, (int) ($data['quantity'] ?? 1));
         $data['quantity']    = $qty;
         $data['total_price'] = round((float) ($data['unit_price'] ?? 0) * $qty, 2);
+        $data['billable']    = isset($data['billable']) && $data['billable'] ? 1 : 0;
 
         if (empty($data['supplier_id'])) {
             $data['supplier_id'] = null;
+        }
+        if (empty($data['clientid'])) {
+            $data['clientid'] = null;
         }
 
         return $data;
@@ -1659,7 +1669,7 @@ class Fleet_management_model extends App_Model
      * (maintenance / fuel / reminder), keeping costs in sync with the Expenses
      * module. The link is stored in the record's `expense_id` column.
      */
-    private function _sync_record_expense($table, $record_id, $amount, $name, $note, $sql_date)
+    private function _sync_record_expense($table, $record_id, $amount, $name, $note, $sql_date, $extra = [])
     {
         if (!$this->db->field_exists('expense_id', db_prefix() . $table)) {
             return;
@@ -1683,14 +1693,16 @@ class Fleet_management_model extends App_Model
             return;
         }
 
-        $payload = [
+        $payload = array_merge([
             'category'     => $category,
             'amount'       => $amount,
             'expense_name' => $name,
             'note'         => $note,
             'date'         => _d($sql_date ?: date('Y-m-d')),
             'currency'     => get_base_currency()->id,
-        ];
+        ], array_filter($extra, function ($v) {
+            return $v !== null && $v !== '';
+        }));
 
         if ($existing) {
             $this->expenses_model->update($payload, $existing);

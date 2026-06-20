@@ -342,6 +342,10 @@ foreach (['fleet_part_orders', 'fleet_maintenance', 'fleet_fuel_logs', 'fleet_re
 if ($CI->db->table_exists(db_prefix() . 'fleet_part_orders') && !$CI->db->field_exists('invoice_no', db_prefix() . 'fleet_part_orders')) {
     $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_part_orders` ADD `invoice_no` VARCHAR(100) NULL');
 }
+if ($CI->db->table_exists(db_prefix() . 'fleet_part_orders') && !$CI->db->field_exists('billable', db_prefix() . 'fleet_part_orders')) {
+    $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_part_orders` ADD `billable` TINYINT(1) NOT NULL DEFAULT 0');
+    $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_part_orders` ADD `clientid` INT(11) NULL');
+}
 
 // Dedicated expense category so fleet costs are grouped in the Expenses module.
 if (get_option('fleet_expense_category_id') == '' && $CI->db->table_exists(db_prefix() . 'expenses_categories')) {

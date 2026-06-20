@@ -3,7 +3,10 @@
 <?php init_head(); ?>
 <div id="wrapper">
     <div class="content fleet-list-page">
-        <a href="<?php echo admin_url('fleet_management/suppliers'); ?>" class="btn btn-default btn-sm mbot15"><i class="fa fa-arrow-left"></i> <?php echo _l('fleet_suppliers'); ?></a>
+        <div class="mbot15">
+            <a href="<?php echo admin_url('fleet_management/suppliers'); ?>" class="btn btn-default btn-sm"><i class="fa fa-arrow-left"></i> <?php echo _l('fleet_suppliers'); ?></a>
+            <a href="<?php echo admin_url('fleet_management/suppliers/export_ledger/' . $supplier->id); ?>" class="btn btn-default btn-sm pull-right"><i class="fa fa-download"></i> <?php echo _l('fleet_export'); ?></a>
+        </div>
 
         <div class="row">
             <!-- Supplier info -->
