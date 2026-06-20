@@ -51,6 +51,7 @@ $lang['fleet_dash_occupancy_short']   = 'Occupancy';
 $lang['fleet_dash_per_vehicle']       = 'Cost per vehicle';
 $lang['fleet_dash_cost_per_km']       = 'Cost / km';
 $lang['fleet_dash_expense_evolution'] = 'Expense evolution (12 months)';
+$lang['fleet_dash_cost_split']        = 'Cost split';
 $lang['fleet_dash_most_used']         = 'Most used vehicle';
 $lang['fleet_dash_most_expensive']    = 'Most expensive vehicle';
 $lang['fleet_dash_most_fuel']         = 'Highest fuel cost';
