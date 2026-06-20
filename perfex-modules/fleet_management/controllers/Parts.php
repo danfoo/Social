@@ -218,7 +218,8 @@ class Parts extends AdminController
             [get_option('invoice_company_name'), get_option('invoice_company_phonenumber'), get_option('smtp_email'), site_url()],
             $footer
         );
-        $pdf->SetY(-32);
+        $pdf->SetAutoPageBreak(false);
+        $pdf->SetY(-30);
         $pdf->writeHTML($footer, true, false, true, false, '');
 
         $pdf->Output('supplier-order-' . $id . '.pdf', 'I');
