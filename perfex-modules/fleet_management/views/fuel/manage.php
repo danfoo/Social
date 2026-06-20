@@ -136,23 +136,30 @@ foreach (fleet_fuel_types() as $t) {
 <?php init_tail(); ?>
 <script>
 $(function() {
-    // Auto-compute total cost from liters * unit price when total is left blank.
-    $('#fleet_fuel_modal').on('input', '[name="liters"], [name="price_per_liter"]', function() {
-        var l = parseFloat($('#fleet_fuel_modal [name="liters"]').val());
-        var p = parseFloat($('#fleet_fuel_modal [name="price_per_liter"]').val());
-        var totalField = $('#fleet_fuel_modal [name="total_cost"]');
-        if (!totalField.data('touched') && !isNaN(l) && !isNaN(p)) {
-            totalField.val((l * p).toFixed(2));
-        }
-    });
-    $('#fleet_fuel_modal [name="total_cost"]').on('input', function() { $(this).data('touched', true); });
+    var $f = $('#fleet_fuel_modal');
+
+    // Mark a field as manually edited so it is not overwritten by auto-compute.
+    $f.on('input', '[name="liters"]', function() { $(this).data('touched', true); fleet_fuel_recompute(); });
+    $f.on('input', '[name="price_per_liter"]', function() { $(this).data('touched', true); fleet_fuel_recompute(); });
+    $f.on('input', '[name="total_cost"]', function() { $(this).data('touched', true); fleet_fuel_recompute(); });
+
+    // Fill whichever of liters / price / total the user did not type, so the
+    // liters value can be derived from "amount paid" + "price per liter".
+    window.fleet_fuel_recompute = function() {
+        var lF = $f.find('[name="liters"]'), pF = $f.find('[name="price_per_liter"]'), tF = $f.find('[name="total_cost"]');
+        var l = parseFloat(lF.val()), p = parseFloat(pF.val()), t = parseFloat(tF.val());
+
+        if (!lF.data('touched') && p > 0 && !isNaN(t)) { lF.val((t / p).toFixed(2)); return; }
+        if (!tF.data('touched') && !isNaN(l) && !isNaN(p)) { tF.val((l * p).toFixed(2)); return; }
+        if (!pF.data('touched') && l > 0 && !isNaN(t)) { pF.val((t / l).toFixed(3)); return; }
+    };
 });
 function fleet_fuel_modal(id) {
     var modal = $('#fleet_fuel_modal');
     modal.find('form')[0].reset();
     $('#fuel_id').val('');
     $('#fuel_full_tank').prop('checked', true);
-    modal.find('[name="total_cost"]').data('touched', false);
+    modal.find('[name="liters"], [name="price_per_liter"], [name="total_cost"]').data('touched', false);
     if (typeof id !== 'undefined') {
         $.getJSON('<?php echo admin_url('fleet_management/fuel/get'); ?>/' + id, function(rec) {
             if (!rec) { return; }
@@ -160,8 +167,8 @@ function fleet_fuel_modal(id) {
             modal.find('[name="vehicle_id"]').val(rec.vehicle_id);
             modal.find('[name="driver_id"]').val(rec.driver_id);
             modal.find('[name="odometer"]').val(rec.odometer);
-            modal.find('[name="liters"]').val(rec.liters);
-            modal.find('[name="price_per_liter"]').val(rec.price_per_liter);
+            modal.find('[name="liters"]').val(rec.liters).data('touched', true);
+            modal.find('[name="price_per_liter"]').val(rec.price_per_liter).data('touched', true);
             modal.find('[name="total_cost"]').val(rec.total_cost).data('touched', true);
             modal.find('[name="fuel_type"]').val(rec.fuel_type);
             modal.find('[name="supplier_id"]').val(rec.supplier_id);

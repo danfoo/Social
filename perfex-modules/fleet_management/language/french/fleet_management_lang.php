@@ -88,6 +88,7 @@ $lang['fleet_next_service_date']      = 'Prochain entretien (date)';
 $lang['fleet_next_service_odometer']  = 'Prochain entretien (km)';
 $lang['fleet_description']            = 'Description';
 $lang['fleet_maintenance_in_global']  = 'Gérez tous les entretiens dans';
+$lang['fleet_next_service']           = 'Prochain entretien';
 
 $lang['fleet_mtype_oil_change']       = 'Vidange';
 $lang['fleet_mtype_revision']         = 'Révision';

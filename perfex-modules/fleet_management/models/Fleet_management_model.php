@@ -232,6 +232,19 @@ class Fleet_management_model extends App_Model
             );
         }
 
+        // A planned next service date automatically schedules a reminder.
+        if ($id && !empty($data['vehicle_id']) && !empty($data['next_service_date'])) {
+            $km = !empty($data['next_service_odometer']) ? ' (' . (int) $data['next_service_odometer'] . ' km)' : '';
+            $this->add_reminder([
+                'vehicle_id'  => $data['vehicle_id'],
+                'type'        => 'service',
+                'title'       => _l('fleet_next_service') . ' - ' . $type_label,
+                'description' => _l('fleet_next_service') . $km,
+                'due_date'    => _d($data['next_service_date']),
+                'notify_days' => 7,
+            ]);
+        }
+
         return $id;
     }
 
