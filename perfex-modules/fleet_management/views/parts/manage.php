@@ -126,7 +126,7 @@ foreach ($items as $it) {
                                         <th>#</th>
                                         <th><?php echo _l('fleet_part'); ?></th>
                                         <th><?php echo _l('fleet_supplier'); ?></th>
-                                        <th><?php echo _l('fleet_quantity'); ?></th>
+                                        <th><?php echo _l('fleet_lines_count'); ?></th>
                                         <th><?php echo _l('fleet_total'); ?></th>
                                         <th><?php echo _l('fleet_order_date'); ?></th>
                                         <th><?php echo _l('fleet_status'); ?></th>

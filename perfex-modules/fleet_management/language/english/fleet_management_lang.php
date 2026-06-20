@@ -295,6 +295,7 @@ $lang['fleet_ostatus_received']       = 'Received';
 $lang['fleet_ostatus_cancelled']      = 'Cancelled';
 $lang['fleet_order_placed']           = 'Order placed';
 $lang['fleet_add_line']               = 'Add line';
+$lang['fleet_lines_count']            = 'Items';
 $lang['fleet_order_no_lines']         = 'Add at least one item line';
 $lang['fleet_order_received_done']    = 'Order received and added to stock';
 $lang['fleet_order_cancelled']        = 'Order cancelled';
