@@ -16,9 +16,12 @@ class Vehicles extends AdminController
             access_denied('fleet');
         }
 
-        $data['vehicles']     = $this->fleet->get_vehicle();
-        $data['status_counts'] = $this->fleet->vehicles_count_by_status();
-        $data['title']        = _l('fleet_vehicles');
+        $show_archived          = (bool) $this->input->get('archived');
+        $data['show_archived']  = $show_archived;
+        $data['vehicles']       = $show_archived ? $this->fleet->get_archived_vehicles() : $this->fleet->get_vehicle();
+        $data['archived_count'] = count($this->fleet->get_archived_vehicles());
+        $data['status_counts']  = $this->fleet->vehicles_count_by_status();
+        $data['title']          = _l('fleet_vehicles');
         $this->load->view('fleet_management/vehicles/manage', $data);
     }
 
@@ -177,19 +180,30 @@ class Vehicles extends AdminController
         exit;
     }
 
-    public function delete($id)
+    /**
+     * Vehicles are never hard-deleted (to keep their activity history); they
+     * are archived (deactivated) and can be restored.
+     */
+    public function archive($id)
     {
         if (!staff_can('delete', 'fleet')) {
             access_denied('fleet');
         }
 
-        if ($this->fleet->delete_vehicle($id)) {
-            set_alert('success', _l('deleted', _l('fleet_vehicle')));
-        } else {
-            set_alert('warning', _l('problem_deleting', _l('fleet_vehicle')));
+        $this->fleet->archive_vehicle($id);
+        set_alert('success', _l('fleet_vehicle_archived'));
+        redirect(admin_url('fleet_management/vehicles'));
+    }
+
+    public function restore($id)
+    {
+        if (!staff_can('edit', 'fleet')) {
+            access_denied('fleet');
         }
 
-        redirect(admin_url('fleet_management/vehicles'));
+        $this->fleet->restore_vehicle($id);
+        set_alert('success', _l('fleet_vehicle_restored'));
+        redirect(admin_url('fleet_management/vehicles?archived=1'));
     }
 
     public function export()

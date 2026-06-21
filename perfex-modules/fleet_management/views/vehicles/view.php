@@ -12,7 +12,12 @@ foreach ($drivers as $d) {
             <div class="col-md-4">
                 <div class="panel_s">
                     <div class="panel-body">
-                        <h4 class="bold"><?php echo html_escape($vehicle->name); ?> <?php echo fleet_vehicle_status_badge($vehicle->status); ?></h4>
+                        <h4 class="bold"><?php echo html_escape($vehicle->name); ?> <?php echo fleet_vehicle_status_badge($vehicle->status); ?>
+                            <?php if (!empty($vehicle->archived)) : ?><span class="label label-default"><i class="fa fa-archive"></i> <?php echo _l('fleet_archived'); ?></span><?php endif; ?>
+                        </h4>
+                        <?php if (!empty($vehicle->archived) && staff_can('edit', 'fleet')) : ?>
+                            <a href="<?php echo admin_url('fleet_management/vehicles/restore/' . $vehicle->id); ?>" class="btn btn-success btn-sm btn-block mbot15"><i class="fa fa-undo"></i> <?php echo _l('fleet_restore'); ?></a>
+                        <?php endif; ?>
                         <p class="text-muted"><?php echo html_escape($vehicle->brand . ' ' . $vehicle->model . ' · ' . $vehicle->year); ?></p>
                         <table class="table table-borderless no-margin">
                             <tr><td class="bold"><?php echo _l('fleet_plate'); ?></td><td><?php echo html_escape($vehicle->plate); ?></td></tr>

@@ -523,6 +523,12 @@ if (!$CI->db->table_exists(db_prefix() . 'fleet_inspection_files')) {
     ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
 }
 
+// Soft-archive flag so a vehicle can be deactivated instead of deleted,
+// preserving its full activity history (idempotent upgrade).
+if ($CI->db->table_exists(db_prefix() . 'fleet_vehicles') && !$CI->db->field_exists('archived', db_prefix() . 'fleet_vehicles')) {
+    $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_vehicles` ADD `archived` TINYINT(1) NOT NULL DEFAULT 0');
+}
+
 // Traffic fines / contraventions (PV) linked to a vehicle + driver, re-billable.
 if (!$CI->db->table_exists(db_prefix() . 'fleet_fines')) {
     $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_fines` (

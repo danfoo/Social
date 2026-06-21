@@ -13,7 +13,7 @@ class Fleet_management_model extends App_Model
      * Vehicles
      * ----------------------------------------------------------------- */
 
-    public function get_vehicle($id = '')
+    public function get_vehicle($id = '', $include_archived = false)
     {
         if (is_numeric($id)) {
             $this->db->where('id', $id);
@@ -21,9 +21,46 @@ class Fleet_management_model extends App_Model
             return $this->db->get(db_prefix() . 'fleet_vehicles')->row();
         }
 
+        // Listings hide archived (deactivated) vehicles by default so they no
+        // longer appear in operational screens, while their data is kept.
+        if (!$include_archived && $this->db->field_exists('archived', db_prefix() . 'fleet_vehicles')) {
+            $this->db->where('archived', 0);
+        }
+
         $this->db->order_by('name', 'asc');
 
         return $this->db->get(db_prefix() . 'fleet_vehicles')->result_array();
+    }
+
+    public function get_archived_vehicles()
+    {
+        if (!$this->db->field_exists('archived', db_prefix() . 'fleet_vehicles')) {
+            return [];
+        }
+
+        $this->db->where('archived', 1);
+        $this->db->order_by('name', 'asc');
+
+        return $this->db->get(db_prefix() . 'fleet_vehicles')->result_array();
+    }
+
+    /** Deactivate a vehicle (kept with its full history) instead of deleting it. */
+    public function archive_vehicle($id)
+    {
+        $this->db->where('id', $id);
+        $this->db->update(db_prefix() . 'fleet_vehicles', ['archived' => 1]);
+        $this->log_activity($id, 'vehicle', _l('fleet_log_vehicle_archived'));
+
+        return true;
+    }
+
+    public function restore_vehicle($id)
+    {
+        $this->db->where('id', $id);
+        $this->db->update(db_prefix() . 'fleet_vehicles', ['archived' => 0]);
+        $this->log_activity($id, 'vehicle', _l('fleet_log_vehicle_restored'));
+
+        return true;
     }
 
     public function add_vehicle($data)
@@ -2150,6 +2187,9 @@ class Fleet_management_model extends App_Model
     public function vehicles_count_by_status()
     {
         $this->db->select('status, COUNT(*) as total');
+        if ($this->db->field_exists('archived', db_prefix() . 'fleet_vehicles')) {
+            $this->db->where('archived', 0);
+        }
         $this->db->group_by('status');
         $rows = $this->db->get(db_prefix() . 'fleet_vehicles')->result_array();
 

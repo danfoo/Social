@@ -460,3 +460,14 @@ $lang['fleet_fstatus_pending']          = 'To settle';
 $lang['fleet_fstatus_paid']             = 'Settled';
 $lang['fleet_fstatus_contested']        = 'Contested';
 $lang['fleet_fstatus_cancelled']        = 'Cancelled';
+
+# Vehicle archiving (soft delete)
+$lang['fleet_archived']                 = 'Archived';
+$lang['fleet_active_vehicles']          = 'Active vehicles';
+$lang['fleet_archive']                  = 'Deactivate / archive';
+$lang['fleet_restore']                  = 'Reactivate';
+$lang['fleet_archive_confirm']          = 'Deactivate this vehicle? It will be archived (its history is kept) and can be reactivated at any time.';
+$lang['fleet_vehicle_archived']         = 'Vehicle archived';
+$lang['fleet_vehicle_restored']         = 'Vehicle reactivated';
+$lang['fleet_log_vehicle_archived']     = 'Vehicle archived (deactivated)';
+$lang['fleet_log_vehicle_restored']     = 'Vehicle reactivated';

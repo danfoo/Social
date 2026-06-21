@@ -13,12 +13,19 @@ $status_meta = [
 
         <!-- Toolbar -->
         <div class="fleet-toolbar">
-            <h3><i class="fa fa-car text-info"></i> <?php echo _l('fleet_vehicles'); ?></h3>
+            <h3><i class="fa fa-car text-info"></i> <?php echo _l('fleet_vehicles'); ?>
+                <?php if (!empty($show_archived)) : ?><small class="text-muted">· <?php echo _l('fleet_archived'); ?></small><?php endif; ?>
+            </h3>
             <div class="fleet-tools">
                 <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
-                <a href="<?php echo admin_url('fleet_management/vehicles/export'); ?>" class="btn btn-default btn-sm"><i class="fa fa-download"></i> <?php echo _l('fleet_export'); ?></a>
-                <?php if (staff_can('create', 'fleet')) : ?>
-                    <a href="<?php echo admin_url('fleet_management/vehicles/vehicle'); ?>" class="btn btn-primary btn-sm"><i class="fa fa-plus"></i> <?php echo _l('fleet_add_vehicle'); ?></a>
+                <?php if (!empty($show_archived)) : ?>
+                    <a href="<?php echo admin_url('fleet_management/vehicles'); ?>" class="btn btn-default btn-sm"><i class="fa fa-arrow-left"></i> <?php echo _l('fleet_active_vehicles'); ?></a>
+                <?php else : ?>
+                    <a href="<?php echo admin_url('fleet_management/vehicles/export'); ?>" class="btn btn-default btn-sm"><i class="fa fa-download"></i> <?php echo _l('fleet_export'); ?></a>
+                    <a href="<?php echo admin_url('fleet_management/vehicles?archived=1'); ?>" class="btn btn-default btn-sm"><i class="fa fa-archive"></i> <?php echo _l('fleet_archived'); ?> <?php echo $archived_count > 0 ? '(' . $archived_count . ')' : ''; ?></a>
+                    <?php if (staff_can('create', 'fleet')) : ?>
+                        <a href="<?php echo admin_url('fleet_management/vehicles/vehicle'); ?>" class="btn btn-primary btn-sm"><i class="fa fa-plus"></i> <?php echo _l('fleet_add_vehicle'); ?></a>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
         </div>
@@ -73,12 +80,18 @@ $status_meta = [
                                         <td class="bold"><?php echo app_format_money($vehicle['daily_rate'], get_base_currency()); ?></td>
                                         <td><?php echo fleet_vehicle_status_badge($vehicle['status']); ?></td>
                                         <td class="text-right">
-                                            <a href="<?php echo admin_url('fleet_management/vehicles/view/' . $vehicle['id']); ?>" class="btn btn-default btn-icon btn-sm"><i class="fa fa-eye"></i></a>
-                                            <?php if (staff_can('edit', 'fleet')) : ?>
-                                                <a href="<?php echo admin_url('fleet_management/vehicles/vehicle/' . $vehicle['id']); ?>" class="btn btn-default btn-icon btn-sm"><i class="fa fa-pencil-square"></i></a>
-                                            <?php endif; ?>
-                                            <?php if (staff_can('delete', 'fleet')) : ?>
-                                                <a href="<?php echo admin_url('fleet_management/vehicles/delete/' . $vehicle['id']); ?>" class="btn btn-danger btn-icon btn-sm _delete"><i class="fa fa-remove"></i></a>
+                                            <a href="<?php echo admin_url('fleet_management/vehicles/view/' . $vehicle['id']); ?>" class="btn btn-default btn-icon btn-sm" title="<?php echo _l('view'); ?>"><i class="fa fa-eye"></i></a>
+                                            <?php if (!empty($show_archived)) : ?>
+                                                <?php if (staff_can('edit', 'fleet')) : ?>
+                                                    <a href="<?php echo admin_url('fleet_management/vehicles/restore/' . $vehicle['id']); ?>" class="btn btn-success btn-sm" title="<?php echo _l('fleet_restore'); ?>"><i class="fa fa-undo"></i> <?php echo _l('fleet_restore'); ?></a>
+                                                <?php endif; ?>
+                                            <?php else : ?>
+                                                <?php if (staff_can('edit', 'fleet')) : ?>
+                                                    <a href="<?php echo admin_url('fleet_management/vehicles/vehicle/' . $vehicle['id']); ?>" class="btn btn-default btn-icon btn-sm" title="<?php echo _l('edit'); ?>"><i class="fa fa-pencil-square"></i></a>
+                                                <?php endif; ?>
+                                                <?php if (staff_can('delete', 'fleet')) : ?>
+                                                    <a href="<?php echo admin_url('fleet_management/vehicles/archive/' . $vehicle['id']); ?>" class="btn btn-warning btn-icon btn-sm" title="<?php echo _l('fleet_archive'); ?>" onclick="return confirm('<?php echo _l('fleet_archive_confirm'); ?>');"><i class="fa fa-archive"></i></a>
+                                                <?php endif; ?>
                                             <?php endif; ?>
                                         </td>
                                     </tr>
