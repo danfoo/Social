@@ -21,10 +21,48 @@ class Rentals extends AdminController
         $this->load->view('fleet_management/rentals/manage', $data);
     }
 
+    public function planning()
+    {
+        if (!staff_can('view', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        // Selected month (Y-m), defaulting to the current month.
+        $month = $this->input->get('month');
+        if (!$month || !preg_match('/^\d{4}-\d{2}$/', $month)) {
+            $month = date('Y-m');
+        }
+
+        $range_start = $month . '-01';
+        $range_end   = date('Y-m-t', strtotime($range_start));
+
+        $data['month']       = $month;
+        $data['range_start'] = $range_start;
+        $data['range_end']   = $range_end;
+        $data['prev_month']  = date('Y-m', strtotime($range_start . ' -1 month'));
+        $data['next_month']  = date('Y-m', strtotime($range_start . ' +1 month'));
+        $data['vehicles']    = $this->fleet->get_vehicle();
+        $data['rentals']     = $this->fleet->get_rentals_in_range($range_start, $range_end);
+        $data['title']       = _l('fleet_planning');
+        $this->load->view('fleet_management/rentals/planning', $data);
+    }
+
     public function rental($id = '')
     {
         if ($this->input->post()) {
             $data = $this->input->post();
+
+            // Guard against double-booking the same vehicle on overlapping dates.
+            if (!empty($data['vehicle_id']) && !empty($data['date_start']) && !empty($data['date_end'])
+                && in_array(($data['status'] ?? 'reserved'), ['reserved', 'ongoing'], true)) {
+                $conflicts = $this->fleet->rental_conflicts($data['vehicle_id'], $data['date_start'], $data['date_end'], $id ?: null);
+                if (!empty($conflicts)) {
+                    $c     = $conflicts[0];
+                    $label = '#' . $c['id'] . ($c['client_name'] ? ' - ' . $c['client_name'] : '');
+                    set_alert('warning', _l('fleet_booking_conflict', [_d($c['date_start']), _d($c['date_end']), $label]));
+                    redirect($id == '' ? admin_url('fleet_management/rentals/rental') : admin_url('fleet_management/rentals/rental/' . $id));
+                }
+            }
 
             if ($id == '') {
                 if (!staff_can('create', 'fleet')) {

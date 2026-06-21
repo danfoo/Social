@@ -47,6 +47,20 @@ foreach ($expense_categories as $c) {
                         </div>
                     </div>
 
+                    <h4 class="bold mtop20"><i class="fa fa-envelope text-warning"></i> <?php echo _l('fleet_set_notifications'); ?></h4>
+                    <hr class="hr-panel-heading" />
+                    <div class="checkbox checkbox-primary">
+                        <input type="checkbox" name="fleet_email_notifications" id="fleet_email_notifications" value="1" <?php echo get_option('fleet_email_notifications') ? 'checked' : ''; ?>>
+                        <label for="fleet_email_notifications"><?php echo _l('fleet_set_email_notifications'); ?></label>
+                    </div>
+                    <p class="text-muted tw-text-xs"><?php echo _l('fleet_set_email_notifications_help'); ?></p>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <?php echo render_input('fleet_notification_emails', 'fleet_set_notification_emails', get_option('fleet_notification_emails')); ?>
+                            <p class="text-muted tw-text-xs"><?php echo _l('fleet_set_notification_emails_help'); ?></p>
+                        </div>
+                    </div>
+
                     <div class="mtop15">
                         <button type="submit" class="btn btn-primary"><?php echo _l('submit'); ?></button>
                     </div>

@@ -365,3 +365,15 @@ $lang['fleet_license_reminders']            = 'Permis de conduire à renouveler'
 $lang['fleet_license_due_notification']     = 'Permis de %s à renouveler (expire le %s)';
 $lang['fleet_set_license_notify_days']      = 'Alerte permis (jours avant)';
 $lang['fleet_set_license_notify_days_help'] = 'Nombre de jours avant l\'expiration d\'un permis de conduire à partir duquel un rappel est généré et le personnel notifié.';
+
+# Planning & booking
+$lang['fleet_planning']                       = 'Planning';
+$lang['fleet_no_vehicles']                    = 'Aucun véhicule';
+$lang['fleet_booking_conflict']               = 'Réservation impossible : ce véhicule est déjà réservé du %s au %s (location %s). Modifiez les dates ou le véhicule.';
+
+# E-mail notifications
+$lang['fleet_set_notifications']              = 'Notifications';
+$lang['fleet_set_email_notifications']        = 'Activer les notifications par e-mail';
+$lang['fleet_set_email_notifications_help']   = 'Envoie un e-mail (en plus de la notification interne) lorsqu\'un rappel de document véhicule ou de permis arrive à échéance.';
+$lang['fleet_set_notification_emails']        = 'Destinataires supplémentaires';
+$lang['fleet_set_notification_emails_help']   = 'Adresses e-mail supplémentaires à prévenir, séparées par une virgule. Le personnel autorisé à voir la flotte est déjà notifié.';

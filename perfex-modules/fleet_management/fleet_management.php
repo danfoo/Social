@@ -14,7 +14,7 @@ define('FLEET_MANAGEMENT_MODULE', 'fleet_management');
 
 // Bump this whenever the database schema changes so the auto-migration below
 // recreates any missing table/column without a manual deactivate/reactivate.
-define('FLEET_MANAGEMENT_DB_VERSION', '1.0.14');
+define('FLEET_MANAGEMENT_DB_VERSION', '1.0.15');
 
 $CI = &get_instance();
 
@@ -118,59 +118,66 @@ function fleet_management_init_menu_items()
     ]);
 
     $CI->app_menu->add_sidebar_children_item('fleet-management', [
+        'slug'     => 'fleet-planning',
+        'name'     => _l('fleet_planning'),
+        'href'     => admin_url('fleet_management/rentals/planning'),
+        'position' => 3,
+    ]);
+
+    $CI->app_menu->add_sidebar_children_item('fleet-management', [
         'slug'     => 'fleet-maintenance',
         'name'     => _l('fleet_maintenance'),
         'href'     => admin_url('fleet_management/maintenance'),
-        'position' => 3,
+        'position' => 4,
     ]);
 
     $CI->app_menu->add_sidebar_children_item('fleet-management', [
         'slug'     => 'fleet-parts',
         'name'     => _l('fleet_parts_articles'),
         'href'     => admin_url('fleet_management/parts'),
-        'position' => 4,
+        'position' => 5,
     ]);
 
     $CI->app_menu->add_sidebar_children_item('fleet-management', [
         'slug'     => 'fleet-fuel',
         'name'     => _l('fleet_fuel'),
         'href'     => admin_url('fleet_management/fuel'),
-        'position' => 5,
+        'position' => 6,
     ]);
 
     $CI->app_menu->add_sidebar_children_item('fleet-management', [
         'slug'     => 'fleet-reminders',
         'name'     => _l('fleet_reminders'),
         'href'     => admin_url('fleet_management/reminders'),
-        'position' => 6,
+        'position' => 7,
     ]);
 
     $CI->app_menu->add_sidebar_children_item('fleet-management', [
         'slug'     => 'fleet-drivers',
         'name'     => _l('fleet_drivers'),
         'href'     => admin_url('fleet_management/drivers'),
-        'position' => 7,
+        'position' => 8,
     ]);
 
     $CI->app_menu->add_sidebar_children_item('fleet-management', [
         'slug'     => 'fleet-suppliers',
         'name'     => _l('fleet_suppliers'),
         'href'     => admin_url('fleet_management/suppliers'),
-        'position' => 8,
+        'position' => 9,
     ]);
 
     $CI->app_menu->add_sidebar_children_item('fleet-management', [
         'slug'     => 'fleet-library',
         'name'     => _l('fleet_library'),
         'href'     => admin_url('fleet_management/library'),
-        'position' => 9,
+        'position' => 10,
     ]);
 
     $CI->app_menu->add_sidebar_children_item('fleet-management', [
         'slug'     => 'fleet-settings',
         'name'     => _l('fleet_settings'),
         'href'     => admin_url('fleet_management/settings'),
-        'position' => 10,
+        'position' => 11,
     ]);
 }
 

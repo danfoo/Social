@@ -365,3 +365,15 @@ $lang['fleet_license_reminders']            = 'Driver licenses to renew';
 $lang['fleet_license_due_notification']     = '%s driver license is due for renewal (expires %s)';
 $lang['fleet_set_license_notify_days']      = 'License alert (days before)';
 $lang['fleet_set_license_notify_days_help'] = 'Number of days before a driver license expires from which a reminder is generated and staff are notified.';
+
+# Planning & booking
+$lang['fleet_planning']                       = 'Planning';
+$lang['fleet_no_vehicles']                    = 'No vehicle';
+$lang['fleet_booking_conflict']               = 'Booking not possible: this vehicle is already booked from %s to %s (rental %s). Change the dates or the vehicle.';
+
+# E-mail notifications
+$lang['fleet_set_notifications']              = 'Notifications';
+$lang['fleet_set_email_notifications']        = 'Enable e-mail notifications';
+$lang['fleet_set_email_notifications_help']   = 'Sends an e-mail (in addition to the in-app notification) when a vehicle document or driver license reminder is due.';
+$lang['fleet_set_notification_emails']        = 'Additional recipients';
+$lang['fleet_set_notification_emails_help']   = 'Extra e-mail addresses to notify, comma separated. Staff allowed to view the fleet are already notified.';

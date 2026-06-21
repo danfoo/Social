@@ -196,6 +196,44 @@ function fleet_reminder_due_badge($due_date, $notify_days = 7)
     return '<span class="label label-success">' . _l('fleet_reminder_ok', $diff) . '</span>';
 }
 
+/**
+ * Send an HTML e-mail to one or several recipients using Perfex's configured
+ * mailer (SMTP settings + decryption handled by application/config/email.php).
+ * No-op when fleet e-mail notifications are disabled in the settings.
+ */
+function fleet_send_email($recipients, $subject, $message)
+{
+    if (!get_option('fleet_email_notifications')) {
+        return false;
+    }
+
+    $recipients = array_filter(array_unique((array) $recipients));
+    if (empty($recipients)) {
+        return false;
+    }
+
+    $CI = &get_instance();
+    $CI->load->library('email');
+
+    $from_email = get_option('smtp_email') ?: get_option('email');
+    $from_name  = get_option('companyname');
+
+    foreach ($recipients as $to) {
+        $CI->email->clear(true);
+        $CI->email->set_mailtype('html');
+        if ($from_email) {
+            $CI->email->from($from_email, $from_name);
+        }
+        $CI->email->to($to);
+        $CI->email->subject($subject);
+        $CI->email->message($message);
+        // Swallow transport errors so a bad address never breaks the cron run.
+        @$CI->email->send(false);
+    }
+
+    return true;
+}
+
 function fleet_accident_severity_badge($severity)
 {
     $map = [

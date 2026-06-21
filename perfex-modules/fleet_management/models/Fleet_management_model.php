@@ -247,7 +247,8 @@ class Fleet_management_model extends App_Model
             return;
         }
 
-        $staff = $this->db->get(db_prefix() . 'staff')->result_array();
+        $staff   = $this->db->get(db_prefix() . 'staff')->result_array();
+        $mail_to = $this->notification_emails();
 
         foreach ($drivers as $driver) {
             if (!empty($driver['license_notified'])) {
@@ -272,6 +273,12 @@ class Fleet_management_model extends App_Model
                     pusher_trigger_notification([$member['staffid']]);
                 }
             }
+
+            // E-mail notification (when enabled in the settings).
+            $subject = _l('fleet_license_reminders') . ' — ' . $driver['full_name'];
+            $body    = '<p>' . sprintf(_l('fleet_license_due_notification'), html_escape($driver['full_name']), _d($driver['license_expiry'])) . '</p>'
+                . '<p><a href="' . admin_url('fleet_management/drivers/profile/' . $driver['staff_id']) . '">' . _l('fleet_driver_profile') . '</a></p>';
+            fleet_send_email($mail_to, $subject, $body);
 
             $this->db->where('staff_id', $driver['staff_id']);
             $this->db->update(db_prefix() . 'fleet_driver_profiles', ['license_notified' => 1]);
@@ -605,7 +612,8 @@ class Fleet_management_model extends App_Model
         }
 
         // Notify every staff member allowed to view the fleet.
-        $staff = $this->db->get(db_prefix() . 'staff')->result_array();
+        $staff       = $this->db->get(db_prefix() . 'staff')->result_array();
+        $mail_to     = $this->notification_emails();
 
         foreach ($reminders as $reminder) {
             $vehicle = $this->get_vehicle($reminder['vehicle_id']);
@@ -629,6 +637,14 @@ class Fleet_management_model extends App_Model
                     pusher_trigger_notification([$member['staffid']]);
                 }
             }
+
+            // E-mail notification (when enabled in the settings).
+            $subject = _l('fleet_reminders') . ' — ' . $reminder['title'] . ' — ' . $vehicle_label;
+            $body    = '<p><strong>' . html_escape($reminder['title']) . '</strong></p>'
+                . '<p>' . _l('fleet_vehicle') . ': ' . html_escape($vehicle_label) . '</p>'
+                . '<p>' . _l('fleet_due_date') . ': ' . _d($reminder['due_date']) . '</p>'
+                . '<p><a href="' . admin_url('fleet_management/reminders') . '">' . _l('fleet_reminders') . '</a></p>';
+            fleet_send_email($mail_to, $subject, $body);
 
             $this->db->where('id', $reminder['id']);
             $this->db->update(db_prefix() . 'fleet_reminders', ['is_notified' => 1]);
@@ -704,6 +720,81 @@ class Fleet_management_model extends App_Model
         $this->db->delete(db_prefix() . 'fleet_rentals');
 
         return $this->db->affected_rows() > 0;
+    }
+
+    /**
+     * Active bookings (reserved / ongoing) that overlap the given date range for
+     * a vehicle. Used to prevent double-booking. Returns matching rows so the
+     * caller can show which rental conflicts.
+     */
+    public function rental_conflicts($vehicle_id, $date_start, $date_end, $exclude_id = null)
+    {
+        if (empty($vehicle_id) || empty($date_start) || empty($date_end)) {
+            return [];
+        }
+
+        $start = to_sql_date($date_start);
+        $end   = to_sql_date($date_end);
+
+        $this->db->select('r.*, c.company as client_name');
+        $this->db->from(db_prefix() . 'fleet_rentals r');
+        $this->db->join(db_prefix() . 'clients c', 'c.userid = r.clientid', 'left');
+        $this->db->where('r.vehicle_id', $vehicle_id);
+        $this->db->where_in('r.status', ['reserved', 'ongoing']);
+        // Overlap: existing.start <= new.end AND existing.end >= new.start
+        $this->db->where('r.date_start <=', $end);
+        $this->db->where('r.date_end >=', $start);
+
+        if ($exclude_id) {
+            $this->db->where('r.id !=', $exclude_id);
+        }
+
+        return $this->db->get()->result_array();
+    }
+
+    /**
+     * Rentals overlapping a calendar window, for the planning/Gantt view.
+     */
+    public function get_rentals_in_range($range_start, $range_end)
+    {
+        $this->db->select('r.*, c.company as client_name');
+        $this->db->from(db_prefix() . 'fleet_rentals r');
+        $this->db->join(db_prefix() . 'clients c', 'c.userid = r.clientid', 'left');
+        $this->db->where('r.status !=', 'cancelled');
+        $this->db->where('r.date_start <=', $range_end);
+        $this->db->where('r.date_end >=', $range_start);
+        $this->db->order_by('r.date_start', 'asc');
+
+        return $this->db->get()->result_array();
+    }
+
+    /**
+     * Recipient e-mails for fleet notifications: every staff member allowed to
+     * view the fleet plus any extra addresses configured in the settings.
+     */
+    public function notification_emails()
+    {
+        $emails = [];
+
+        foreach ($this->db->get(db_prefix() . 'staff')->result_array() as $member) {
+            if (is_staff_member($member['staffid'])
+                && !empty($member['email'])
+                && staff_can('view', 'fleet', $member['staffid'])) {
+                $emails[] = $member['email'];
+            }
+        }
+
+        $extra = get_option('fleet_notification_emails');
+        if ($extra) {
+            foreach (preg_split('/[,;\s]+/', $extra) as $e) {
+                $e = trim($e);
+                if ($e !== '') {
+                    $emails[] = $e;
+                }
+            }
+        }
+
+        return array_values(array_unique($emails));
     }
 
     /**
