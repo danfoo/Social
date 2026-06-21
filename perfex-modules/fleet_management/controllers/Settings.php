@@ -23,6 +23,7 @@ class Settings extends AdminController
             update_option('fleet_license_notify_days', (int) $this->input->post('fleet_license_notify_days'));
             update_option('fleet_email_notifications', $this->input->post('fleet_email_notifications') ? 1 : 0);
             update_option('fleet_notification_emails', $this->input->post('fleet_notification_emails'));
+            update_option('fleet_contract_terms', $this->input->post('fleet_contract_terms', false));
             set_alert('success', _l('settings_updated'));
             redirect(admin_url('fleet_management/settings'));
         }

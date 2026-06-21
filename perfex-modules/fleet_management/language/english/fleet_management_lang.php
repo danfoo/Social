@@ -471,3 +471,7 @@ $lang['fleet_vehicle_archived']         = 'Vehicle archived';
 $lang['fleet_vehicle_restored']         = 'Vehicle reactivated';
 $lang['fleet_log_vehicle_archived']     = 'Vehicle archived (deactivated)';
 $lang['fleet_log_vehicle_restored']     = 'Vehicle reactivated';
+
+# Configurable contract terms
+$lang['fleet_set_contract_terms']       = 'Contract terms (contract footer)';
+$lang['fleet_set_contract_terms_help']  = 'Legal text printed at the bottom of the rental agreement PDF. Leave empty to use the default text.';

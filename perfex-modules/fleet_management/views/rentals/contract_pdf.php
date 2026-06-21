@@ -87,7 +87,13 @@ $client_name = $client ? $client->company : '';
 <?php endif; ?>
 
 <br><br>
-<span style="font-size:9px; color:#777777;"><?php echo _l('fleet_contract_terms'); ?></span>
+<?php
+$contract_terms = get_option('fleet_contract_terms');
+if (trim($contract_terms) === '') {
+    $contract_terms = _l('fleet_contract_terms');
+}
+?>
+<span style="font-size:9px; color:#777777;"><?php echo nl2br(html_escape($contract_terms)); ?></span>
 
 <br><br><br>
 <table style="width:100%; font-size:11px;">

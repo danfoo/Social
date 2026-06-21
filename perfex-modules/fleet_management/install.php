@@ -589,6 +589,7 @@ add_option('fleet_occupancy_days', 30);
 add_option('fleet_license_notify_days', 30);
 add_option('fleet_email_notifications', 1);
 add_option('fleet_notification_emails', '');
+add_option('fleet_contract_terms', '');
 
 // Mark the schema as up to date so the auto-migration stops re-running.
 $fleet_db_version = defined('FLEET_MANAGEMENT_DB_VERSION') ? FLEET_MANAGEMENT_DB_VERSION : '1.0.3';

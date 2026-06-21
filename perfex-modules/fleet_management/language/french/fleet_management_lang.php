@@ -471,3 +471,7 @@ $lang['fleet_vehicle_archived']         = 'Véhicule archivé';
 $lang['fleet_vehicle_restored']         = 'Véhicule réactivé';
 $lang['fleet_log_vehicle_archived']     = 'Véhicule archivé (désactivé)';
 $lang['fleet_log_vehicle_restored']     = 'Véhicule réactivé';
+
+# Configurable contract terms
+$lang['fleet_set_contract_terms']       = 'Termes du contrat (bas du contrat)';
+$lang['fleet_set_contract_terms_help']  = 'Texte juridique imprimé en bas du contrat de location PDF. Laissez vide pour utiliser le texte par défaut.';

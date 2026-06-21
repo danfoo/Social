@@ -61,6 +61,17 @@ foreach ($expense_categories as $c) {
                         </div>
                     </div>
 
+                    <h4 class="bold mtop20"><i class="fa fa-file-text text-info"></i> <?php echo _l('fleet_contract'); ?></h4>
+                    <hr class="hr-panel-heading" />
+                    <?php
+                    $terms_value = get_option('fleet_contract_terms');
+                    if (trim($terms_value) === '') {
+                        $terms_value = _l('fleet_contract_terms');
+                    }
+                    echo render_textarea('fleet_contract_terms', 'fleet_set_contract_terms', $terms_value, ['rows' => 6]);
+                    ?>
+                    <p class="text-muted tw-text-xs"><?php echo _l('fleet_set_contract_terms_help'); ?></p>
+
                     <div class="mtop15">
                         <button type="submit" class="btn btn-primary"><?php echo _l('submit'); ?></button>
                     </div>
