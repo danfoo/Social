@@ -377,3 +377,26 @@ $lang['fleet_set_email_notifications']        = 'Enable e-mail notifications';
 $lang['fleet_set_email_notifications_help']   = 'Sends an e-mail (in addition to the in-app notification) when a vehicle document or driver license reminder is due.';
 $lang['fleet_set_notification_emails']        = 'Additional recipients';
 $lang['fleet_set_notification_emails_help']   = 'Extra e-mail addresses to notify, comma separated. Staff allowed to view the fleet are already notified.';
+
+# Rental contract & inspection
+$lang['fleet_deposit']                  = 'Security deposit';
+$lang['fleet_without_driver']           = 'Without driver';
+$lang['fleet_contract']                 = 'Rental agreement';
+$lang['fleet_contract_lessor']          = 'The lessor';
+$lang['fleet_contract_lessee']          = 'The lessee';
+$lang['fleet_contract_read_approved']   = 'Read and approved';
+$lang['fleet_contract_terms']           = 'The lessee acknowledges receiving the above vehicle in good working order and undertakes to return it in the same condition, at the agreed date and place. Fuel, fines, penalties and any damage not covered by insurance remain the lessee\'s responsibility. The deposit may be withheld in whole or in part for damage noted on return. This agreement is governed by Senegalese law.';
+$lang['fleet_inspection']               = 'Condition report';
+$lang['fleet_inspections']              = 'Condition reports (out / in)';
+$lang['fleet_inspection_checkout']      = 'Condition report — Checkout';
+$lang['fleet_inspection_checkin']       = 'Condition report — Check-in';
+$lang['fleet_inspection_save_first']    = 'Save this condition report first to be able to add photos.';
+$lang['fleet_inspection_not_done']      = 'Not done';
+$lang['fleet_fuel_level']               = 'Fuel level';
+$lang['fleet_fuel_empty']               = 'Empty (0/8)';
+$lang['fleet_fuel_full']                = 'Full (8/8)';
+$lang['fleet_exterior_condition']       = 'Exterior condition';
+$lang['fleet_interior_condition']       = 'Interior condition';
+$lang['fleet_damages']                  = 'Noted damages';
+$lang['fleet_photos']                   = 'Photos';
+$lang['fleet_upload']                   = 'Upload';

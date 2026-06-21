@@ -377,3 +377,26 @@ $lang['fleet_set_email_notifications']        = 'Activer les notifications par e
 $lang['fleet_set_email_notifications_help']   = 'Envoie un e-mail (en plus de la notification interne) lorsqu\'un rappel de document véhicule ou de permis arrive à échéance.';
 $lang['fleet_set_notification_emails']        = 'Destinataires supplémentaires';
 $lang['fleet_set_notification_emails_help']   = 'Adresses e-mail supplémentaires à prévenir, séparées par une virgule. Le personnel autorisé à voir la flotte est déjà notifié.';
+
+# Rental contract & inspection (état des lieux)
+$lang['fleet_deposit']                  = 'Caution / dépôt de garantie';
+$lang['fleet_without_driver']           = 'Sans chauffeur';
+$lang['fleet_contract']                 = 'Contrat de location';
+$lang['fleet_contract_lessor']          = 'Le loueur';
+$lang['fleet_contract_lessee']          = 'Le locataire';
+$lang['fleet_contract_read_approved']   = 'Lu et approuvé';
+$lang['fleet_contract_terms']           = 'Le locataire reconnaît avoir reçu le véhicule désigné ci-dessus en bon état de marche et s\'engage à le restituer dans le même état, aux date et lieu convenus. Le carburant, les amendes, contraventions et tout dommage non couvert par l\'assurance restent à la charge du locataire. La caution pourra être retenue en tout ou partie en cas de dégâts constatés à la restitution. Le présent contrat est régi par le droit sénégalais.';
+$lang['fleet_inspection']               = 'État des lieux';
+$lang['fleet_inspections']              = 'États des lieux (départ / retour)';
+$lang['fleet_inspection_checkout']      = 'État des lieux — Départ';
+$lang['fleet_inspection_checkin']       = 'État des lieux — Retour';
+$lang['fleet_inspection_save_first']    = 'Enregistrez d\'abord cet état des lieux pour pouvoir ajouter des photos.';
+$lang['fleet_inspection_not_done']      = 'Non réalisé';
+$lang['fleet_fuel_level']               = 'Niveau de carburant';
+$lang['fleet_fuel_empty']               = 'Vide (0/8)';
+$lang['fleet_fuel_full']                = 'Plein (8/8)';
+$lang['fleet_exterior_condition']       = 'État extérieur';
+$lang['fleet_interior_condition']       = 'État intérieur';
+$lang['fleet_damages']                  = 'Dégâts constatés';
+$lang['fleet_photos']                   = 'Photos';
+$lang['fleet_upload']                   = 'Téléverser';

@@ -447,6 +447,44 @@ if (!$CI->db->table_exists(db_prefix() . 'fleet_driver_accidents')) {
     ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
 }
 
+// Rental security deposit (caution) shown on the contract (idempotent upgrade).
+if ($CI->db->table_exists(db_prefix() . 'fleet_rentals') && !$CI->db->field_exists('deposit', db_prefix() . 'fleet_rentals')) {
+    $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_rentals` ADD `deposit` DECIMAL(15,2) NULL AFTER `total`');
+}
+
+// Vehicle condition reports (état des lieux) at checkout and check-in.
+if (!$CI->db->table_exists(db_prefix() . 'fleet_inspections')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_inspections` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `rental_id` INT(11) NOT NULL,
+        `type` VARCHAR(20) NOT NULL DEFAULT 'checkout',
+        `inspection_date` DATE NULL,
+        `odometer` INT(11) NULL,
+        `fuel_level` INT(11) NULL,
+        `exterior_condition` TEXT NULL,
+        `interior_condition` TEXT NULL,
+        `damages` TEXT NULL,
+        `notes` TEXT NULL,
+        `created_by` INT(11) NULL,
+        `date_created` DATETIME NULL,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `rental_type` (`rental_id`, `type`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
+if (!$CI->db->table_exists(db_prefix() . 'fleet_inspection_files')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_inspection_files` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `inspection_id` INT(11) NOT NULL,
+        `file_name` VARCHAR(191) NOT NULL,
+        `original_name` VARCHAR(191) NULL,
+        `created_by` INT(11) NULL,
+        `date_created` DATETIME NULL,
+        PRIMARY KEY (`id`),
+        KEY `inspection_id` (`inspection_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
 // Dedicated expense category so fleet costs are grouped in the Expenses module.
 if (get_option('fleet_expense_category_id') == '' && $CI->db->table_exists(db_prefix() . 'expenses_categories')) {
     $CI->db->insert(db_prefix() . 'expenses_categories', [

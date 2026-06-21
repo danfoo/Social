@@ -234,6 +234,38 @@ function fleet_send_email($recipients, $subject, $message)
     return true;
 }
 
+/**
+ * Shared company footer block (HTML) for the module's generated PDFs.
+ */
+function fleet_pdf_footer_html()
+{
+    $footer = '<div style="font-size: 8px; color: #777777; text-align: center; line-height: 1.4; border-top: 1px solid #dddddd; padding-top: 4px;"><strong>{company_name} ( LRC )</strong><br>T&eacute;l. {company_phone} &nbsp;&middot;&nbsp; {company_email} &nbsp;&middot;&nbsp; {website}<br>Si&egrave;ge Social Mamelle Cit&eacute; Mbackiyou Faye. DAKAR - SENEGAL - R.C SN.DKR.2024.B.37304 - N.I.N.E.A 011532480</div>';
+
+    return str_replace(
+        ['{company_name}', '{company_phone}', '{company_email}', '{website}'],
+        [get_option('invoice_company_name'), get_option('invoice_company_phonenumber'), get_option('smtp_email'), site_url()],
+        $footer
+    );
+}
+
+/**
+ * Human-readable fuel gauge level stored in eighths (0..8).
+ */
+function fleet_fuel_eighths_label($value)
+{
+    if ($value === null || $value === '') {
+        return '—';
+    }
+
+    $value = max(0, min(8, (int) $value));
+    $map   = [
+        0 => _l('fleet_fuel_empty'),
+        8 => _l('fleet_fuel_full'),
+    ];
+
+    return isset($map[$value]) ? $map[$value] : ($value . '/8');
+}
+
 function fleet_accident_severity_badge($severity)
 {
     $map = [

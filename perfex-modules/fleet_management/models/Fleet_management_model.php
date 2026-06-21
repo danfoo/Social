@@ -1417,6 +1417,94 @@ class Fleet_management_model extends App_Model
     }
 
     /* ----------------------------------------------------------------- *
+     * Rental inspections (état des lieux) — checkout & check-in
+     * ----------------------------------------------------------------- */
+
+    /** Returns the two inspections of a rental keyed by type (checkout/checkin). */
+    public function get_inspections($rental_id)
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_inspections')) {
+            return [];
+        }
+
+        $this->db->where('rental_id', $rental_id);
+        $rows = $this->db->get(db_prefix() . 'fleet_inspections')->result_array();
+
+        $keyed = [];
+        foreach ($rows as $row) {
+            $keyed[$row['type']] = $row;
+        }
+
+        return $keyed;
+    }
+
+    public function get_inspection($id)
+    {
+        return $this->db->get_where(db_prefix() . 'fleet_inspections', ['id' => $id])->row();
+    }
+
+    /** Upsert an inspection by (rental_id, type); returns its id. */
+    public function save_inspection($data)
+    {
+        $data = $this->_clean_numeric($data, ['odometer', 'fuel_level']);
+        $data = $this->_clean_dates($data, ['inspection_date']);
+
+        $type = in_array(($data['type'] ?? ''), ['checkout', 'checkin'], true) ? $data['type'] : 'checkout';
+        $data['type'] = $type;
+
+        $existing = $this->db->get_where(db_prefix() . 'fleet_inspections', [
+            'rental_id' => $data['rental_id'], 'type' => $type,
+        ])->row();
+
+        if ($existing) {
+            $this->db->where('id', $existing->id);
+            $this->db->update(db_prefix() . 'fleet_inspections', $data);
+
+            return $existing->id;
+        }
+
+        $data['created_by']   = get_staff_user_id();
+        $data['date_created'] = date('Y-m-d H:i:s');
+        $this->db->insert(db_prefix() . 'fleet_inspections', $data);
+
+        return $this->db->insert_id();
+    }
+
+    public function get_inspection_files($inspection_id)
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_inspection_files')) {
+            return [];
+        }
+
+        $this->db->where('inspection_id', $inspection_id);
+        $this->db->order_by('id', 'asc');
+
+        return $this->db->get(db_prefix() . 'fleet_inspection_files')->result_array();
+    }
+
+    public function add_inspection_file($data)
+    {
+        $data['created_by']   = get_staff_user_id();
+        $data['date_created'] = date('Y-m-d H:i:s');
+        $this->db->insert(db_prefix() . 'fleet_inspection_files', $data);
+
+        return $this->db->insert_id();
+    }
+
+    public function get_inspection_file($id)
+    {
+        return $this->db->get_where(db_prefix() . 'fleet_inspection_files', ['id' => $id])->row();
+    }
+
+    public function delete_inspection_file($id)
+    {
+        $this->db->where('id', $id);
+        $this->db->delete(db_prefix() . 'fleet_inspection_files');
+
+        return $this->db->affected_rows() > 0;
+    }
+
+    /* ----------------------------------------------------------------- *
      * Parts catalog (items) with stock tracking
      * ----------------------------------------------------------------- */
 
@@ -2073,7 +2161,7 @@ class Fleet_management_model extends App_Model
 
     private function _prepare_rental_data($data)
     {
-        $data = $this->_clean_numeric($data, ['vehicle_id', 'clientid', 'driver_id', 'daily_rate', 'odometer_start', 'odometer_end']);
+        $data = $this->_clean_numeric($data, ['vehicle_id', 'clientid', 'driver_id', 'daily_rate', 'odometer_start', 'odometer_end', 'deposit']);
         $data = $this->_clean_dates($data, ['date_start', 'date_end']);
 
         $data['with_driver'] = isset($data['with_driver']) && $data['with_driver'] ? 1 : 0;
