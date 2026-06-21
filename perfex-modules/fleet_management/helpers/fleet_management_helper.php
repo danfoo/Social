@@ -266,6 +266,43 @@ function fleet_fuel_eighths_label($value)
     return isset($map[$value]) ? $map[$value] : ($value . '/8');
 }
 
+function fleet_deposit_status_badge($status)
+{
+    $map = [
+        'none'     => 'default',
+        'held'     => 'info',
+        'returned' => 'success',
+        'withheld' => 'danger',
+        'partial'  => 'warning',
+    ];
+    $color = isset($map[$status]) ? $map[$status] : 'default';
+
+    return '<span class="label label-' . $color . '">' . _l('fleet_deposit_status_' . $status) . '</span>';
+}
+
+function fleet_vehicle_document_types()
+{
+    return ['registration', 'insurance', 'technical_inspection', 'vignette', 'permit', 'other'];
+}
+
+function fleet_document_expiry_badge($expiry_date)
+{
+    if (empty($expiry_date) || $expiry_date === '0000-00-00') {
+        return '';
+    }
+
+    $days = (int) floor((strtotime($expiry_date) - strtotime(date('Y-m-d'))) / 86400);
+
+    if ($days < 0) {
+        return '<span class="label label-danger">' . _l('fleet_expired') . '</span>';
+    }
+    if ($days <= 30) {
+        return '<span class="label label-warning">' . _l('fleet_reminder_soon', $days) . '</span>';
+    }
+
+    return '<span class="label label-success">' . _l('fleet_valid') . '</span>';
+}
+
 function fleet_accident_severity_badge($severity)
 {
     $map = [

@@ -158,6 +158,30 @@ class Rentals extends AdminController
         redirect(admin_url('fleet_management/rentals/rental/' . $id));
     }
 
+    /* ---------------- Security deposit (caution) ---------------- */
+
+    public function deposit_hold($id)
+    {
+        if (!staff_can('edit', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $this->fleet->deposit_hold($id);
+        set_alert('success', _l('fleet_deposit_held_done'));
+        redirect(admin_url('fleet_management/rentals/rental/' . $id) . '#deposit');
+    }
+
+    public function deposit_settle($id)
+    {
+        if (!staff_can('edit', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $this->fleet->deposit_settle($id, $this->input->post('withheld'), $this->input->post('deposit_note'));
+        set_alert('success', _l('fleet_deposit_settled_done'));
+        redirect(admin_url('fleet_management/rentals/rental/' . $id) . '#deposit');
+    }
+
     /* ---------------- Inspections (état des lieux) ---------------- */
 
     public function save_inspection()

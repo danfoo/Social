@@ -80,8 +80,101 @@ class Vehicles extends AdminController
         $data['activity']    = $this->fleet->get_activity($id);
         $data['parts']       = $this->fleet->get_part_assignment('', $id);
         $data['drivers']     = $this->fleet->get_drivers();
+        $data['documents']   = $this->fleet->get_vehicle_files($id);
         $data['title']       = $vehicle->name;
         $this->load->view('fleet_management/vehicles/view', $data);
+    }
+
+    /* ---------------- Vehicle documents ---------------- */
+
+    public function upload_document($vehicle_id)
+    {
+        if (!staff_can('edit', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $vehicle = $this->fleet->get_vehicle($vehicle_id);
+        if (!$vehicle) {
+            show_404();
+        }
+
+        if (isset($_FILES['file']) && $_FILES['file']['name'] != '') {
+            $path = FCPATH . 'uploads/fleet_management/vehicles/' . $vehicle_id . '/';
+            if (!is_dir($path)) {
+                mkdir($path, 0755, true);
+            }
+
+            $this->load->library('upload');
+            $this->upload->initialize([
+                'upload_path'   => $path,
+                'allowed_types' => 'jpg|jpeg|png|gif|webp|heic|pdf',
+                'max_size'      => 15000,
+                'encrypt_name'  => true,
+            ]);
+
+            if ($this->upload->do_upload('file')) {
+                $uploaded = $this->upload->data();
+                $this->fleet->add_vehicle_file([
+                    'vehicle_id'    => $vehicle_id,
+                    'type'          => $this->input->post('type'),
+                    'title'         => $this->input->post('title'),
+                    'issue_date'    => $this->input->post('issue_date'),
+                    'expiry_date'   => $this->input->post('expiry_date'),
+                    'note'          => $this->input->post('note'),
+                    'file_name'     => $uploaded['file_name'],
+                    'original_name' => $uploaded['orig_name'],
+                ]);
+                set_alert('success', _l('fleet_document_uploaded'));
+            } else {
+                set_alert('warning', strip_tags($this->upload->display_errors()));
+            }
+        }
+
+        redirect(admin_url('fleet_management/vehicles/view/' . $vehicle_id) . '#tab_documents');
+    }
+
+    public function delete_document($file_id)
+    {
+        if (!staff_can('delete', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $file = $this->fleet->get_vehicle_file($file_id);
+        if ($file) {
+            $full = FCPATH . 'uploads/fleet_management/vehicles/' . $file->vehicle_id . '/' . $file->file_name;
+            if (is_file($full)) {
+                @unlink($full);
+            }
+            $this->fleet->delete_vehicle_file($file_id);
+            set_alert('success', _l('deleted', _l('fleet_document')));
+            redirect(admin_url('fleet_management/vehicles/view/' . $file->vehicle_id) . '#tab_documents');
+        }
+
+        redirect(admin_url('fleet_management/vehicles'));
+    }
+
+    public function download_document($file_id)
+    {
+        if (!staff_can('view', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $file = $this->fleet->get_vehicle_file($file_id);
+        if (!$file) {
+            show_404();
+        }
+
+        $full = FCPATH . 'uploads/fleet_management/vehicles/' . $file->vehicle_id . '/' . $file->file_name;
+        if (!is_file($full)) {
+            show_404();
+        }
+
+        $mime = function_exists('mime_content_type') ? mime_content_type($full) : 'application/octet-stream';
+        header('Content-Type: ' . $mime);
+        header('Content-Disposition: inline; filename="' . $file->original_name . '"');
+        header('Content-Length: ' . filesize($full));
+        readfile($full);
+        exit;
     }
 
     public function delete($id)

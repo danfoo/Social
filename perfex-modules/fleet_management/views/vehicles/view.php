@@ -47,6 +47,7 @@ foreach ($drivers as $d) {
                             <li role="presentation"><a href="#tab_maintenance" role="tab" data-toggle="tab"><?php echo _l('fleet_maintenance'); ?></a></li>
                             <li role="presentation"><a href="#tab_parts" role="tab" data-toggle="tab"><?php echo _l('fleet_parts_articles'); ?></a></li>
                             <li role="presentation"><a href="#tab_reminders" role="tab" data-toggle="tab"><?php echo _l('fleet_reminders'); ?></a></li>
+                            <li role="presentation"><a href="#tab_documents" role="tab" data-toggle="tab"><?php echo _l('fleet_documents'); ?></a></li>
                         </ul>
                         <div class="tab-content mtop15">
                             <div role="tabpanel" class="tab-pane active" id="tab_history">
@@ -146,6 +147,56 @@ foreach ($drivers as $d) {
                                             <td><?php echo fleet_reminder_due_badge($r['due_date'], $r['notify_days']); ?></td>
                                         </tr>
                                     <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div role="tabpanel" class="tab-pane" id="tab_documents">
+                                <?php if (staff_can('edit', 'fleet')) : ?>
+                                    <?php echo form_open_multipart(admin_url('fleet_management/vehicles/upload_document/' . $vehicle->id)); ?>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <?php
+                                            $doc_types = [];
+                                            foreach (fleet_vehicle_document_types() as $t) {
+                                                $doc_types[] = ['id' => $t, 'name' => _l('fleet_doctype_' . $t)];
+                                            }
+                                            echo render_select('type', $doc_types, ['id', 'name'], 'fleet_document_type');
+                                            ?>
+                                        </div>
+                                        <div class="col-md-4"><?php echo render_input('title', 'fleet_document_title', ''); ?></div>
+                                        <div class="col-md-2"><?php echo render_date_input('issue_date', 'fleet_issue_date', ''); ?></div>
+                                        <div class="col-md-2"><?php echo render_date_input('expiry_date', 'fleet_expiry_date', ''); ?></div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <label class="control-label"><?php echo _l('fleet_file'); ?></label>
+                                            <div class="input-group">
+                                                <input type="file" name="file" accept="image/*,application/pdf" class="form-control" required>
+                                                <span class="input-group-btn"><button type="submit" class="btn btn-primary"><i class="fa fa-upload"></i> <?php echo _l('fleet_upload'); ?></button></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <?php echo form_close(); ?>
+                                    <hr />
+                                <?php endif; ?>
+                                <table class="table">
+                                    <thead><tr><th><?php echo _l('fleet_document_type'); ?></th><th><?php echo _l('fleet_document_title'); ?></th><th><?php echo _l('fleet_issue_date'); ?></th><th><?php echo _l('fleet_expiry_date'); ?></th><th class="text-right"><?php echo _l('options'); ?></th></tr></thead>
+                                    <tbody>
+                                    <?php foreach ($documents as $doc) : ?>
+                                        <tr>
+                                            <td><?php echo _l('fleet_doctype_' . $doc['type']); ?></td>
+                                            <td><?php echo html_escape($doc['title']); ?></td>
+                                            <td><?php echo $doc['issue_date'] ? _d($doc['issue_date']) : '-'; ?></td>
+                                            <td><?php echo $doc['expiry_date'] ? _d($doc['expiry_date']) : '-'; ?> <?php echo fleet_document_expiry_badge($doc['expiry_date']); ?></td>
+                                            <td class="text-right">
+                                                <a href="<?php echo admin_url('fleet_management/vehicles/download_document/' . $doc['id']); ?>" target="_blank" class="btn btn-default btn-icon btn-sm"><i class="fa fa-eye"></i></a>
+                                                <?php if (staff_can('delete', 'fleet')) : ?>
+                                                    <a href="<?php echo admin_url('fleet_management/vehicles/delete_document/' . $doc['id']); ?>" class="btn btn-danger btn-icon btn-sm _delete"><i class="fa fa-remove"></i></a>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                    <?php if (empty($documents)) : ?><tr><td colspan="5" class="text-center text-muted"><?php echo _l('fleet_no_documents'); ?></td></tr><?php endif; ?>
                                     </tbody>
                                 </table>
                             </div>

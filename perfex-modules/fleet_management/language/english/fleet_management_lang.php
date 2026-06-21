@@ -400,3 +400,39 @@ $lang['fleet_interior_condition']       = 'Interior condition';
 $lang['fleet_damages']                  = 'Noted damages';
 $lang['fleet_photos']                   = 'Photos';
 $lang['fleet_upload']                   = 'Upload';
+
+# Security deposit workflow
+$lang['fleet_deposit_amount']           = 'Deposit amount';
+$lang['fleet_deposit_status_none']      = 'Not collected';
+$lang['fleet_deposit_status_held']      = 'Held';
+$lang['fleet_deposit_status_returned']  = 'Returned';
+$lang['fleet_deposit_status_withheld']  = 'Withheld';
+$lang['fleet_deposit_status_partial']   = 'Partially withheld';
+$lang['fleet_deposit_held_date']        = 'Collected on';
+$lang['fleet_deposit_returned_date']    = 'Returned on';
+$lang['fleet_deposit_withheld']         = 'Withheld amount';
+$lang['fleet_deposit_returned_amount']  = 'Returned amount';
+$lang['fleet_deposit_hold']             = 'Collect deposit';
+$lang['fleet_deposit_settle']           = 'Return / settle deposit';
+$lang['fleet_deposit_closed']           = 'Deposit settled';
+$lang['fleet_deposit_held_done']        = 'Deposit collected';
+$lang['fleet_deposit_settled_done']     = 'Deposit settled';
+$lang['fleet_deposit_reason']           = 'Reason for withholding';
+$lang['fleet_deposit_withheld_help']    = 'Amount to keep (damage, fuel, fines...). Leave 0 to return everything.';
+
+# Vehicle documents
+$lang['fleet_documents']                = 'Documents';
+$lang['fleet_document']                 = 'Document';
+$lang['fleet_document_type']            = 'Document type';
+$lang['fleet_document_title']           = 'Label';
+$lang['fleet_issue_date']               = 'Issue date';
+$lang['fleet_expiry_date']              = 'Expiry date';
+$lang['fleet_file']                     = 'File';
+$lang['fleet_document_uploaded']        = 'Document added';
+$lang['fleet_no_documents']             = 'No document';
+$lang['fleet_doctype_registration']     = 'Registration card';
+$lang['fleet_doctype_insurance']        = 'Insurance certificate';
+$lang['fleet_doctype_technical_inspection'] = 'Technical inspection';
+$lang['fleet_doctype_vignette']         = 'Road tax / vignette';
+$lang['fleet_doctype_permit']           = 'Permit / license';
+$lang['fleet_doctype_other']            = 'Other';

@@ -1505,6 +1505,93 @@ class Fleet_management_model extends App_Model
     }
 
     /* ----------------------------------------------------------------- *
+     * Security deposit (caution) lifecycle
+     * ----------------------------------------------------------------- */
+
+    /** Mark the deposit as collected/held. */
+    public function deposit_hold($rental_id)
+    {
+        $this->db->where('id', $rental_id);
+        $this->db->update(db_prefix() . 'fleet_rentals', [
+            'deposit_status'    => 'held',
+            'deposit_held_date' => date('Y-m-d'),
+        ]);
+
+        return true;
+    }
+
+    /** Settle the deposit at return: withhold part/all of it and return the rest. */
+    public function deposit_settle($rental_id, $withheld, $note = '')
+    {
+        $rental = $this->db->get_where(db_prefix() . 'fleet_rentals', ['id' => $rental_id])->row();
+        if (!$rental) {
+            return false;
+        }
+
+        $deposit  = (float) $rental->deposit;
+        $withheld = max(0, min((float) $withheld, $deposit));
+
+        if ($withheld <= 0) {
+            $status = 'returned';
+        } elseif ($withheld >= $deposit) {
+            $status = 'withheld';
+        } else {
+            $status = 'partial';
+        }
+
+        $this->db->where('id', $rental_id);
+        $this->db->update(db_prefix() . 'fleet_rentals', [
+            'deposit_status'        => $status,
+            'deposit_withheld'      => $withheld,
+            'deposit_note'          => $note,
+            'deposit_returned_date' => date('Y-m-d'),
+        ]);
+
+        return true;
+    }
+
+    /* ----------------------------------------------------------------- *
+     * Vehicle documents (registration, insurance, technical inspection...)
+     * ----------------------------------------------------------------- */
+
+    public function get_vehicle_files($vehicle_id)
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_vehicle_files')) {
+            return [];
+        }
+
+        $this->db->where('vehicle_id', $vehicle_id);
+        $this->db->order_by('expiry_date', 'asc');
+
+        return $this->db->get(db_prefix() . 'fleet_vehicle_files')->result_array();
+    }
+
+    public function add_vehicle_file($data)
+    {
+        $data = $this->_clean_dates($data, ['issue_date', 'expiry_date']);
+
+        $data['created_by']   = get_staff_user_id();
+        $data['date_created'] = date('Y-m-d H:i:s');
+
+        $this->db->insert(db_prefix() . 'fleet_vehicle_files', $data);
+
+        return $this->db->insert_id();
+    }
+
+    public function get_vehicle_file($id)
+    {
+        return $this->db->get_where(db_prefix() . 'fleet_vehicle_files', ['id' => $id])->row();
+    }
+
+    public function delete_vehicle_file($id)
+    {
+        $this->db->where('id', $id);
+        $this->db->delete(db_prefix() . 'fleet_vehicle_files');
+
+        return $this->db->affected_rows() > 0;
+    }
+
+    /* ----------------------------------------------------------------- *
      * Parts catalog (items) with stock tracking
      * ----------------------------------------------------------------- */
 

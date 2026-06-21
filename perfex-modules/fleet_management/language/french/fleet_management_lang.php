@@ -400,3 +400,39 @@ $lang['fleet_interior_condition']       = 'État intérieur';
 $lang['fleet_damages']                  = 'Dégâts constatés';
 $lang['fleet_photos']                   = 'Photos';
 $lang['fleet_upload']                   = 'Téléverser';
+
+# Security deposit workflow
+$lang['fleet_deposit_amount']           = 'Montant de la caution';
+$lang['fleet_deposit_status_none']      = 'Non encaissée';
+$lang['fleet_deposit_status_held']      = 'Encaissée';
+$lang['fleet_deposit_status_returned']  = 'Restituée';
+$lang['fleet_deposit_status_withheld']  = 'Retenue';
+$lang['fleet_deposit_status_partial']   = 'Partiellement retenue';
+$lang['fleet_deposit_held_date']        = 'Date d\'encaissement';
+$lang['fleet_deposit_returned_date']    = 'Date de restitution';
+$lang['fleet_deposit_withheld']         = 'Montant retenu';
+$lang['fleet_deposit_returned_amount']  = 'Montant restitué';
+$lang['fleet_deposit_hold']             = 'Encaisser la caution';
+$lang['fleet_deposit_settle']           = 'Restituer / solder la caution';
+$lang['fleet_deposit_closed']           = 'Caution soldée';
+$lang['fleet_deposit_held_done']        = 'Caution encaissée';
+$lang['fleet_deposit_settled_done']     = 'Caution soldée';
+$lang['fleet_deposit_reason']           = 'Motif de la retenue';
+$lang['fleet_deposit_withheld_help']    = 'Montant à conserver (dégâts, carburant, amendes...). Laissez 0 pour tout restituer.';
+
+# Vehicle documents
+$lang['fleet_documents']                = 'Documents';
+$lang['fleet_document']                 = 'Document';
+$lang['fleet_document_type']            = 'Type de document';
+$lang['fleet_document_title']           = 'Libellé';
+$lang['fleet_issue_date']               = 'Date de délivrance';
+$lang['fleet_expiry_date']              = 'Date d\'expiration';
+$lang['fleet_file']                     = 'Fichier';
+$lang['fleet_document_uploaded']        = 'Document ajouté';
+$lang['fleet_no_documents']             = 'Aucun document';
+$lang['fleet_doctype_registration']     = 'Carte grise';
+$lang['fleet_doctype_insurance']        = 'Attestation d\'assurance';
+$lang['fleet_doctype_technical_inspection'] = 'Visite technique';
+$lang['fleet_doctype_vignette']         = 'Vignette';
+$lang['fleet_doctype_permit']           = 'Autorisation / licence';
+$lang['fleet_doctype_other']            = 'Autre';

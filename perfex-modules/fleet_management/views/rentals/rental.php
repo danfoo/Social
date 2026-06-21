@@ -132,6 +132,62 @@ foreach (fleet_rental_statuses() as $s) {
                 <?php
             };
             ?>
+<?php if ($rental->deposit !== null && (float) $rental->deposit > 0) :
+                $bc       = get_base_currency();
+                $dstatus  = $rental->deposit_status ?: 'none';
+                $withheld = (float) ($rental->deposit_withheld ?? 0);
+                $net      = (float) $rental->deposit - $withheld;
+                ?>
+                <div class="row" id="deposit">
+                    <div class="col-md-12">
+                        <div class="panel_s"><div class="panel-body">
+                            <h4 class="bold"><i class="fa fa-shield text-info"></i> <?php echo _l('fleet_deposit'); ?> <?php echo fleet_deposit_status_badge($dstatus); ?></h4>
+                            <hr class="hr-panel-heading" />
+                            <div class="row">
+                                <div class="col-md-7">
+                                    <table class="table table-borderless no-margin">
+                                        <tr><td class="bold"><?php echo _l('fleet_deposit_amount'); ?></td><td><?php echo app_format_money($rental->deposit, $bc); ?></td></tr>
+                                        <?php if ($rental->deposit_held_date) : ?><tr><td class="bold"><?php echo _l('fleet_deposit_held_date'); ?></td><td><?php echo _d($rental->deposit_held_date); ?></td></tr><?php endif; ?>
+                                        <?php if (in_array($dstatus, ['returned', 'withheld', 'partial'], true)) : ?>
+                                            <tr><td class="bold"><?php echo _l('fleet_deposit_returned_date'); ?></td><td><?php echo $rental->deposit_returned_date ? _d($rental->deposit_returned_date) : '—'; ?></td></tr>
+                                            <tr><td class="bold"><?php echo _l('fleet_deposit_withheld'); ?></td><td class="text-danger"><?php echo app_format_money($withheld, $bc); ?></td></tr>
+                                            <tr><td class="bold"><?php echo _l('fleet_deposit_returned_amount'); ?></td><td class="text-success"><?php echo app_format_money($net, $bc); ?></td></tr>
+                                            <?php if ($rental->deposit_note) : ?><tr><td class="bold"><?php echo _l('fleet_notes'); ?></td><td><?php echo nl2br(html_escape($rental->deposit_note)); ?></td></tr><?php endif; ?>
+                                        <?php endif; ?>
+                                    </table>
+                                </div>
+                                <div class="col-md-5 text-right">
+                                    <?php if (staff_can('edit', 'fleet')) : ?>
+                                        <?php if ($dstatus === 'none') : ?>
+                                            <a href="<?php echo admin_url('fleet_management/rentals/deposit_hold/' . $rental->id); ?>" class="btn btn-info"><i class="fa fa-lock"></i> <?php echo _l('fleet_deposit_hold'); ?></a>
+                                        <?php elseif ($dstatus === 'held') : ?>
+                                            <button type="button" class="btn btn-success" onclick="$('#fleet_deposit_modal').modal('show');"><i class="fa fa-unlock"></i> <?php echo _l('fleet_deposit_settle'); ?></button>
+                                        <?php else : ?>
+                                            <span class="text-muted"><?php echo _l('fleet_deposit_closed'); ?></span>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div></div>
+                    </div>
+                </div>
+
+                <?php if ($dstatus === 'held' && staff_can('edit', 'fleet')) : ?>
+                    <div class="modal fade" id="fleet_deposit_modal" tabindex="-1" role="dialog"><div class="modal-dialog"><div class="modal-content">
+                        <?php echo form_open(admin_url('fleet_management/rentals/deposit_settle/' . $rental->id)); ?>
+                        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title"><?php echo _l('fleet_deposit_settle'); ?></h4></div>
+                        <div class="modal-body">
+                            <p class="text-muted"><?php echo _l('fleet_deposit_amount'); ?>: <strong><?php echo app_format_money($rental->deposit, $bc); ?></strong></p>
+                            <?php echo render_input('withheld', 'fleet_deposit_withheld', 0, 'number'); ?>
+                            <p class="text-muted"><small><?php echo _l('fleet_deposit_withheld_help'); ?></small></p>
+                            <?php echo render_textarea('deposit_note', 'fleet_deposit_reason', ''); ?>
+                        </div>
+                        <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal"><?php echo _l('close'); ?></button><button type="submit" class="btn btn-primary"><?php echo _l('fleet_deposit_settle'); ?></button></div>
+                        <?php echo form_close(); ?>
+                    </div></div></div>
+                <?php endif; ?>
+            <?php endif; ?>
+
             <div class="row" id="inspections">
                 <div class="col-md-12"><h4 class="bold"><i class="fa fa-clipboard"></i> <?php echo _l('fleet_inspections'); ?></h4></div>
                 <?php $render_inspection('checkout', 'fa-sign-out', 'fleet_inspection_checkout'); ?>

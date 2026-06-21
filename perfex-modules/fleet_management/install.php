@@ -452,6 +452,44 @@ if ($CI->db->table_exists(db_prefix() . 'fleet_rentals') && !$CI->db->field_exis
     $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_rentals` ADD `deposit` DECIMAL(15,2) NULL AFTER `total`');
 }
 
+// Security-deposit lifecycle tracking (held -> returned / withheld).
+if ($CI->db->table_exists(db_prefix() . 'fleet_rentals')) {
+    if (!$CI->db->field_exists('deposit_status', db_prefix() . 'fleet_rentals')) {
+        $CI->db->query('ALTER TABLE `' . db_prefix() . "fleet_rentals` ADD `deposit_status` VARCHAR(20) NOT NULL DEFAULT 'none'");
+    }
+    if (!$CI->db->field_exists('deposit_held_date', db_prefix() . 'fleet_rentals')) {
+        $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_rentals` ADD `deposit_held_date` DATE NULL');
+    }
+    if (!$CI->db->field_exists('deposit_returned_date', db_prefix() . 'fleet_rentals')) {
+        $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_rentals` ADD `deposit_returned_date` DATE NULL');
+    }
+    if (!$CI->db->field_exists('deposit_withheld', db_prefix() . 'fleet_rentals')) {
+        $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_rentals` ADD `deposit_withheld` DECIMAL(15,2) NULL');
+    }
+    if (!$CI->db->field_exists('deposit_note', db_prefix() . 'fleet_rentals')) {
+        $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_rentals` ADD `deposit_note` TEXT NULL');
+    }
+}
+
+// Vehicle documents (registration card, insurance, technical inspection...).
+if (!$CI->db->table_exists(db_prefix() . 'fleet_vehicle_files')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_vehicle_files` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `vehicle_id` INT(11) NOT NULL,
+        `type` VARCHAR(50) NOT NULL DEFAULT 'other',
+        `title` VARCHAR(191) NULL,
+        `file_name` VARCHAR(191) NOT NULL,
+        `original_name` VARCHAR(191) NULL,
+        `issue_date` DATE NULL,
+        `expiry_date` DATE NULL,
+        `note` TEXT NULL,
+        `created_by` INT(11) NULL,
+        `date_created` DATETIME NULL,
+        PRIMARY KEY (`id`),
+        KEY `vehicle_id` (`vehicle_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
 // Vehicle condition reports (état des lieux) at checkout and check-in.
 if (!$CI->db->table_exists(db_prefix() . 'fleet_inspections')) {
     $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_inspections` (
