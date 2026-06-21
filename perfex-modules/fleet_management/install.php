@@ -546,6 +546,7 @@ if (!$CI->db->table_exists(db_prefix() . 'fleet_fines')) {
         `paid` TINYINT(1) NOT NULL DEFAULT 0,
         `paid_date` DATE NULL,
         `invoice_id` INT(11) NULL,
+        `expense_id` INT(11) NULL,
         `notes` TEXT NULL,
         `created_by` INT(11) NULL,
         `date_created` DATETIME NULL,
@@ -553,6 +554,11 @@ if (!$CI->db->table_exists(db_prefix() . 'fleet_fines')) {
         KEY `vehicle_id` (`vehicle_id`),
         KEY `driver_id` (`driver_id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
+// Link a fine to a Perfex core expense (idempotent upgrade).
+if ($CI->db->table_exists(db_prefix() . 'fleet_fines') && !$CI->db->field_exists('expense_id', db_prefix() . 'fleet_fines')) {
+    $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_fines` ADD `expense_id` INT(11) NULL');
 }
 
 // Dedicated expense category so fleet costs are grouped in the Expenses module.

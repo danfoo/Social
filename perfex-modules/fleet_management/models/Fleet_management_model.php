@@ -1666,6 +1666,10 @@ class Fleet_management_model extends App_Model
             $this->log_activity($data['vehicle_id'], 'fine', _l('fleet_log_fine_added', $data['fine_number'] ?? ('#' . $id)));
         }
 
+        if ($id) {
+            $this->_sync_fine_expense($id);
+        }
+
         return $id;
     }
 
@@ -1679,15 +1683,53 @@ class Fleet_management_model extends App_Model
         $this->db->where('id', $id);
         $this->db->update(db_prefix() . 'fleet_fines', $data);
 
+        $this->_sync_fine_expense($id);
+
         return true;
     }
 
     public function delete_fine($id)
     {
+        $this->_delete_record_expense('fleet_fines', $id);
+
         $this->db->where('id', $id);
         $this->db->delete(db_prefix() . 'fleet_fines');
 
         return $this->db->affected_rows() > 0;
+    }
+
+    /**
+     * Post (or update / remove) the Perfex expense backing a fine. The expense
+     * name carries the PV number so it is easy to reconcile in Expenses.
+     */
+    private function _sync_fine_expense($id)
+    {
+        $fine = $this->db->get_where(db_prefix() . 'fleet_fines', ['id' => $id])->row();
+        if (!$fine) {
+            return;
+        }
+
+        // Cancelled fines are not a cost: passing 0 drops any linked expense.
+        $amount = ($fine->status === 'cancelled') ? 0 : (float) $fine->amount;
+        $ref    = $fine->fine_number ?: ('#' . $fine->id);
+
+        $parts = [];
+        if (!empty($fine->vehicle_id)) {
+            $parts[] = $this->_vehicle_label($fine->vehicle_id);
+        }
+        if (!empty($fine->driver_id)) {
+            $parts[] = get_staff_full_name($fine->driver_id);
+        }
+
+        $this->_sync_record_expense(
+            'fleet_fines',
+            $id,
+            $amount,
+            _l('fleet_fine_invoice_title', $ref),
+            implode(' — ', $parts),
+            $fine->fine_date,
+            ['reference_no' => $fine->fine_number]
+        );
     }
 
     /**
