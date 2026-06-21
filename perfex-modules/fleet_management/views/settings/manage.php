@@ -68,8 +68,11 @@ foreach ($expense_categories as $c) {
                     if (trim($terms_value) === '') {
                         $terms_value = _l('fleet_contract_terms');
                     }
-                    echo render_textarea('fleet_contract_terms', 'fleet_set_contract_terms', $terms_value, ['rows' => 6]);
                     ?>
+                    <div class="form-group">
+                        <label for="fleet_contract_terms" class="control-label"><?php echo _l('fleet_set_contract_terms'); ?></label>
+                        <textarea name="fleet_contract_terms" id="fleet_contract_terms" class="form-control tinymce" rows="8"><?php echo $terms_value; ?></textarea>
+                    </div>
                     <p class="text-muted tw-text-xs"><?php echo _l('fleet_set_contract_terms_help'); ?></p>
 
                     <div class="mtop15">
