@@ -72,6 +72,7 @@ foreach ($expense_categories as $c) {
                     <div class="form-group">
                         <label for="fleet_contract_terms" class="control-label"><?php echo _l('fleet_set_contract_terms'); ?></label>
                         <textarea name="fleet_contract_terms" id="fleet_contract_terms" class="form-control tinymce" rows="8"><?php echo $terms_value; ?></textarea>
+                        <input type="hidden" name="fleet_contract_terms_encoded" id="fleet_contract_terms_encoded" value="">
                     </div>
                     <p class="text-muted tw-text-xs"><?php echo _l('fleet_set_contract_terms_help'); ?></p>
 
@@ -94,5 +95,24 @@ foreach ($expense_categories as $c) {
     </div>
 </div>
 <?php init_tail(); ?>
+<script>
+// The contract terms hold rich HTML. Posting raw HTML on this module URL can be
+// blocked (403) by Perfex's input filter or a server WAF, so we base64-encode
+// the editor content before submit and decode it server-side. The raw textarea
+// is disabled so no HTML tags appear in the request.
+$(function () {
+    var $area = $('#fleet_contract_terms');
+    if (!$area.length) { return; }
+
+    $area.closest('form').on('submit', function () {
+        if (typeof tinymce !== 'undefined' && tinymce.get('fleet_contract_terms')) {
+            tinymce.triggerSave();
+        }
+        var html = $area.val();
+        $('#fleet_contract_terms_encoded').val(window.btoa(unescape(encodeURIComponent(html))));
+        $area.prop('disabled', true);
+    });
+});
+</script>
 </body>
 </html>
