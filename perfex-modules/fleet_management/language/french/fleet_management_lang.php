@@ -436,3 +436,27 @@ $lang['fleet_doctype_technical_inspection'] = 'Visite technique';
 $lang['fleet_doctype_vignette']         = 'Vignette';
 $lang['fleet_doctype_permit']           = 'Autorisation / licence';
 $lang['fleet_doctype_other']            = 'Autre';
+
+# Fines / contraventions (PV)
+$lang['fleet_fines']                    = 'Amendes / PV';
+$lang['fleet_fine']                     = 'Amende / contravention';
+$lang['fleet_add_fine']                 = 'Ajouter une amende';
+$lang['fleet_no_fines']                 = 'Aucune amende enregistrée';
+$lang['fleet_fine_number']              = 'N° de PV';
+$lang['fleet_fine_type']                = 'Type d\'infraction';
+$lang['fleet_amount']                   = 'Montant';
+$lang['fleet_rebill_client']            = 'Refacturer au client';
+$lang['fleet_rebill']                   = 'Refacturer';
+$lang['fleet_fine_invoice_title']       = 'Contravention %s';
+$lang['fleet_log_fine_added']           = 'Amende ajoutée : %s';
+$lang['fleet_atype_fine']               = 'Amende';
+$lang['fleet_ftype_speeding']           = 'Excès de vitesse';
+$lang['fleet_ftype_parking']            = 'Stationnement';
+$lang['fleet_ftype_red_light']          = 'Feu rouge';
+$lang['fleet_ftype_documents']          = 'Défaut de documents';
+$lang['fleet_ftype_phone']              = 'Téléphone au volant';
+$lang['fleet_ftype_other']              = 'Autre';
+$lang['fleet_fstatus_pending']          = 'À régler';
+$lang['fleet_fstatus_paid']             = 'Réglée';
+$lang['fleet_fstatus_contested']        = 'Contestée';
+$lang['fleet_fstatus_cancelled']        = 'Annulée';

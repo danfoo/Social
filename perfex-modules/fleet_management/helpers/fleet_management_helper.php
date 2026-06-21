@@ -153,7 +153,8 @@ function fleet_activity_icon($type)
         'fuel'       => 'fa-tint',
         'odometer'   => 'fa-tachometer',
         'rental'     => 'fa-calendar',
-        'invoice'    => 'fa-file-text-o',
+        'invoice'    => 'fa-file-text',
+        'fine'       => 'fa-gavel',
     ];
 
     return $map[$type] ?? 'fa-circle';
@@ -264,6 +265,24 @@ function fleet_fuel_eighths_label($value)
     ];
 
     return isset($map[$value]) ? $map[$value] : ($value . '/8');
+}
+
+function fleet_fine_types()
+{
+    return ['speeding', 'parking', 'red_light', 'documents', 'phone', 'other'];
+}
+
+function fleet_fine_status_badge($status)
+{
+    $map = [
+        'pending'   => 'warning',
+        'paid'      => 'success',
+        'contested' => 'info',
+        'cancelled' => 'default',
+    ];
+    $color = isset($map[$status]) ? $map[$status] : 'default';
+
+    return '<span class="label label-' . $color . '">' . _l('fleet_fstatus_' . $status) . '</span>';
 }
 
 function fleet_deposit_status_badge($status)

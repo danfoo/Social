@@ -1592,6 +1592,129 @@ class Fleet_management_model extends App_Model
     }
 
     /* ----------------------------------------------------------------- *
+     * Traffic fines / contraventions (PV)
+     * ----------------------------------------------------------------- */
+
+    public function get_fine($id = '')
+    {
+        if (is_numeric($id)) {
+            $this->db->where('id', $id);
+
+            return $this->db->get(db_prefix() . 'fleet_fines')->row();
+        }
+
+        $this->db->select('f.*, v.name as vehicle_name, v.plate as vehicle_plate, CONCAT(s.firstname, " ", s.lastname) as driver_name, c.company as client_name');
+        $this->db->from(db_prefix() . 'fleet_fines f');
+        $this->db->join(db_prefix() . 'fleet_vehicles v', 'v.id = f.vehicle_id', 'left');
+        $this->db->join(db_prefix() . 'staff s', 's.staffid = f.driver_id', 'left');
+        $this->db->join(db_prefix() . 'clients c', 'c.userid = f.clientid', 'left');
+        $this->db->order_by('f.fine_date', 'desc');
+
+        return $this->db->get()->result_array();
+    }
+
+    public function add_fine($data)
+    {
+        $data = $this->_clean_numeric($data, ['vehicle_id', 'driver_id', 'clientid', 'rental_id', 'amount']);
+        $data = $this->_clean_dates($data, ['fine_date']);
+
+        $data['paid']         = !empty($data['paid']) ? 1 : 0;
+        $data['created_by']   = get_staff_user_id();
+        $data['date_created'] = date('Y-m-d H:i:s');
+
+        $this->db->insert(db_prefix() . 'fleet_fines', $data);
+        $id = $this->db->insert_id();
+
+        if ($id && !empty($data['vehicle_id'])) {
+            $this->log_activity($data['vehicle_id'], 'fine', _l('fleet_log_fine_added', $data['fine_number'] ?? ('#' . $id)));
+        }
+
+        return $id;
+    }
+
+    public function update_fine($id, $data)
+    {
+        $data = $this->_clean_numeric($data, ['vehicle_id', 'driver_id', 'clientid', 'rental_id', 'amount']);
+        $data = $this->_clean_dates($data, ['fine_date']);
+
+        $data['paid'] = !empty($data['paid']) ? 1 : 0;
+
+        $this->db->where('id', $id);
+        $this->db->update(db_prefix() . 'fleet_fines', $data);
+
+        return true;
+    }
+
+    public function delete_fine($id)
+    {
+        $this->db->where('id', $id);
+        $this->db->delete(db_prefix() . 'fleet_fines');
+
+        return $this->db->affected_rows() > 0;
+    }
+
+    /**
+     * Re-bill a fine to its client by creating a draft Perfex invoice.
+     *
+     * @return int|false Invoice id on success, false otherwise.
+     */
+    public function create_fine_invoice($fine_id)
+    {
+        $fine = $this->get_fine($fine_id);
+
+        if (!$fine || empty($fine->clientid) || !empty($fine->invoice_id) || (float) $fine->amount <= 0) {
+            return false;
+        }
+
+        $this->load->model('invoices_model');
+        $this->load->model('currencies_model');
+
+        $base_currency = $this->currencies_model->get_base_currency();
+        $vehicle       = $fine->vehicle_id ? $this->get_vehicle($fine->vehicle_id) : null;
+        $vehicle_label = $vehicle ? ($vehicle->name . ' (' . $vehicle->plate . ')') : '';
+
+        $description = _l('fleet_fine_invoice_title', $fine->fine_number ?: ('#' . $fine->id));
+        $long        = trim($vehicle_label . ($fine->fine_date ? ' — ' . _dt($fine->fine_date) : ''));
+
+        $invoice_data = [
+            'clientid'         => $fine->clientid,
+            'number'           => get_option('next_invoice_number'),
+            'date'             => _d(date('Y-m-d')),
+            'duedate'          => _d(date('Y-m-d', strtotime('+' . (int) get_option('fleet_invoice_due_days') . ' days'))),
+            'currency'         => $base_currency->id,
+            'subtotal'         => (float) $fine->amount,
+            'total'            => (float) $fine->amount,
+            'adjustment'       => 0,
+            'discount_percent' => 0,
+            'discount_total'   => 0,
+            'discount_type'    => '',
+            'terms'            => get_option('predefined_terms_invoice'),
+            'clientnote'       => get_option('predefined_clientnote_invoice'),
+            'show_quantity_as' => 1,
+            'newitems'         => [
+                1 => [
+                    'description'      => $description,
+                    'long_description' => $long,
+                    'qty'              => 1,
+                    'unit'             => '',
+                    'rate'             => (float) $fine->amount,
+                    'order'            => 1,
+                    'taxname'          => [],
+                ],
+            ],
+        ];
+
+        $invoice_id = $this->invoices_model->add($invoice_data);
+
+        if ($invoice_id) {
+            $this->db->where('id', $fine_id);
+            $this->db->update(db_prefix() . 'fleet_fines', ['invoice_id' => $invoice_id]);
+        }
+
+        return $invoice_id;
+    }
+
+    /* ----------------------------------------------------------------- *
      * Parts catalog (items) with stock tracking
      * ----------------------------------------------------------------- */
 

@@ -523,6 +523,32 @@ if (!$CI->db->table_exists(db_prefix() . 'fleet_inspection_files')) {
     ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
 }
 
+// Traffic fines / contraventions (PV) linked to a vehicle + driver, re-billable.
+if (!$CI->db->table_exists(db_prefix() . 'fleet_fines')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_fines` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `fine_number` VARCHAR(100) NULL,
+        `vehicle_id` INT(11) NULL,
+        `driver_id` INT(11) NULL,
+        `rental_id` INT(11) NULL,
+        `clientid` INT(11) NULL,
+        `type` VARCHAR(50) NOT NULL DEFAULT 'other',
+        `fine_date` DATE NULL,
+        `location` VARCHAR(191) NULL,
+        `amount` DECIMAL(15,2) NOT NULL DEFAULT 0,
+        `status` VARCHAR(30) NOT NULL DEFAULT 'pending',
+        `paid` TINYINT(1) NOT NULL DEFAULT 0,
+        `paid_date` DATE NULL,
+        `invoice_id` INT(11) NULL,
+        `notes` TEXT NULL,
+        `created_by` INT(11) NULL,
+        `date_created` DATETIME NULL,
+        PRIMARY KEY (`id`),
+        KEY `vehicle_id` (`vehicle_id`),
+        KEY `driver_id` (`driver_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
 // Dedicated expense category so fleet costs are grouped in the Expenses module.
 if (get_option('fleet_expense_category_id') == '' && $CI->db->table_exists(db_prefix() . 'expenses_categories')) {
     $CI->db->insert(db_prefix() . 'expenses_categories', [

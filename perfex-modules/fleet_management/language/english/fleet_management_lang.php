@@ -436,3 +436,27 @@ $lang['fleet_doctype_technical_inspection'] = 'Technical inspection';
 $lang['fleet_doctype_vignette']         = 'Road tax / vignette';
 $lang['fleet_doctype_permit']           = 'Permit / license';
 $lang['fleet_doctype_other']            = 'Other';
+
+# Fines / contraventions
+$lang['fleet_fines']                    = 'Fines';
+$lang['fleet_fine']                     = 'Fine / contravention';
+$lang['fleet_add_fine']                 = 'Add fine';
+$lang['fleet_no_fines']                 = 'No fine recorded';
+$lang['fleet_fine_number']              = 'Ticket no.';
+$lang['fleet_fine_type']                = 'Offence type';
+$lang['fleet_amount']                   = 'Amount';
+$lang['fleet_rebill_client']            = 'Re-bill to client';
+$lang['fleet_rebill']                   = 'Re-bill';
+$lang['fleet_fine_invoice_title']       = 'Traffic fine %s';
+$lang['fleet_log_fine_added']           = 'Fine added: %s';
+$lang['fleet_atype_fine']               = 'Fine';
+$lang['fleet_ftype_speeding']           = 'Speeding';
+$lang['fleet_ftype_parking']            = 'Parking';
+$lang['fleet_ftype_red_light']          = 'Red light';
+$lang['fleet_ftype_documents']          = 'Missing documents';
+$lang['fleet_ftype_phone']              = 'Phone while driving';
+$lang['fleet_ftype_other']              = 'Other';
+$lang['fleet_fstatus_pending']          = 'To settle';
+$lang['fleet_fstatus_paid']             = 'Settled';
+$lang['fleet_fstatus_contested']        = 'Contested';
+$lang['fleet_fstatus_cancelled']        = 'Cancelled';
