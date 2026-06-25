@@ -491,3 +491,14 @@ $lang['fleet_set_role_access']          = 'Feature access per role';
 $lang['fleet_set_role_access_help']     = 'Tick the features visible to each role. A role with nothing ticked has no access; an unconfigured role (all ticked) sees everything. Admins always see everything. The base "Fleet Management" (view) permission is still required to reach the module.';
 $lang['fleet_toggle_all']               = 'All / none';
 $lang['fleet_role']                    = 'Role';
+
+# Commercial offer (estimate) from a rental + end-of-term notification
+$lang['fleet_create_estimate']          = 'Create commercial offer';
+$lang['fleet_view_estimate']            = 'View commercial offer';
+$lang['fleet_estimate_created']         = 'Commercial offer (estimate) created successfully';
+$lang['fleet_estimate_create_failed']   = 'Could not create the commercial offer';
+$lang['fleet_log_estimate_created']     = 'Commercial offer created: %s';
+$lang['fleet_atype_estimate']           = 'Commercial offer';
+$lang['fleet_rental_ended_notification'] = 'Rental reached its term: %s (ended %s)';
+$lang['fleet_rental_ended_intro']       = 'The following rental has reached its term. Please process the file (vehicle return, invoicing, deposit...).';
+$lang['fleet_not_invoiced']             = 'Not invoiced';

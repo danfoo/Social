@@ -739,6 +739,11 @@ class Fleet_management_model extends App_Model
     {
         $data = $this->_prepare_rental_data($data);
 
+        // Re-arm the end-of-term notification (e.g. when the rental is extended).
+        if ($this->db->field_exists('end_notified', db_prefix() . 'fleet_rentals')) {
+            $data['end_notified'] = 0;
+        }
+
         $this->db->where('id', $id);
         $this->db->update(db_prefix() . 'fleet_rentals', $data);
 
@@ -899,6 +904,137 @@ class Fleet_management_model extends App_Model
         }
 
         return $invoice_id;
+    }
+
+    /**
+     * Create a draft Perfex estimate (commercial offer) from a rental and link
+     * it back. Mirrors create_invoice().
+     *
+     * @return int|false Estimate id on success, false otherwise.
+     */
+    public function create_estimate($rental_id)
+    {
+        $rental = $this->get_rental($rental_id);
+
+        if (!$rental || !empty($rental->estimate_id)) {
+            return false;
+        }
+
+        $this->load->model('estimates_model');
+        $this->load->model('currencies_model');
+
+        $base_currency = $this->currencies_model->get_base_currency();
+        $rate          = (float) $rental->daily_rate;
+        $qty           = (int) $rental->days;
+        $line_total    = $rate * $qty;
+
+        $description = _l('fleet_invoice_item_title', $rental->vehicle_name . ' (' . $rental->vehicle_plate . ')');
+        $long        = _l('fleet_invoice_item_period', [_dt($rental->date_start), _dt($rental->date_end)]);
+        if ($rental->with_driver) {
+            $long .= ' — ' . _l('fleet_with_driver');
+        }
+
+        $estimate_data = [
+            'clientid'         => $rental->clientid,
+            'number'           => get_option('next_estimate_number'),
+            'date'             => _d(date('Y-m-d')),
+            'expirydate'       => _d(date('Y-m-d', strtotime('+' . (int) get_option('fleet_invoice_due_days') . ' days'))),
+            'currency'         => $base_currency->id,
+            'subtotal'         => $line_total,
+            'total'            => $line_total,
+            'adjustment'       => 0,
+            'discount_percent' => 0,
+            'discount_total'   => 0,
+            'discount_type'    => '',
+            'status'           => 1,
+            'terms'            => get_option('predefined_terms_estimate'),
+            'clientnote'       => get_option('predefined_clientnote_estimate'),
+            'show_quantity_as' => 1,
+            'newitems'         => [
+                1 => [
+                    'description'      => $description,
+                    'long_description' => $long,
+                    'qty'              => $qty,
+                    'unit'             => _l('fleet_unit_day'),
+                    'rate'             => $rate,
+                    'order'            => 1,
+                    'taxname'          => [],
+                ],
+            ],
+        ];
+
+        $estimate_id = $this->estimates_model->add($estimate_data);
+
+        if ($estimate_id) {
+            $this->db->where('id', $rental_id);
+            $this->db->update(db_prefix() . 'fleet_rentals', ['estimate_id' => $estimate_id]);
+
+            $this->log_activity($rental->vehicle_id, 'estimate', _l('fleet_log_estimate_created', format_estimate_number($estimate_id)));
+        }
+
+        return $estimate_id;
+    }
+
+    /**
+     * Cron: e-mail + notify fleet staff when a rental reaches its end date and
+     * is still open (so the file can be closed: return, invoicing, deposit...).
+     */
+    public function notify_ending_rentals()
+    {
+        $today = date('Y-m-d');
+
+        $this->db->select('r.*, v.name as vehicle_name, v.plate as vehicle_plate, v.id as vehicle_id, c.company as client_name');
+        $this->db->from(db_prefix() . 'fleet_rentals r');
+        $this->db->join(db_prefix() . 'fleet_vehicles v', 'v.id = r.vehicle_id', 'left');
+        $this->db->join(db_prefix() . 'clients c', 'c.userid = r.clientid', 'left');
+        $this->db->where_in('r.status', ['reserved', 'ongoing']);
+        $this->db->where('r.end_notified', 0);
+        $this->db->where('r.date_end <=', $today);
+        $rentals = $this->db->get()->result_array();
+
+        if (empty($rentals)) {
+            return;
+        }
+
+        $staff   = $this->db->get(db_prefix() . 'staff')->result_array();
+        $mail_to = $this->notification_emails();
+        $bc      = get_base_currency();
+
+        foreach ($rentals as $r) {
+            $label = trim(($r['vehicle_name'] ?: '') . ' (' . $r['vehicle_plate'] . ')')
+                . ' — ' . ($r['client_name'] ?: '');
+
+            foreach ($staff as $member) {
+                if (!is_staff_member($member['staffid']) || !staff_can('view', 'fleet', $member['staffid'])) {
+                    continue;
+                }
+                $notified = add_notification([
+                    'description'     => 'fleet_rental_ended_notification',
+                    'touserid'        => $member['staffid'],
+                    'fromcompany'     => 1,
+                    'fromuserid'      => 0,
+                    'additional_data' => serialize([$label, _d($r['date_end'])]),
+                    'link'            => 'fleet_management/rentals/rental/' . $r['id'],
+                ]);
+                if ($notified) {
+                    pusher_trigger_notification([$member['staffid']]);
+                }
+            }
+
+            $body = '<p>' . _l('fleet_rental_ended_intro') . '</p>'
+                . '<table cellpadding="6" style="border-collapse:collapse;">'
+                . '<tr><td><strong>' . _l('fleet_vehicle') . '</strong></td><td>' . html_escape($r['vehicle_name'] . ' (' . $r['vehicle_plate'] . ')') . '</td></tr>'
+                . '<tr><td><strong>' . _l('fleet_client') . '</strong></td><td>' . html_escape($r['client_name']) . '</td></tr>'
+                . '<tr><td><strong>' . _l('fleet_period') . '</strong></td><td>' . _d($r['date_start']) . ' → ' . _d($r['date_end']) . '</td></tr>'
+                . '<tr><td><strong>' . _l('fleet_total') . '</strong></td><td>' . app_format_money($r['total'], $bc) . '</td></tr>'
+                . '<tr><td><strong>' . _l('invoice') . '</strong></td><td>' . (!empty($r['invoice_id']) ? format_invoice_number($r['invoice_id']) : _l('fleet_not_invoiced')) . '</td></tr>'
+                . '</table>'
+                . '<p><a href="' . admin_url('fleet_management/rentals/rental/' . $r['id']) . '">' . _l('fleet_rental') . ' #' . $r['id'] . '</a></p>';
+            fleet_send_email($mail_to, _l('fleet_rental_ended_notification', [$label, _d($r['date_end'])]), $body);
+
+            $this->db->where('id', $r['id']);
+            $this->db->update(db_prefix() . 'fleet_rentals', ['end_notified' => 1]);
+        }
     }
 
     /* ----------------------------------------------------------------- *

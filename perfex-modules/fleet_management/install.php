@@ -471,6 +471,16 @@ if ($CI->db->table_exists(db_prefix() . 'fleet_rentals')) {
     }
 }
 
+// Rental end-of-term notification flag + linked commercial offer (estimate).
+if ($CI->db->table_exists(db_prefix() . 'fleet_rentals')) {
+    if (!$CI->db->field_exists('end_notified', db_prefix() . 'fleet_rentals')) {
+        $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_rentals` ADD `end_notified` TINYINT(1) NOT NULL DEFAULT 0');
+    }
+    if (!$CI->db->field_exists('estimate_id', db_prefix() . 'fleet_rentals')) {
+        $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_rentals` ADD `estimate_id` INT(11) NULL');
+    }
+}
+
 // Vehicle documents (registration card, insurance, technical inspection...).
 if (!$CI->db->table_exists(db_prefix() . 'fleet_vehicle_files')) {
     $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_vehicle_files` (

@@ -260,6 +260,7 @@ function fleet_activity_icon($type)
         'odometer'   => 'fa-tachometer',
         'rental'     => 'fa-calendar',
         'invoice'    => 'fa-file-text',
+        'estimate'   => 'fa-file',
         'fine'       => 'fa-gavel',
     ];
 
@@ -279,6 +280,7 @@ function fleet_activity_color($type)
         'odometer'   => 'primary',
         'rental'     => 'info',
         'invoice'    => 'success',
+        'estimate'   => 'warning',
     ];
 
     return $map[$type] ?? 'default';

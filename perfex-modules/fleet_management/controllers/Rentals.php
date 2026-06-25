@@ -162,6 +162,23 @@ class Rentals extends AdminController
         redirect(admin_url('fleet_management/rentals/rental/' . $id));
     }
 
+    public function create_estimate($id)
+    {
+        if (!staff_can('create', 'fleet') || !has_permission('estimates', '', 'create')) {
+            access_denied('fleet');
+        }
+
+        $estimate_id = $this->fleet->create_estimate($id);
+
+        if ($estimate_id) {
+            set_alert('success', _l('fleet_estimate_created'));
+            redirect(admin_url('estimates/list_estimates/' . $estimate_id));
+        }
+
+        set_alert('warning', _l('fleet_estimate_create_failed'));
+        redirect(admin_url('fleet_management/rentals/rental/' . $id));
+    }
+
     /* ---------------- Security deposit (caution) ---------------- */
 
     public function deposit_hold($id)

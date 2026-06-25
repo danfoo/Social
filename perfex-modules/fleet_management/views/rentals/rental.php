@@ -62,6 +62,13 @@ foreach (fleet_rental_statuses() as $s) {
                                 <a href="<?php echo admin_url('fleet_management/rentals/contract_pdf/' . $rental->id); ?>" target="_blank" class="btn btn-info"><i class="fa fa-file-pdf"></i> <?php echo _l('fleet_contract'); ?></a>
                                 <a href="<?php echo admin_url('fleet_management/rentals/inspection_pdf/' . $rental->id); ?>" target="_blank" class="btn btn-info"><i class="fa fa-file-pdf"></i> <?php echo _l('fleet_inspection'); ?></a>
                             <?php endif; ?>
+                            <?php if ($rental && staff_can('create', 'fleet')) : ?>
+                                <?php if (!empty($rental->estimate_id)) : ?>
+                                    <a href="<?php echo admin_url('estimates/list_estimates/' . $rental->estimate_id); ?>" class="btn btn-default"><i class="fa fa-file-text"></i> <?php echo _l('fleet_view_estimate'); ?></a>
+                                <?php elseif (has_permission('estimates', '', 'create')) : ?>
+                                    <a href="<?php echo admin_url('fleet_management/rentals/create_estimate/' . $rental->id); ?>" class="btn btn-warning"><i class="fa fa-file"></i> <?php echo _l('fleet_create_estimate'); ?></a>
+                                <?php endif; ?>
+                            <?php endif; ?>
                             <?php if ($rental && empty($rental->invoice_id) && staff_can('create', 'fleet')) : ?>
                                 <a href="<?php echo admin_url('fleet_management/rentals/create_invoice/' . $rental->id); ?>" class="btn btn-success"><i class="fa fa-file-text"></i> <?php echo _l('fleet_create_invoice'); ?></a>
                             <?php endif; ?>
