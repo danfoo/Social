@@ -61,6 +61,26 @@ foreach ($expense_categories as $c) {
                         </div>
                     </div>
 
+                    <h4 class="bold mtop20"><i class="fa fa-check-square-o text-success"></i> <?php echo _l('fleet_set_approval'); ?></h4>
+                    <hr class="hr-panel-heading" />
+                    <div class="checkbox checkbox-primary">
+                        <input type="checkbox" name="fleet_approval_enabled" id="fleet_approval_enabled" value="1" <?php echo get_option('fleet_approval_enabled') ? 'checked' : ''; ?>>
+                        <label for="fleet_approval_enabled"><?php echo _l('fleet_set_approval_enabled'); ?></label>
+                    </div>
+                    <p class="text-muted tw-text-xs"><?php echo _l('fleet_set_approval_help'); ?></p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <?php
+                            $approver_options = [['id' => '', 'name' => _l('fleet_approver_admins')]];
+                            foreach ($staff as $st) {
+                                $approver_options[] = ['id' => $st['staffid'], 'name' => trim($st['firstname'] . ' ' . $st['lastname'])];
+                            }
+                            echo render_select('fleet_approver_id', $approver_options, ['id', 'name'], 'fleet_set_approver', get_option('fleet_approver_id'));
+                            ?>
+                            <p class="text-muted tw-text-xs"><?php echo _l('fleet_set_approver_help'); ?></p>
+                        </div>
+                    </div>
+
                     <h4 class="bold mtop20"><i class="fa fa-file-text text-info"></i> <?php echo _l('fleet_contract'); ?></h4>
                     <hr class="hr-panel-heading" />
                     <?php

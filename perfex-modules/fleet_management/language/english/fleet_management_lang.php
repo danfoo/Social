@@ -503,3 +503,36 @@ $lang['fleet_rental_ended_notification'] = 'Rental reached its term: %s (ended %
 $lang['fleet_rental_ended_intro']       = 'The following rental has reached its term. Please process the file (vehicle return, invoicing, deposit...).';
 $lang['fleet_not_invoiced']             = 'Not invoiced';
 $lang['fleet_atype_proposal']           = 'Commercial offer';
+
+# Change-approval workflow
+$lang['fleet_approvals']                    = 'Approvals';
+$lang['fleet_approve']                      = 'Approve';
+$lang['fleet_reject']                       = 'Reject';
+$lang['fleet_approval_change']              = 'Requested change';
+$lang['fleet_approval_requested_by']        = 'Requested by';
+$lang['fleet_approval_action_update']       = 'Edit';
+$lang['fleet_approval_action_delete']       = 'Deletion';
+$lang['fleet_approval_status_pending']      = 'Pending';
+$lang['fleet_approval_status_approved']     = 'Approved';
+$lang['fleet_approval_status_rejected']     = 'Rejected';
+$lang['fleet_approval_none']                = 'No request';
+$lang['fleet_approval_reason']              = 'Rejection reason';
+$lang['fleet_approval_confirm_approve']     = 'Approve and apply this change?';
+$lang['fleet_approval_submitted']           = 'Your change has been submitted for approval.';
+$lang['fleet_approval_approved_done']       = 'Change approved and applied';
+$lang['fleet_approval_rejected_done']       = 'Request rejected';
+$lang['fleet_approval_invalid']             = 'Request not found or already handled';
+$lang['fleet_approval_pending_notification'] = 'Approval required: %s (requested by %s)';
+$lang['fleet_approval_approved_notification'] = 'Your change was approved: %s';
+$lang['fleet_approval_rejected_notification'] = 'Your change was rejected: %s';
+$lang['fleet_approval_pending_subject']     = 'Approval required';
+$lang['fleet_approval_approved_subject']    = 'Change approved';
+$lang['fleet_approval_rejected_subject']    = 'Change rejected';
+$lang['fleet_approval_email_intro']         = 'A change requires your approval in Fleet Management.';
+# Settings
+$lang['fleet_set_approval']                 = 'Change approval';
+$lang['fleet_set_approval_enabled']         = 'Require approval for edits and deletions';
+$lang['fleet_set_approval_help']            = 'When enabled, any edit or deletion (fuel, maintenance, rentals, fines, reminders) made by a non-authorized user is held until approved, and the approver is notified by e-mail.';
+$lang['fleet_set_approver']                 = 'Approver';
+$lang['fleet_set_approver_help']            = 'Choose who can validate changes. Defaults to all admins.';
+$lang['fleet_approver_admins']              = 'All admins';

@@ -34,6 +34,9 @@ class Settings extends AdminController
                 update_option('fleet_contract_terms', $this->input->post('fleet_contract_terms', false));
             }
 
+            update_option('fleet_approval_enabled', $this->input->post('fleet_approval_enabled') ? 1 : 0);
+            update_option('fleet_approver_id', $this->input->post('fleet_approver_id'));
+
             $this->_save_role_features();
 
             set_alert('success', _l('settings_updated'));
@@ -52,6 +55,10 @@ class Settings extends AdminController
         $this->db->order_by('name', 'asc');
         $data['roles']         = $this->db->get(db_prefix() . 'roles')->result_array();
         $data['role_features'] = fleet_role_feature_map();
+
+        $this->db->where('active', 1);
+        $this->db->order_by('firstname', 'asc');
+        $data['staff'] = $this->db->get(db_prefix() . 'staff')->result_array();
 
         $data['title'] = _l('fleet_settings');
         $this->load->view('fleet_management/settings/manage', $data);

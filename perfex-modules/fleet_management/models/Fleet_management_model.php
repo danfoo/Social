@@ -2620,6 +2620,206 @@ class Fleet_management_model extends App_Model
         return ['labels' => $labels] + $series;
     }
 
+    /* ----------------------------------------------------------------- *
+     * Change-approval workflow
+     * ----------------------------------------------------------------- */
+
+    public function add_approval($data)
+    {
+        $data['requested_by'] = get_staff_user_id();
+        $data['status']       = 'pending';
+        $data['date_created'] = date('Y-m-d H:i:s');
+
+        $this->db->insert(db_prefix() . 'fleet_approvals', $data);
+        $id = $this->db->insert_id();
+
+        if ($id) {
+            $this->_notify_approvers($id);
+        }
+
+        return $id;
+    }
+
+    public function get_approval($id)
+    {
+        return $this->db->get_where(db_prefix() . 'fleet_approvals', ['id' => $id])->row();
+    }
+
+    public function get_approvals($status = 'pending')
+    {
+        $this->db->select('a.*, CONCAT(s.firstname, " ", s.lastname) as requester_name, CONCAT(rv.firstname, " ", rv.lastname) as reviewer_name');
+        $this->db->from(db_prefix() . 'fleet_approvals a');
+        $this->db->join(db_prefix() . 'staff s', 's.staffid = a.requested_by', 'left');
+        $this->db->join(db_prefix() . 'staff rv', 'rv.staffid = a.reviewed_by', 'left');
+        if ($status) {
+            $this->db->where('a.status', $status);
+        }
+        $this->db->order_by('a.date_created', 'desc');
+
+        return $this->db->get()->result_array();
+    }
+
+    public function pending_approvals_count()
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_approvals')) {
+            return 0;
+        }
+
+        return (int) $this->db->where('status', 'pending')->count_all_results(db_prefix() . 'fleet_approvals');
+    }
+
+    /** Human-readable reference to the record targeted by an approval request. */
+    public function approval_record_label($module, $record_id)
+    {
+        switch ($module) {
+            case 'fuel':
+                $r = $this->get_fuel_log($record_id);
+                return $r ? (_l('fleet_fuel') . ' — ' . $r->vehicle_name . ' · ' . _d($r->date) . ' · ' . (float) $r->liters . ' L') : ('#' . $record_id);
+            case 'maintenance':
+                $r = $this->get_maintenance($record_id);
+                return $r ? (_l('fleet_maintenance') . ' — ' . $r->vehicle_name . ' · ' . _l('fleet_mtype_' . $r->type)) : ('#' . $record_id);
+            case 'rental':
+                $r = $this->get_rental($record_id);
+                return $r ? (_l('fleet_rental') . ' #' . $r->id . ' — ' . $r->vehicle_name . ' · ' . $r->client_name) : ('#' . $record_id);
+            case 'fine':
+                $r = $this->get_fine($record_id);
+                return $r ? (_l('fleet_fine') . ' ' . ($r->fine_number ?: ('#' . $r->id))) : ('#' . $record_id);
+            case 'reminder':
+                $r = $this->get_reminders($record_id);
+                return $r ? (_l('fleet_reminder') . ' — ' . $r->title) : ('#' . $record_id);
+        }
+
+        return $module . ' #' . $record_id;
+    }
+
+    /** Apply an approved request by replaying the stored operation. */
+    public function apply_approval($id)
+    {
+        $a = $this->get_approval($id);
+        if (!$a || $a->status !== 'pending') {
+            return false;
+        }
+
+        $data = $a->payload ? unserialize($a->payload) : [];
+
+        switch ($a->module . '.' . $a->action) {
+            case 'fuel.update':        $this->update_fuel_log($a->record_id, $data); break;
+            case 'fuel.delete':        $this->delete_fuel_log($a->record_id); break;
+            case 'maintenance.update': $this->update_maintenance($a->record_id, $data); break;
+            case 'maintenance.delete': $this->delete_maintenance($a->record_id); break;
+            case 'rental.update':      $this->update_rental($a->record_id, $data); break;
+            case 'rental.delete':      $this->delete_rental($a->record_id); break;
+            case 'fine.update':        $this->update_fine($a->record_id, $data); break;
+            case 'fine.delete':        $this->delete_fine($a->record_id); break;
+            case 'reminder.update':    $this->update_reminder($a->record_id, $data); break;
+            case 'reminder.delete':    $this->delete_reminder($a->record_id); break;
+            default: return false;
+        }
+
+        $this->db->where('id', $id);
+        $this->db->update(db_prefix() . 'fleet_approvals', [
+            'status'      => 'approved',
+            'reviewed_by' => get_staff_user_id(),
+            'reviewed_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        $this->_notify_requester($a, 'approved');
+
+        return true;
+    }
+
+    public function reject_approval($id, $note = '')
+    {
+        $a = $this->get_approval($id);
+        if (!$a || $a->status !== 'pending') {
+            return false;
+        }
+
+        $this->db->where('id', $id);
+        $this->db->update(db_prefix() . 'fleet_approvals', [
+            'status'      => 'rejected',
+            'reviewed_by' => get_staff_user_id(),
+            'reviewed_at' => date('Y-m-d H:i:s'),
+            'note'        => $note,
+        ]);
+
+        $this->_notify_requester($a, 'rejected');
+
+        return true;
+    }
+
+    private function _notify_approvers($approval_id)
+    {
+        $a = $this->get_approval($approval_id);
+        if (!$a) {
+            return;
+        }
+
+        $label   = $this->approval_record_label($a->module, $a->record_id);
+        $action  = _l('fleet_approval_action_' . $a->action);
+        $by      = get_staff_full_name($a->requested_by);
+        $emails  = [];
+
+        foreach (fleet_approver_ids() as $sid) {
+            $staff = $this->db->get_where(db_prefix() . 'staff', ['staffid' => $sid])->row();
+            if (!$staff) {
+                continue;
+            }
+            if (!empty($staff->email)) {
+                $emails[] = $staff->email;
+            }
+            $notified = add_notification([
+                'description'     => 'fleet_approval_pending_notification',
+                'touserid'        => $sid,
+                'fromcompany'     => 1,
+                'fromuserid'      => 0,
+                'additional_data' => serialize([$action . ' — ' . $label, $by]),
+                'link'            => 'fleet_management/approvals',
+            ]);
+            if ($notified) {
+                pusher_trigger_notification([$sid]);
+            }
+        }
+
+        $body = '<p>' . _l('fleet_approval_email_intro') . '</p>'
+            . '<p><strong>' . html_escape($action) . '</strong> — ' . html_escape($label) . '<br>'
+            . _l('fleet_approval_requested_by') . ': ' . html_escape($by) . '</p>'
+            . '<p><a href="' . admin_url('fleet_management/approvals') . '">' . _l('fleet_approvals') . '</a></p>';
+        fleet_send_email($emails, _l('fleet_approval_pending_subject') . ' — ' . $label, $body, true);
+    }
+
+    private function _notify_requester($approval, $decision)
+    {
+        if (empty($approval->requested_by)) {
+            return;
+        }
+
+        $label = $this->approval_record_label($approval->module, $approval->record_id);
+        $desc  = $decision === 'approved' ? 'fleet_approval_approved_notification' : 'fleet_approval_rejected_notification';
+
+        $notified = add_notification([
+            'description'     => $desc,
+            'touserid'        => $approval->requested_by,
+            'fromcompany'     => 1,
+            'fromuserid'      => 0,
+            'additional_data' => serialize([$label]),
+            'link'            => 'fleet_management/approvals?status=' . $decision,
+        ]);
+        if ($notified) {
+            pusher_trigger_notification([$approval->requested_by]);
+        }
+
+        $staff = $this->db->get_where(db_prefix() . 'staff', ['staffid' => $approval->requested_by])->row();
+        if ($staff && !empty($staff->email)) {
+            $head = $decision === 'approved' ? _l('fleet_approval_approved_subject') : _l('fleet_approval_rejected_subject');
+            $body = '<p>' . $head . ' : <strong>' . html_escape($label) . '</strong></p>';
+            if ($decision === 'rejected' && !empty($approval->note)) {
+                $body .= '<p>' . _l('fleet_approval_reason') . ': ' . html_escape($approval->note) . '</p>';
+            }
+            fleet_send_email([$staff->email], $head . ' — ' . $label, $body, true);
+        }
+    }
+
     private function _sum_by_vehicle($table, $column, $date_col = null, $start = null, $end = null)
     {
         if (!$this->db->table_exists(db_prefix() . $table)) {

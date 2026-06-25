@@ -14,7 +14,7 @@ define('FLEET_MANAGEMENT_MODULE', 'fleet_management');
 
 // Bump this whenever the database schema changes so the auto-migration below
 // recreates any missing table/column without a manual deactivate/reactivate.
-define('FLEET_MANAGEMENT_DB_VERSION', '1.0.23');
+define('FLEET_MANAGEMENT_DB_VERSION', '1.0.24');
 
 $CI = &get_instance();
 
@@ -129,6 +129,20 @@ function fleet_management_init_menu_items()
             'slug'     => $slug,
             'name'     => _l($lang),
             'href'     => admin_url($path),
+            'position' => $position++,
+        ]);
+    }
+
+    // Approval queue: shown to approvers when the workflow is enabled.
+    if (fleet_approval_active() && fleet_is_approver()) {
+        $CI->load->model('fleet_management/fleet_management_model', 'fleet');
+        $pending = $CI->fleet->pending_approvals_count();
+        $badge   = $pending > 0 ? ' <span class="badge" style="background:#e74c3c;">' . $pending . '</span>' : '';
+
+        $CI->app_menu->add_sidebar_children_item('fleet-management', [
+            'slug'     => 'fleet-approvals',
+            'name'     => _l('fleet_approvals') . $badge,
+            'href'     => admin_url('fleet_management/approvals'),
             'position' => $position++,
         ]);
     }

@@ -503,3 +503,36 @@ $lang['fleet_rental_ended_notification'] = 'Location arrivée à terme : %s (fin
 $lang['fleet_rental_ended_intro']       = 'La location suivante est arrivée à son terme. Merci de traiter le dossier (retour du véhicule, facturation, caution...).';
 $lang['fleet_not_invoiced']             = 'Non facturée';
 $lang['fleet_atype_proposal']           = 'Offre commerciale';
+
+# Change-approval workflow
+$lang['fleet_approvals']                    = 'Validations';
+$lang['fleet_approve']                      = 'Approuver';
+$lang['fleet_reject']                       = 'Rejeter';
+$lang['fleet_approval_change']              = 'Changement demandé';
+$lang['fleet_approval_requested_by']        = 'Demandé par';
+$lang['fleet_approval_action_update']       = 'Modification';
+$lang['fleet_approval_action_delete']       = 'Suppression';
+$lang['fleet_approval_status_pending']      = 'En attente';
+$lang['fleet_approval_status_approved']     = 'Approuvées';
+$lang['fleet_approval_status_rejected']     = 'Rejetées';
+$lang['fleet_approval_none']                = 'Aucune demande';
+$lang['fleet_approval_reason']              = 'Motif du rejet';
+$lang['fleet_approval_confirm_approve']     = 'Approuver et appliquer ce changement ?';
+$lang['fleet_approval_submitted']           = 'Votre modification a été soumise pour validation à un responsable.';
+$lang['fleet_approval_approved_done']       = 'Changement approuvé et appliqué';
+$lang['fleet_approval_rejected_done']       = 'Demande rejetée';
+$lang['fleet_approval_invalid']             = 'Demande introuvable ou déjà traitée';
+$lang['fleet_approval_pending_notification'] = 'Validation requise : %s (demandé par %s)';
+$lang['fleet_approval_approved_notification'] = 'Votre modification a été approuvée : %s';
+$lang['fleet_approval_rejected_notification'] = 'Votre modification a été rejetée : %s';
+$lang['fleet_approval_pending_subject']     = 'Validation requise';
+$lang['fleet_approval_approved_subject']    = 'Modification approuvée';
+$lang['fleet_approval_rejected_subject']    = 'Modification rejetée';
+$lang['fleet_approval_email_intro']         = 'Une modification nécessite votre validation dans la gestion de flotte.';
+# Settings
+$lang['fleet_set_approval']                 = 'Validation des modifications';
+$lang['fleet_set_approval_enabled']         = 'Exiger une validation pour les modifications et suppressions';
+$lang['fleet_set_approval_help']            = 'Quand cette option est active, toute modification ou suppression (carburant, entretiens, locations, amendes, rappels) effectuée par une personne non habilitée est mise en attente jusqu\'à validation, et le validateur est notifié par e-mail.';
+$lang['fleet_set_approver']                 = 'Personne qui valide';
+$lang['fleet_set_approver_help']            = 'Choisissez qui peut valider les changements. Par défaut, tous les administrateurs.';
+$lang['fleet_approver_admins']              = 'Tous les administrateurs';

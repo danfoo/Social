@@ -82,6 +82,9 @@ class Rentals extends AdminController
             if (!staff_can('edit', 'fleet')) {
                 access_denied('fleet');
             }
+            if (fleet_intercept('rental', 'update', $id, $data)) {
+                redirect(admin_url('fleet_management/rentals/rental/' . $id));
+            }
             $this->fleet->update_rental($id, $data);
             set_alert('success', _l('updated_successfully', _l('fleet_rental')));
             redirect(admin_url('fleet_management/rentals/rental/' . $id));
@@ -110,6 +113,10 @@ class Rentals extends AdminController
     {
         if (!staff_can('delete', 'fleet')) {
             access_denied('fleet');
+        }
+
+        if (fleet_intercept('rental', 'delete', $id, null)) {
+            redirect(admin_url('fleet_management/rentals'));
         }
 
         if ($this->fleet->delete_rental($id)) {

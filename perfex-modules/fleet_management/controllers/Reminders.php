@@ -48,6 +48,9 @@ class Reminders extends AdminController
             if (!staff_can('edit', 'fleet')) {
                 access_denied('fleet');
             }
+            if (fleet_intercept('reminder', 'update', $id, $data)) {
+                redirect($this->input->server('HTTP_REFERER') ?: admin_url('fleet_management/reminders'));
+            }
             $this->fleet->update_reminder($id, $data);
             set_alert('success', _l('updated_successfully', _l('fleet_reminder')));
         }
@@ -91,6 +94,10 @@ class Reminders extends AdminController
     {
         if (!staff_can('delete', 'fleet')) {
             access_denied('fleet');
+        }
+
+        if (fleet_intercept('reminder', 'delete', $id, null)) {
+            redirect($this->input->server('HTTP_REFERER') ?: admin_url('fleet_management/reminders'));
         }
 
         $this->fleet->delete_reminder($id);

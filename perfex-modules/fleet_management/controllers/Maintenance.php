@@ -47,6 +47,9 @@ class Maintenance extends AdminController
             if (!staff_can('edit', 'fleet')) {
                 access_denied('fleet');
             }
+            if (fleet_intercept('maintenance', 'update', $id, $data)) {
+                redirect($this->input->server('HTTP_REFERER') ?: admin_url('fleet_management/maintenance'));
+            }
             $this->fleet->update_maintenance($id, $data);
             set_alert('success', _l('updated_successfully', _l('fleet_maintenance_record')));
         }
@@ -67,6 +70,10 @@ class Maintenance extends AdminController
     {
         if (!staff_can('delete', 'fleet')) {
             access_denied('fleet');
+        }
+
+        if (fleet_intercept('maintenance', 'delete', $id, null)) {
+            redirect($this->input->server('HTTP_REFERER') ?: admin_url('fleet_management/maintenance'));
         }
 
         $this->fleet->delete_maintenance($id);

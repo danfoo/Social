@@ -49,6 +49,9 @@ class Fines extends AdminController
             if (!staff_can('edit', 'fleet')) {
                 access_denied('fleet');
             }
+            if (fleet_intercept('fine', 'update', $id, $data)) {
+                redirect(admin_url('fleet_management/fines'));
+            }
             $this->fleet->update_fine($id, $data);
             set_alert('success', _l('updated_successfully', _l('fleet_fine')));
         }
@@ -74,6 +77,10 @@ class Fines extends AdminController
     {
         if (!staff_can('delete', 'fleet')) {
             access_denied('fleet');
+        }
+
+        if (fleet_intercept('fine', 'delete', $id, null)) {
+            redirect(admin_url('fleet_management/fines'));
         }
 
         $this->fleet->delete_fine($id);

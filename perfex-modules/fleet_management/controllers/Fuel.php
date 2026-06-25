@@ -78,6 +78,9 @@ class Fuel extends AdminController
             if (!staff_can('edit', 'fleet')) {
                 access_denied('fleet');
             }
+            if (fleet_intercept('fuel', 'update', $id, $data)) {
+                redirect(admin_url('fleet_management/fuel'));
+            }
             $this->fleet->update_fuel_log($id, $data);
             set_alert('success', _l('updated_successfully', _l('fleet_fuel_log')));
         }
@@ -245,6 +248,10 @@ class Fuel extends AdminController
     {
         if (!staff_can('delete', 'fleet')) {
             access_denied('fleet');
+        }
+
+        if (fleet_intercept('fuel', 'delete', $id, null)) {
+            redirect(admin_url('fleet_management/fuel'));
         }
 
         $this->fleet->delete_fuel_log($id);

@@ -89,6 +89,68 @@ function fleet_first_allowed_feature_url()
     return '';
 }
 
+/* ===================================================================== *
+ * Change-approval workflow
+ * ===================================================================== */
+
+/** Whether the approval workflow is switched on by the admin. */
+function fleet_approval_active()
+{
+    return (int) get_option('fleet_approval_enabled') === 1;
+}
+
+/** Staff ids allowed to validate changes (the designated approver, or admins). */
+function fleet_approver_ids()
+{
+    $approver = (int) get_option('fleet_approver_id');
+    if ($approver) {
+        return [$approver];
+    }
+
+    $CI  = &get_instance();
+    $ids = [];
+    foreach ($CI->db->where('admin', 1)->where('active', 1)->get(db_prefix() . 'staff')->result_array() as $s) {
+        $ids[] = (int) $s['staffid'];
+    }
+
+    return $ids;
+}
+
+/** Whether the current user may validate changes (always true for admins). */
+function fleet_is_approver()
+{
+    if (is_admin()) {
+        return true;
+    }
+
+    return in_array((int) get_staff_user_id(), fleet_approver_ids(), true);
+}
+
+/**
+ * Intercept an update/delete: when the workflow is active and the current user
+ * is not an approver, queue the operation for validation instead of applying
+ * it. Returns true when queued (the caller should stop and redirect).
+ */
+function fleet_intercept($module, $action, $record_id, $payload = null)
+{
+    if (!fleet_approval_active() || fleet_is_approver()) {
+        return false;
+    }
+
+    $CI = &get_instance();
+    $CI->load->model('fleet_management/fleet_management_model', 'fleet');
+    $CI->fleet->add_approval([
+        'module'    => $module,
+        'action'    => $action,
+        'record_id' => (int) $record_id,
+        'payload'   => $payload !== null ? serialize($payload) : null,
+    ]);
+
+    set_alert('info', _l('fleet_approval_submitted'));
+
+    return true;
+}
+
 /**
  * Available vehicle statuses.
  */
@@ -312,9 +374,9 @@ function fleet_reminder_due_badge($due_date, $notify_days = 7)
  * mailer (SMTP settings + decryption handled by application/config/email.php).
  * No-op when fleet e-mail notifications are disabled in the settings.
  */
-function fleet_send_email($recipients, $subject, $message)
+function fleet_send_email($recipients, $subject, $message, $force = false)
 {
-    if (!get_option('fleet_email_notifications')) {
+    if (!$force && !get_option('fleet_email_notifications')) {
         return false;
     }
 

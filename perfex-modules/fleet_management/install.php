@@ -588,6 +588,25 @@ if (!$CI->db->table_exists(db_prefix() . 'fleet_fuel_files')) {
     ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
 }
 
+// Change-approval workflow: pending update/delete requests awaiting validation.
+if (!$CI->db->table_exists(db_prefix() . 'fleet_approvals')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_approvals` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `module` VARCHAR(30) NOT NULL,
+        `action` VARCHAR(10) NOT NULL,
+        `record_id` INT(11) NULL,
+        `payload` LONGTEXT NULL,
+        `requested_by` INT(11) NULL,
+        `status` VARCHAR(20) NOT NULL DEFAULT 'pending',
+        `reviewed_by` INT(11) NULL,
+        `reviewed_at` DATETIME NULL,
+        `note` TEXT NULL,
+        `date_created` DATETIME NULL,
+        PRIMARY KEY (`id`),
+        KEY `status` (`status`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
 // Dedicated expense category so fleet costs are grouped in the Expenses module.
 if (get_option('fleet_expense_category_id') == '' && $CI->db->table_exists(db_prefix() . 'expenses_categories')) {
     $CI->db->insert(db_prefix() . 'expenses_categories', [
@@ -623,6 +642,8 @@ add_option('fleet_license_notify_days', 30);
 add_option('fleet_email_notifications', 1);
 add_option('fleet_notification_emails', '');
 add_option('fleet_contract_terms', '');
+add_option('fleet_approval_enabled', 0);
+add_option('fleet_approver_id', '');
 
 // Mark the schema as up to date so the auto-migration stops re-running.
 $fleet_db_version = defined('FLEET_MANAGEMENT_DB_VERSION') ? FLEET_MANAGEMENT_DB_VERSION : '1.0.3';
