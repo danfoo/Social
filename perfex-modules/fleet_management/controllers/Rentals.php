@@ -8,6 +8,10 @@ class Rentals extends AdminController
     {
         parent::__construct();
         $this->load->model('fleet_management/fleet_management_model', 'fleet');
+
+        if (!fleet_can_feature('rentals')) {
+            access_denied('fleet');
+        }
     }
 
     public function index()

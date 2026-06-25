@@ -2,6 +2,93 @@
 
 defined('BASEPATH') or exit('No direct script access allowed');
 
+/* ===================================================================== *
+ * Per-role feature access
+ * --------------------------------------------------------------------- *
+ * Lets an admin decide, per Perfex role, which fleet features are visible
+ * (e.g. a fuel manager only sees Fuel). Configuration is stored in the
+ * `fleet_role_features` option as [roleid => [feature => 1, ...]].
+ * A role with no entry keeps full access (backward compatible).
+ * ===================================================================== */
+
+/**
+ * The configurable features: slug => [label lang key, controller path].
+ */
+function fleet_features()
+{
+    return [
+        'dashboard'   => ['fleet_dashboard', 'fleet_management/dashboard'],
+        'vehicles'    => ['fleet_vehicles', 'fleet_management/vehicles'],
+        'rentals'     => ['fleet_rentals', 'fleet_management/rentals'],
+        'maintenance' => ['fleet_maintenance', 'fleet_management/maintenance'],
+        'parts'       => ['fleet_parts_articles', 'fleet_management/parts'],
+        'fuel'        => ['fleet_fuel', 'fleet_management/fuel'],
+        'reminders'   => ['fleet_reminders', 'fleet_management/reminders'],
+        'fines'       => ['fleet_fines', 'fleet_management/fines'],
+        'drivers'     => ['fleet_drivers', 'fleet_management/drivers'],
+        'suppliers'   => ['fleet_suppliers', 'fleet_management/suppliers'],
+        'library'     => ['fleet_library', 'fleet_management/library'],
+    ];
+}
+
+function fleet_role_feature_map()
+{
+    $raw = get_option('fleet_role_features');
+    if (!$raw) {
+        return [];
+    }
+    $map = @unserialize($raw);
+
+    return is_array($map) ? $map : [];
+}
+
+/** Role id of the currently logged-in staff member (cached). */
+function fleet_current_role_id()
+{
+    static $rid = null;
+    if ($rid !== null) {
+        return $rid;
+    }
+
+    $CI    = &get_instance();
+    $staff = $CI->db->get_where(db_prefix() . 'staff', ['staffid' => get_staff_user_id()])->row();
+    $rid   = $staff ? (int) $staff->role : 0;
+
+    return $rid;
+}
+
+/**
+ * Whether the current user may see a given fleet feature. Admins always can;
+ * a role with no saved configuration keeps full access.
+ */
+function fleet_can_feature($feature)
+{
+    if (is_admin()) {
+        return true;
+    }
+
+    $map  = fleet_role_feature_map();
+    $role = fleet_current_role_id();
+
+    if (!isset($map[$role])) {
+        return true;
+    }
+
+    return !empty($map[$role][$feature]);
+}
+
+/** URL of the first feature the current user is allowed to see ('' if none). */
+function fleet_first_allowed_feature_url()
+{
+    foreach (fleet_features() as $slug => $f) {
+        if (fleet_can_feature($slug)) {
+            return admin_url($f[1]);
+        }
+    }
+
+    return '';
+}
+
 /**
  * Available vehicle statuses.
  */

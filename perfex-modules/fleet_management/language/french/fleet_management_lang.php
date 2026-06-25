@@ -485,3 +485,9 @@ $lang['fleet_no_station']               = 'Sans station';
 $lang['fleet_no_data']                  = 'Aucune donnée pour cette période';
 $lang['fleet_specific_date']            = 'Date précise';
 $lang['fleet_all_fuel_types']          = 'Tous les carburants';
+
+# Per-role feature access
+$lang['fleet_set_role_access']          = 'Accès aux fonctionnalités par rôle';
+$lang['fleet_set_role_access_help']     = 'Cochez les fonctionnalités visibles pour chaque rôle. Un rôle dont aucune case n\'est cochée n\'a accès à rien ; un rôle non configuré (toutes cochées) voit tout. Les administrateurs voient toujours tout. La permission de base « Gestion de flotte » (voir) reste requise pour accéder au module.';
+$lang['fleet_toggle_all']               = 'Tout / rien';
+$lang['fleet_role']                    = 'Rôle';

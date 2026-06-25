@@ -89,103 +89,59 @@ function fleet_management_init_menu_items()
         return;
     }
 
+    $first_url = fleet_first_allowed_feature_url();
+
+    // A non-admin role with no enabled feature gets no fleet menu at all.
+    if ($first_url === '' && !is_admin()) {
+        return;
+    }
+
     $CI->app_menu->add_sidebar_menu_item('fleet-management', [
         'name'     => _l('fleet_management'),
         'icon'     => 'fa fa-car',
         'position' => 30,
-        'href'     => admin_url('fleet_management/dashboard'),
+        'href'     => $first_url ?: admin_url('fleet_management/dashboard'),
     ]);
 
-    $CI->app_menu->add_sidebar_children_item('fleet-management', [
-        'slug'     => 'fleet-dashboard',
-        'name'     => _l('fleet_dashboard'),
-        'href'     => admin_url('fleet_management/dashboard'),
-        'position' => 0,
-    ]);
+    // Each child item is shown only when its feature is enabled for the role.
+    $children = [
+        ['dashboard',   'fleet-dashboard',   'fleet_dashboard',       'fleet_management/dashboard'],
+        ['vehicles',    'fleet-vehicles',    'fleet_vehicles',        'fleet_management/vehicles'],
+        ['rentals',     'fleet-rentals',     'fleet_rentals',         'fleet_management/rentals'],
+        ['rentals',     'fleet-planning',    'fleet_planning',        'fleet_management/rentals/planning'],
+        ['maintenance', 'fleet-maintenance', 'fleet_maintenance',     'fleet_management/maintenance'],
+        ['parts',       'fleet-parts',       'fleet_parts_articles',  'fleet_management/parts'],
+        ['fuel',        'fleet-fuel',        'fleet_fuel',            'fleet_management/fuel'],
+        ['reminders',   'fleet-reminders',   'fleet_reminders',       'fleet_management/reminders'],
+        ['fines',       'fleet-fines',       'fleet_fines',           'fleet_management/fines'],
+        ['drivers',     'fleet-drivers',     'fleet_drivers',         'fleet_management/drivers'],
+        ['suppliers',   'fleet-suppliers',   'fleet_suppliers',       'fleet_management/suppliers'],
+        ['library',     'fleet-library',     'fleet_library',         'fleet_management/library'],
+    ];
 
-    $CI->app_menu->add_sidebar_children_item('fleet-management', [
-        'slug'     => 'fleet-vehicles',
-        'name'     => _l('fleet_vehicles'),
-        'href'     => admin_url('fleet_management/vehicles'),
-        'position' => 1,
-    ]);
+    $position = 0;
+    foreach ($children as $child) {
+        list($feature, $slug, $lang, $path) = $child;
+        if (!fleet_can_feature($feature)) {
+            continue;
+        }
+        $CI->app_menu->add_sidebar_children_item('fleet-management', [
+            'slug'     => $slug,
+            'name'     => _l($lang),
+            'href'     => admin_url($path),
+            'position' => $position++,
+        ]);
+    }
 
-    $CI->app_menu->add_sidebar_children_item('fleet-management', [
-        'slug'     => 'fleet-rentals',
-        'name'     => _l('fleet_rentals'),
-        'href'     => admin_url('fleet_management/rentals'),
-        'position' => 2,
-    ]);
-
-    $CI->app_menu->add_sidebar_children_item('fleet-management', [
-        'slug'     => 'fleet-planning',
-        'name'     => _l('fleet_planning'),
-        'href'     => admin_url('fleet_management/rentals/planning'),
-        'position' => 3,
-    ]);
-
-    $CI->app_menu->add_sidebar_children_item('fleet-management', [
-        'slug'     => 'fleet-maintenance',
-        'name'     => _l('fleet_maintenance'),
-        'href'     => admin_url('fleet_management/maintenance'),
-        'position' => 4,
-    ]);
-
-    $CI->app_menu->add_sidebar_children_item('fleet-management', [
-        'slug'     => 'fleet-parts',
-        'name'     => _l('fleet_parts_articles'),
-        'href'     => admin_url('fleet_management/parts'),
-        'position' => 5,
-    ]);
-
-    $CI->app_menu->add_sidebar_children_item('fleet-management', [
-        'slug'     => 'fleet-fuel',
-        'name'     => _l('fleet_fuel'),
-        'href'     => admin_url('fleet_management/fuel'),
-        'position' => 6,
-    ]);
-
-    $CI->app_menu->add_sidebar_children_item('fleet-management', [
-        'slug'     => 'fleet-reminders',
-        'name'     => _l('fleet_reminders'),
-        'href'     => admin_url('fleet_management/reminders'),
-        'position' => 7,
-    ]);
-
-    $CI->app_menu->add_sidebar_children_item('fleet-management', [
-        'slug'     => 'fleet-fines',
-        'name'     => _l('fleet_fines'),
-        'href'     => admin_url('fleet_management/fines'),
-        'position' => 8,
-    ]);
-
-    $CI->app_menu->add_sidebar_children_item('fleet-management', [
-        'slug'     => 'fleet-drivers',
-        'name'     => _l('fleet_drivers'),
-        'href'     => admin_url('fleet_management/drivers'),
-        'position' => 9,
-    ]);
-
-    $CI->app_menu->add_sidebar_children_item('fleet-management', [
-        'slug'     => 'fleet-suppliers',
-        'name'     => _l('fleet_suppliers'),
-        'href'     => admin_url('fleet_management/suppliers'),
-        'position' => 10,
-    ]);
-
-    $CI->app_menu->add_sidebar_children_item('fleet-management', [
-        'slug'     => 'fleet-library',
-        'name'     => _l('fleet_library'),
-        'href'     => admin_url('fleet_management/library'),
-        'position' => 11,
-    ]);
-
-    $CI->app_menu->add_sidebar_children_item('fleet-management', [
-        'slug'     => 'fleet-settings',
-        'name'     => _l('fleet_settings'),
-        'href'     => admin_url('fleet_management/settings'),
-        'position' => 12,
-    ]);
+    // Settings (incl. the per-role access matrix) are reserved for admins.
+    if (is_admin()) {
+        $CI->app_menu->add_sidebar_children_item('fleet-management', [
+            'slug'     => 'fleet-settings',
+            'name'     => _l('fleet_settings'),
+            'href'     => admin_url('fleet_management/settings'),
+            'position' => $position++,
+        ]);
+    }
 }
 
 /**

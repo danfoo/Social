@@ -8,6 +8,16 @@ class Dashboard extends AdminController
     {
         parent::__construct();
         $this->load->model('fleet_management/fleet_management_model', 'fleet');
+
+        // Roles without the dashboard feature land on their first allowed page
+        // (or are denied if they have no enabled feature at all).
+        if (!fleet_can_feature('dashboard')) {
+            $url = fleet_first_allowed_feature_url();
+            if ($url) {
+                redirect($url);
+            }
+            access_denied('fleet');
+        }
     }
 
     public function index()

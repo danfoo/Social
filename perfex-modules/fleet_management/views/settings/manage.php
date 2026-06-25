@@ -11,10 +11,10 @@ foreach ($expense_categories as $c) {
         <div class="fleet-toolbar">
             <h3><i class="fa fa-cogs text-info"></i> <?php echo _l('fleet_settings'); ?></h3>
         </div>
+        <?php echo form_open(admin_url('fleet_management/settings')); ?>
         <div class="row">
             <div class="col-md-8">
                 <div class="panel_s"><div class="panel-body">
-                    <?php echo form_open(admin_url('fleet_management/settings')); ?>
 
                     <h4 class="bold"><i class="fa fa-money text-success"></i> <?php echo _l('fleet_set_billing'); ?></h4>
                     <hr class="hr-panel-heading" />
@@ -75,11 +75,6 @@ foreach ($expense_categories as $c) {
                         <input type="hidden" name="fleet_contract_terms_encoded" id="fleet_contract_terms_encoded" value="">
                     </div>
                     <p class="text-muted tw-text-xs"><?php echo _l('fleet_set_contract_terms_help'); ?></p>
-
-                    <div class="mtop15">
-                        <button type="submit" class="btn btn-primary"><?php echo _l('submit'); ?></button>
-                    </div>
-                    <?php echo form_close(); ?>
                 </div></div>
             </div>
             <div class="col-md-4">
@@ -92,6 +87,58 @@ foreach ($expense_categories as $c) {
                 </div></div>
             </div>
         </div>
+
+        <!-- Per-role feature access matrix -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel_s"><div class="panel-body">
+                    <h4 class="bold"><i class="fa fa-key text-info"></i> <?php echo _l('fleet_set_role_access'); ?></h4>
+                    <hr class="hr-panel-heading" />
+                    <p class="text-muted tw-text-xs"><?php echo _l('fleet_set_role_access_help'); ?></p>
+                    <div class="table-responsive">
+                        <table class="table table-bordered" style="vertical-align:middle;">
+                            <thead>
+                                <tr>
+                                    <th style="min-width:180px;"><?php echo _l('fleet_role'); ?></th>
+                                    <?php foreach (fleet_features() as $slug => $f) : ?>
+                                        <th class="text-center" style="font-size:11px;"><?php echo _l($f[0]); ?></th>
+                                    <?php endforeach; ?>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($roles as $r) :
+                                    $rid        = (int) $r['roleid'];
+                                    $configured = array_key_exists($rid, $role_features);
+                                    ?>
+                                    <tr>
+                                        <td class="bold">
+                                            <?php echo html_escape($r['name']); ?>
+                                            <input type="hidden" name="configured[<?php echo $rid; ?>]" value="1">
+                                            <br><a href="#" class="text-muted tw-text-xs" onclick="fleetToggleRow(this); return false;"><?php echo _l('fleet_toggle_all'); ?></a>
+                                        </td>
+                                        <?php foreach (fleet_features() as $slug => $f) :
+                                            $checked = $configured ? !empty($role_features[$rid][$slug]) : true;
+                                            ?>
+                                            <td class="text-center">
+                                                <input type="checkbox" name="feat[<?php echo $rid; ?>][<?php echo $slug; ?>]" value="1" <?php echo $checked ? 'checked' : ''; ?>>
+                                            </td>
+                                        <?php endforeach; ?>
+                                    </tr>
+                                <?php endforeach; ?>
+                                <?php if (empty($roles)) : ?>
+                                    <tr><td colspan="<?php echo count(fleet_features()) + 1; ?>" class="text-muted text-center"><?php echo _l('fleet_no_data'); ?></td></tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div></div>
+            </div>
+        </div>
+
+        <div class="mbot25">
+            <button type="submit" class="btn btn-primary"><?php echo _l('submit'); ?></button>
+        </div>
+        <?php echo form_close(); ?>
     </div>
 </div>
 <?php init_tail(); ?>
@@ -100,6 +147,12 @@ foreach ($expense_categories as $c) {
 // blocked (403) by Perfex's input filter or a server WAF, so we base64-encode
 // the editor content before submit and decode it server-side. The raw textarea
 // is disabled so no HTML tags appear in the request.
+function fleetToggleRow(link) {
+    var $row = $(link).closest('tr');
+    var boxes = $row.find('input[type="checkbox"]');
+    var anyOff = boxes.filter(':not(:checked)').length > 0;
+    boxes.prop('checked', anyOff);
+}
 $(function () {
     var $area = $('#fleet_contract_terms');
     if (!$area.length) { return; }

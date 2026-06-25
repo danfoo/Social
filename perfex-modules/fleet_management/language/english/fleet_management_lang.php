@@ -485,3 +485,9 @@ $lang['fleet_no_station']               = 'No station';
 $lang['fleet_no_data']                  = 'No data for this period';
 $lang['fleet_specific_date']            = 'Specific date';
 $lang['fleet_all_fuel_types']          = 'All fuel types';
+
+# Per-role feature access
+$lang['fleet_set_role_access']          = 'Feature access per role';
+$lang['fleet_set_role_access_help']     = 'Tick the features visible to each role. A role with nothing ticked has no access; an unconfigured role (all ticked) sees everything. Admins always see everything. The base "Fleet Management" (view) permission is still required to reach the module.';
+$lang['fleet_toggle_all']               = 'All / none';
+$lang['fleet_role']                    = 'Role';

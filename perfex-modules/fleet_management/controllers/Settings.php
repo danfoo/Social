@@ -12,7 +12,8 @@ class Settings extends AdminController
 
     public function index()
     {
-        if (!is_admin() && !staff_can('edit', 'fleet')) {
+        // Settings now include the per-role access matrix: admins only.
+        if (!is_admin()) {
             access_denied('fleet');
         }
 
@@ -33,6 +34,8 @@ class Settings extends AdminController
                 update_option('fleet_contract_terms', $this->input->post('fleet_contract_terms', false));
             }
 
+            $this->_save_role_features();
+
             set_alert('success', _l('settings_updated'));
             redirect(admin_url('fleet_management/settings'));
         }
@@ -46,7 +49,40 @@ class Settings extends AdminController
         $role = $this->db->get_where(db_prefix() . 'roles', ['roleid' => get_option('fleet_driver_role_id')])->row();
         $data['driver_role'] = $role ? $role->name : '—';
 
+        $this->db->order_by('name', 'asc');
+        $data['roles']         = $this->db->get(db_prefix() . 'roles')->result_array();
+        $data['role_features'] = fleet_role_feature_map();
+
         $data['title'] = _l('fleet_settings');
         $this->load->view('fleet_management/settings/manage', $data);
+    }
+
+    /**
+     * Persist the role -> features matrix. A role appears in `configured[]` for
+     * every rendered row, so unticking everything for a role stores an empty
+     * set (no access) rather than reverting to full access.
+     */
+    private function _save_role_features()
+    {
+        $configured = $this->input->post('configured');
+        $feat       = $this->input->post('feat');
+        $valid      = array_keys(fleet_features());
+        $map        = [];
+
+        if (is_array($configured)) {
+            foreach ($configured as $rid => $_) {
+                $rid       = (int) $rid;
+                $map[$rid] = [];
+                if (isset($feat[$rid]) && is_array($feat[$rid])) {
+                    foreach ($feat[$rid] as $slug => $v) {
+                        if (in_array($slug, $valid, true)) {
+                            $map[$rid][$slug] = 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        update_option('fleet_role_features', serialize($map));
     }
 }
