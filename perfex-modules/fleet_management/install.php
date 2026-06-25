@@ -561,6 +561,20 @@ if ($CI->db->table_exists(db_prefix() . 'fleet_fines') && !$CI->db->field_exists
     $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_fines` ADD `expense_id` INT(11) NULL');
 }
 
+// Photos attached to a fuel entry (receipt, pump display...).
+if (!$CI->db->table_exists(db_prefix() . 'fleet_fuel_files')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_fuel_files` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `fuel_id` INT(11) NOT NULL,
+        `file_name` VARCHAR(191) NOT NULL,
+        `original_name` VARCHAR(191) NULL,
+        `created_by` INT(11) NULL,
+        `date_created` DATETIME NULL,
+        PRIMARY KEY (`id`),
+        KEY `fuel_id` (`fuel_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
 // Dedicated expense category so fleet costs are grouped in the Expenses module.
 if (get_option('fleet_expense_category_id') == '' && $CI->db->table_exists(db_prefix() . 'expenses_categories')) {
     $CI->db->insert(db_prefix() . 'expenses_categories', [

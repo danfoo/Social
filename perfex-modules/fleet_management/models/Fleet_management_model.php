@@ -1271,7 +1271,11 @@ class Fleet_management_model extends App_Model
             return $this->db->get(db_prefix() . 'fleet_fuel_logs')->row();
         }
 
-        $this->db->select('f.*, v.name as vehicle_name, v.plate as vehicle_plate, sup.name as supplier_name, CONCAT(s.firstname, " ", s.lastname) as driver_name');
+        $photos = $this->db->table_exists(db_prefix() . 'fleet_fuel_files')
+            ? ', (SELECT COUNT(*) FROM ' . db_prefix() . 'fleet_fuel_files ff WHERE ff.fuel_id = f.id) as photos_count'
+            : ', 0 as photos_count';
+
+        $this->db->select('f.*, v.name as vehicle_name, v.plate as vehicle_plate, sup.name as supplier_name, CONCAT(s.firstname, " ", s.lastname) as driver_name' . $photos, false);
         $this->db->from(db_prefix() . 'fleet_fuel_logs f');
         $this->db->join(db_prefix() . 'fleet_vehicles v', 'v.id = f.vehicle_id', 'left');
         $this->db->join(db_prefix() . 'fleet_suppliers sup', 'sup.id = f.supplier_id', 'left');
@@ -1386,6 +1390,42 @@ class Fleet_management_model extends App_Model
 
         $this->db->where('id', $id);
         $this->db->delete(db_prefix() . 'fleet_fuel_logs');
+
+        return $this->db->affected_rows() > 0;
+    }
+
+    /* ---- Fuel entry photos ---- */
+
+    public function get_fuel_files($fuel_id)
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_fuel_files')) {
+            return [];
+        }
+
+        $this->db->where('fuel_id', $fuel_id);
+        $this->db->order_by('id', 'asc');
+
+        return $this->db->get(db_prefix() . 'fleet_fuel_files')->result_array();
+    }
+
+    public function add_fuel_file($data)
+    {
+        $data['created_by']   = get_staff_user_id();
+        $data['date_created'] = date('Y-m-d H:i:s');
+        $this->db->insert(db_prefix() . 'fleet_fuel_files', $data);
+
+        return $this->db->insert_id();
+    }
+
+    public function get_fuel_file($id)
+    {
+        return $this->db->get_where(db_prefix() . 'fleet_fuel_files', ['id' => $id])->row();
+    }
+
+    public function delete_fuel_file($id)
+    {
+        $this->db->where('id', $id);
+        $this->db->delete(db_prefix() . 'fleet_fuel_files');
 
         return $this->db->affected_rows() > 0;
     }

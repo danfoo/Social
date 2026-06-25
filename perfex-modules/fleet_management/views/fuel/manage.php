@@ -75,6 +75,9 @@ foreach (fleet_fuel_types() as $t) {
         <div class="panel_s"><div class="panel-body">
             <h4 class="bold no-margin"><i class="fa fa-flask text-info"></i> <?php echo _l('fleet_fuel_by_station'); ?></h4>
             <hr class="hr-panel-heading" />
+            <?php if (!empty($by_station)) : ?>
+                <div style="position:relative;height:240px;width:100%;margin-bottom:10px;"><canvas id="fuelStationChart"></canvas></div>
+            <?php endif; ?>
             <div class="table-responsive">
                 <table class="table">
                     <thead><tr>
@@ -114,6 +117,7 @@ foreach (fleet_fuel_types() as $t) {
                                         <th><?php echo _l('fleet_price_per_liter'); ?></th>
                                         <th><?php echo _l('fleet_total'); ?></th>
                                         <th><?php echo _l('fleet_station'); ?></th>
+                                        <th><?php echo _l('fleet_photos'); ?></th>
                                         <th><?php echo _l('options'); ?></th>
                                     </tr>
                                 </thead>
@@ -129,6 +133,13 @@ foreach (fleet_fuel_types() as $t) {
                                             <td><?php echo app_format_money($f['total_cost'], get_base_currency()); ?></td>
                                             <td><?php echo html_escape($f['supplier_name']); ?></td>
                                             <td>
+                                                <?php if (!empty($f['photos_count'])) : ?>
+                                                    <a href="#" onclick="fleet_fuel_modal(<?php echo $f['id']; ?>); return false;" class="label label-info"><i class="fa fa-camera"></i> <?php echo (int) $f['photos_count']; ?></a>
+                                                <?php else : ?>
+                                                    <span class="text-muted">—</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
                                                 <?php if (staff_can('edit', 'fleet')) : ?>
                                                     <a href="#" class="btn btn-default btn-icon" onclick="fleet_fuel_modal(<?php echo $f['id']; ?>); return false;"><i class="fa fa-pencil-square"></i></a>
                                                 <?php endif; ?>
@@ -139,7 +150,7 @@ foreach (fleet_fuel_types() as $t) {
                                         </tr>
                                     <?php endforeach; ?>
                                     <?php if (empty($logs)) : ?>
-                                        <tr><td colspan="9" class="text-center text-muted" style="padding:24px;"><?php echo _l('fleet_no_data'); ?></td></tr>
+                                        <tr><td colspan="10" class="text-center text-muted" style="padding:24px;"><?php echo _l('fleet_no_data'); ?></td></tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
@@ -154,7 +165,7 @@ foreach (fleet_fuel_types() as $t) {
 <div class="modal fade" id="fleet_fuel_modal" tabindex="-1" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
-            <?php echo form_open(admin_url('fleet_management/fuel/save')); ?>
+            <?php echo form_open_multipart(admin_url('fleet_management/fuel/save')); ?>
             <input type="hidden" name="id" id="fuel_id" value="">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
@@ -184,6 +195,12 @@ foreach (fleet_fuel_types() as $t) {
                 </div>
                 <?php echo render_textarea('notes', 'fleet_notes', ''); ?>
                 <p class="text-muted"><small><?php echo _l('fleet_fuel_total_hint'); ?></small></p>
+
+                <div class="form-group">
+                    <label class="control-label"><?php echo _l('fleet_photos'); ?></label>
+                    <input type="file" name="files[]" accept="image/*" multiple class="form-control">
+                </div>
+                <div id="fuel_photos" class="fleet-insp-photos"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal"><?php echo _l('close'); ?></button>
@@ -195,6 +212,12 @@ foreach (fleet_fuel_types() as $t) {
 </div>
 
 <?php init_tail(); ?>
+<style>
+#fuel_photos{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+#fuel_photos .fuel-thumb{position:relative;width:78px;height:78px;border-radius:8px;overflow:hidden;border:1px solid #e6e9f0;}
+#fuel_photos .fuel-thumb img{width:100%;height:100%;object-fit:cover;}
+#fuel_photos .fuel-thumb .del{position:absolute;top:2px;right:2px;background:#dc3545;color:#fff;width:18px;height:18px;line-height:18px;text-align:center;border-radius:50%;font-size:10px;}
+</style>
 <script>
 function fleet_fuel_station_filter(supplierId) {
     var url = '<?php echo admin_url('fleet_management/fuel'); ?>?period=<?php echo $period; ?>';
@@ -202,6 +225,28 @@ function fleet_fuel_station_filter(supplierId) {
     window.location.href = url;
 }
 $(function() {
+    // Litres-per-station bar chart for the selected period.
+    if (typeof Chart !== 'undefined') {
+        var sc = document.getElementById('fuelStationChart');
+        if (sc) {
+            var isV3 = !!(Chart.version && parseInt(Chart.version, 10) >= 3);
+            var scales = isV3 ? { y: { beginAtZero: true } } : { yAxes: [{ ticks: { beginAtZero: true } }] };
+            new Chart(sc, {
+                type: 'bar',
+                data: {
+                    labels: <?php echo json_encode(array_map(function ($s) { return $s['supplier_name'] ?: _l('fleet_no_station'); }, $by_station)); ?>,
+                    datasets: [{
+                        label: '<?php echo _l('fleet_liters'); ?>',
+                        backgroundColor: '#03c3ec',
+                        borderRadius: 4,
+                        data: <?php echo json_encode(array_map(function ($s) { return (float) $s['total_liters']; }, $by_station)); ?>
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: scales, plugins: { legend: { display: false } }, legend: { display: false } }
+            });
+        }
+    }
+
     var $f = $('#fleet_fuel_modal');
 
     // Mark a field as manually edited so it is not overwritten by auto-compute.
@@ -220,16 +265,29 @@ $(function() {
         if (!pF.data('touched') && l > 0 && !isNaN(t)) { pF.val((t / l).toFixed(3)); return; }
     };
 });
+function fleet_fuel_render_photos(files) {
+    var box = $('#fuel_photos').empty();
+    (files || []).forEach(function(f) {
+        box.append(
+            '<div class="fuel-thumb">' +
+            '<a href="' + f.url + '" target="_blank"><img src="' + f.url + '"></a>' +
+            '<a href="' + f.del + '" class="del _delete"><i class="fa fa-remove"></i></a>' +
+            '</div>'
+        );
+    });
+}
 function fleet_fuel_modal(id) {
     var modal = $('#fleet_fuel_modal');
     modal.find('form')[0].reset();
     $('#fuel_id').val('');
     $('#fuel_full_tank').prop('checked', true);
+    fleet_fuel_render_photos([]);
     modal.find('[name="liters"], [name="price_per_liter"], [name="total_cost"]').data('touched', false);
     if (typeof id !== 'undefined') {
         $.getJSON('<?php echo admin_url('fleet_management/fuel/get'); ?>/' + id, function(rec) {
             if (!rec) { return; }
             $('#fuel_id').val(rec.id);
+            modal.find('[name="date"]').val(rec.date_display || '');
             modal.find('[name="vehicle_id"]').val(rec.vehicle_id);
             modal.find('[name="driver_id"]').val(rec.driver_id);
             modal.find('[name="odometer"]').val(rec.odometer);
@@ -240,6 +298,7 @@ function fleet_fuel_modal(id) {
             modal.find('[name="supplier_id"]').val(rec.supplier_id);
             modal.find('[name="notes"]').val(rec.notes);
             $('#fuel_full_tank').prop('checked', rec.full_tank == 1);
+            fleet_fuel_render_photos(rec.files);
             if (modal.find('.selectpicker').length) {
                 modal.find('.selectpicker').selectpicker('refresh');
             }
