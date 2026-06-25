@@ -133,8 +133,10 @@ function fleet_management_init_menu_items()
         ]);
     }
 
-    // Approval queue: shown to approvers when the workflow is enabled.
-    if (fleet_approval_active() && fleet_is_approver()) {
+    // Approval queue: always visible to anyone allowed to validate changes
+    // (admins + the designated approver), so it is discoverable even before the
+    // workflow is switched on.
+    if (fleet_is_approver()) {
         $CI->load->model('fleet_management/fleet_management_model', 'fleet');
         $pending = $CI->fleet->pending_approvals_count();
         $badge   = $pending > 0 ? ' <span class="badge" style="background:#e74c3c;">' . $pending . '</span>' : '';
