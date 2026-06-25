@@ -1263,7 +1263,7 @@ class Fleet_management_model extends App_Model
      * Fuel logs
      * ----------------------------------------------------------------- */
 
-    public function get_fuel_log($id = '', $vehicle_id = '')
+    public function get_fuel_log($id = '', $vehicle_id = '', $start = null, $end = null, $supplier_id = null)
     {
         if (is_numeric($id)) {
             $this->db->where('id', $id);
@@ -1280,8 +1280,39 @@ class Fleet_management_model extends App_Model
         if (is_numeric($vehicle_id)) {
             $this->db->where('f.vehicle_id', $vehicle_id);
         }
+        if ($start) {
+            $this->db->where('f.date >=', $start);
+        }
+        if ($end) {
+            $this->db->where('f.date <=', $end);
+        }
+        if (is_numeric($supplier_id)) {
+            $this->db->where('f.supplier_id', $supplier_id);
+        }
 
         $this->db->order_by('f.date', 'desc');
+
+        return $this->db->get()->result_array();
+    }
+
+    /**
+     * Fuel consumption aggregated per station (supplier) over a date range.
+     */
+    public function fuel_by_station($start = null, $end = null)
+    {
+        $this->db->select('f.supplier_id, sup.name as supplier_name, COUNT(*) as entries, COALESCE(SUM(f.liters),0) as total_liters, COALESCE(SUM(f.total_cost),0) as total_cost');
+        $this->db->from(db_prefix() . 'fleet_fuel_logs f');
+        $this->db->join(db_prefix() . 'fleet_suppliers sup', 'sup.id = f.supplier_id', 'left');
+
+        if ($start) {
+            $this->db->where('f.date >=', $start);
+        }
+        if ($end) {
+            $this->db->where('f.date <=', $end);
+        }
+
+        $this->db->group_by('f.supplier_id');
+        $this->db->order_by('total_liters', 'desc');
 
         return $this->db->get()->result_array();
     }
@@ -1362,10 +1393,19 @@ class Fleet_management_model extends App_Model
     /**
      * Aggregate fuel figures (optionally for a single vehicle).
      */
-    public function fuel_stats($vehicle_id = '')
+    public function fuel_stats($vehicle_id = '', $start = null, $end = null, $supplier_id = null)
     {
         if (is_numeric($vehicle_id)) {
             $this->db->where('vehicle_id', $vehicle_id);
+        }
+        if ($start) {
+            $this->db->where('date >=', $start);
+        }
+        if ($end) {
+            $this->db->where('date <=', $end);
+        }
+        if (is_numeric($supplier_id)) {
+            $this->db->where('supplier_id', $supplier_id);
         }
         $this->db->select('COUNT(*) as entries, COALESCE(SUM(liters),0) as total_liters, COALESCE(SUM(total_cost),0) as total_cost');
 

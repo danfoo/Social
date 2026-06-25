@@ -24,7 +24,7 @@ foreach (fleet_fuel_types() as $t) {
             <h3><i class="fa fa-tint text-info"></i> <?php echo _l('fleet_fuel'); ?></h3>
             <div class="fleet-tools">
                 <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
-                <a href="<?php echo admin_url('fleet_management/fuel/export'); ?>" class="btn btn-default btn-sm"><i class="fa fa-download"></i> <?php echo _l('fleet_export'); ?></a>
+                <a href="<?php echo admin_url('fleet_management/fuel/export?period=' . $period . ($supplier_id ? '&supplier_id=' . $supplier_id : '')); ?>" class="btn btn-default btn-sm"><i class="fa fa-download"></i> <?php echo _l('fleet_export'); ?></a>
                 <?php if (staff_can('create', 'fleet')) : ?>
                     <a href="#" class="btn btn-primary btn-sm" onclick="fleet_fuel_modal(); return false;"><i class="fa fa-plus"></i> <?php echo _l('fleet_add_fuel'); ?></a>
                 <?php endif; ?>
@@ -44,6 +44,60 @@ foreach (fleet_fuel_types() as $t) {
                 <div><h2><?php echo app_format_money($stats->total_cost, get_base_currency()); ?></h2><span><?php echo _l('fleet_fuel_total_cost'); ?></span></div>
             </div></div></div>
         </div>
+
+        <!-- Period / station filter bar -->
+        <div class="panel_s"><div class="panel-body">
+            <?php
+            $periods = ['day' => _l('fleet_period_day'), 'week' => _l('fleet_period_week'), 'month' => _l('fleet_period_month'), 'year' => _l('fleet_period_year')];
+            ?>
+            <div class="btn-group fleet-period">
+                <?php foreach ($periods as $key => $label) :
+                    $active = $period === $key ? 'btn-primary' : 'btn-default';
+                    $url    = admin_url('fleet_management/fuel?period=' . $key . ($supplier_id ? '&supplier_id=' . $supplier_id : ''));
+                    ?>
+                    <a href="<?php echo $url; ?>" class="btn btn-sm <?php echo $active; ?>"><?php echo $label; ?></a>
+                <?php endforeach; ?>
+            </div>
+            <span class="text-muted" style="margin-left:12px;"><i class="fa fa-calendar"></i>
+                <?php echo $filter_start === $filter_end ? _d($filter_start) : (_d($filter_start) . ' → ' . _d($filter_end)); ?>
+            </span>
+            <div class="pull-right" style="min-width:220px;">
+                <select class="selectpicker" data-width="100%" data-none-selected-text="<?php echo _l('fleet_all_stations'); ?>" onchange="fleet_fuel_station_filter(this.value);">
+                    <option value=""><?php echo _l('fleet_all_stations'); ?></option>
+                    <?php foreach ($suppliers as $s) : ?>
+                        <option value="<?php echo $s['id']; ?>" <?php echo ($supplier_id == $s['id']) ? 'selected' : ''; ?>><?php echo html_escape($s['name']); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div></div>
+
+        <!-- Consumption per station -->
+        <div class="panel_s"><div class="panel-body">
+            <h4 class="bold no-margin"><i class="fa fa-flask text-info"></i> <?php echo _l('fleet_fuel_by_station'); ?></h4>
+            <hr class="hr-panel-heading" />
+            <div class="table-responsive">
+                <table class="table">
+                    <thead><tr>
+                        <th><?php echo _l('fleet_station'); ?></th>
+                        <th class="text-right"><?php echo _l('fleet_fuel_entries'); ?></th>
+                        <th class="text-right"><?php echo _l('fleet_fuel_total_liters'); ?></th>
+                        <th class="text-right"><?php echo _l('fleet_fuel_total_cost'); ?></th>
+                    </tr></thead>
+                    <tbody>
+                    <?php foreach ($by_station as $st) : ?>
+                        <tr>
+                            <td class="bold"><?php echo $st['supplier_name'] ? html_escape($st['supplier_name']) : ('<span class="text-muted">' . _l('fleet_no_station') . '</span>'); ?></td>
+                            <td class="text-right"><?php echo (int) $st['entries']; ?></td>
+                            <td class="text-right bold"><?php echo (float) $st['total_liters']; ?> L</td>
+                            <td class="text-right"><?php echo app_format_money($st['total_cost'], get_base_currency()); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <?php if (empty($by_station)) : ?><tr><td colspan="4" class="text-center text-muted"><?php echo _l('fleet_no_data'); ?></td></tr><?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div></div>
+
         <div class="row">
             <div class="col-md-12">
                 <div class="panel_s">
@@ -84,6 +138,9 @@ foreach (fleet_fuel_types() as $t) {
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
+                                    <?php if (empty($logs)) : ?>
+                                        <tr><td colspan="9" class="text-center text-muted" style="padding:24px;"><?php echo _l('fleet_no_data'); ?></td></tr>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -139,6 +196,11 @@ foreach (fleet_fuel_types() as $t) {
 
 <?php init_tail(); ?>
 <script>
+function fleet_fuel_station_filter(supplierId) {
+    var url = '<?php echo admin_url('fleet_management/fuel'); ?>?period=<?php echo $period; ?>';
+    if (supplierId) { url += '&supplier_id=' + supplierId; }
+    window.location.href = url;
+}
 $(function() {
     var $f = $('#fleet_fuel_modal');
 

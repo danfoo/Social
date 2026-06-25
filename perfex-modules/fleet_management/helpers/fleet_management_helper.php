@@ -102,6 +102,25 @@ function fleet_period_range($period)
 }
 
 /**
+ * Date range [start, end] for the fuel dashboard granularity:
+ * day (default), week, month or year.
+ */
+function fleet_fuel_period_range($period)
+{
+    switch ($period) {
+        case 'week':
+            return [date('Y-m-d', strtotime('monday this week')), date('Y-m-d', strtotime('sunday this week'))];
+        case 'month':
+            return [date('Y-m-01'), date('Y-m-t')];
+        case 'year':
+            return [date('Y-01-01'), date('Y-12-31')];
+        case 'day':
+        default:
+            return [date('Y-m-d'), date('Y-m-d')];
+    }
+}
+
+/**
  * Stream an array of rows as a downloadable CSV file and stop execution.
  * Uses ";" as the separator and a UTF-8 BOM so Excel opens accents correctly.
  *

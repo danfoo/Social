@@ -16,12 +16,27 @@ class Fuel extends AdminController
             access_denied('fleet');
         }
 
-        $data['logs']      = $this->fleet->get_fuel_log();
-        $data['stats']     = $this->fleet->fuel_stats();
-        $data['vehicles']  = $this->fleet->get_vehicle();
-        $data['drivers']   = $this->fleet->get_drivers();
-        $data['suppliers'] = $this->fleet->get_supplier('', 'fuel_station');
-        $data['title']     = _l('fleet_fuel');
+        // Dashboard granularity: day (default) / week / month / year.
+        $period = $this->input->get('period');
+        if (!in_array($period, ['day', 'week', 'month', 'year'], true)) {
+            $period = 'day';
+        }
+        list($start, $end) = fleet_fuel_period_range($period);
+
+        $supplier_id = $this->input->get('supplier_id');
+        $supplier_id = is_numeric($supplier_id) ? (int) $supplier_id : null;
+
+        $data['period']      = $period;
+        $data['filter_start'] = $start;
+        $data['filter_end']   = $end;
+        $data['supplier_id']  = $supplier_id;
+        $data['logs']        = $this->fleet->get_fuel_log('', '', $start, $end, $supplier_id);
+        $data['stats']       = $this->fleet->fuel_stats('', $start, $end, $supplier_id);
+        $data['by_station']  = $this->fleet->fuel_by_station($start, $end);
+        $data['vehicles']    = $this->fleet->get_vehicle();
+        $data['drivers']     = $this->fleet->get_drivers();
+        $data['suppliers']   = $this->fleet->get_supplier('', 'fuel_station');
+        $data['title']       = _l('fleet_fuel');
         $this->load->view('fleet_management/fuel/manage', $data);
     }
 
@@ -64,8 +79,16 @@ class Fuel extends AdminController
             _l('fleet_station'), _l('fleet_full_tank'),
         ];
 
+        $period = $this->input->get('period');
+        if (!in_array($period, ['day', 'week', 'month', 'year'], true)) {
+            $period = 'day';
+        }
+        list($start, $end) = fleet_fuel_period_range($period);
+        $supplier_id = $this->input->get('supplier_id');
+        $supplier_id = is_numeric($supplier_id) ? (int) $supplier_id : null;
+
         $rows = [];
-        foreach ($this->fleet->get_fuel_log() as $f) {
+        foreach ($this->fleet->get_fuel_log('', '', $start, $end, $supplier_id) as $f) {
             $rows[] = [
                 $f['date'] ? _d($f['date']) : '', $f['vehicle_name'], $f['driver_name'],
                 $f['odometer'], $f['liters'], $f['price_per_liter'], $f['total_cost'],

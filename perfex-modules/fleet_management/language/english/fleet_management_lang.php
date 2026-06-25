@@ -475,3 +475,11 @@ $lang['fleet_log_vehicle_restored']     = 'Vehicle reactivated';
 # Configurable contract terms
 $lang['fleet_set_contract_terms']       = 'Contract terms (contract footer)';
 $lang['fleet_set_contract_terms_help']  = 'Legal text printed at the bottom of the rental agreement PDF. Leave empty to use the default text.';
+
+# Fuel dashboard filters
+$lang['fleet_period_day']               = 'Day';
+$lang['fleet_period_week']              = 'Week';
+$lang['fleet_all_stations']             = 'All stations';
+$lang['fleet_fuel_by_station']          = 'Consumption per station';
+$lang['fleet_no_station']               = 'No station';
+$lang['fleet_no_data']                  = 'No data for this period';
