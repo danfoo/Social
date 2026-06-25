@@ -1263,7 +1263,7 @@ class Fleet_management_model extends App_Model
      * Fuel logs
      * ----------------------------------------------------------------- */
 
-    public function get_fuel_log($id = '', $vehicle_id = '', $start = null, $end = null, $supplier_id = null)
+    public function get_fuel_log($id = '', $vehicle_id = '', $start = null, $end = null, $supplier_id = null, $fuel_type = null)
     {
         if (is_numeric($id)) {
             $this->db->where('id', $id);
@@ -1293,6 +1293,9 @@ class Fleet_management_model extends App_Model
         if (is_numeric($supplier_id)) {
             $this->db->where('f.supplier_id', $supplier_id);
         }
+        if ($fuel_type) {
+            $this->db->where('f.fuel_type', $fuel_type);
+        }
 
         $this->db->order_by('f.date', 'desc');
 
@@ -1302,7 +1305,7 @@ class Fleet_management_model extends App_Model
     /**
      * Fuel consumption aggregated per station (supplier) over a date range.
      */
-    public function fuel_by_station($start = null, $end = null)
+    public function fuel_by_station($start = null, $end = null, $fuel_type = null)
     {
         $this->db->select('f.supplier_id, sup.name as supplier_name, COUNT(*) as entries, COALESCE(SUM(f.liters),0) as total_liters, COALESCE(SUM(f.total_cost),0) as total_cost');
         $this->db->from(db_prefix() . 'fleet_fuel_logs f');
@@ -1313,6 +1316,9 @@ class Fleet_management_model extends App_Model
         }
         if ($end) {
             $this->db->where('f.date <=', $end);
+        }
+        if ($fuel_type) {
+            $this->db->where('f.fuel_type', $fuel_type);
         }
 
         $this->db->group_by('f.supplier_id');
@@ -1433,7 +1439,7 @@ class Fleet_management_model extends App_Model
     /**
      * Aggregate fuel figures (optionally for a single vehicle).
      */
-    public function fuel_stats($vehicle_id = '', $start = null, $end = null, $supplier_id = null)
+    public function fuel_stats($vehicle_id = '', $start = null, $end = null, $supplier_id = null, $fuel_type = null)
     {
         if (is_numeric($vehicle_id)) {
             $this->db->where('vehicle_id', $vehicle_id);
@@ -1446,6 +1452,9 @@ class Fleet_management_model extends App_Model
         }
         if (is_numeric($supplier_id)) {
             $this->db->where('supplier_id', $supplier_id);
+        }
+        if ($fuel_type) {
+            $this->db->where('fuel_type', $fuel_type);
         }
         $this->db->select('COUNT(*) as entries, COALESCE(SUM(liters),0) as total_liters, COALESCE(SUM(total_cost),0) as total_cost');
 

@@ -35,14 +35,18 @@ class Fuel extends AdminController
         $supplier_id = $this->input->get('supplier_id');
         $supplier_id = is_numeric($supplier_id) ? (int) $supplier_id : null;
 
+        $fuel_type = $this->input->get('fuel_type');
+        $fuel_type = in_array($fuel_type, fleet_fuel_types(), true) ? $fuel_type : null;
+
         $data['period']        = $period;
         $data['specific_date'] = $specific;
         $data['filter_start'] = $start;
         $data['filter_end']   = $end;
         $data['supplier_id']  = $supplier_id;
-        $data['logs']        = $this->fleet->get_fuel_log('', '', $start, $end, $supplier_id);
-        $data['stats']       = $this->fleet->fuel_stats('', $start, $end, $supplier_id);
-        $data['by_station']  = $this->fleet->fuel_by_station($start, $end);
+        $data['fuel_type']    = $fuel_type;
+        $data['logs']        = $this->fleet->get_fuel_log('', '', $start, $end, $supplier_id, $fuel_type);
+        $data['stats']       = $this->fleet->fuel_stats('', $start, $end, $supplier_id, $fuel_type);
+        $data['by_station']  = $this->fleet->fuel_by_station($start, $end, $fuel_type);
         $data['vehicles']    = $this->fleet->get_vehicle();
         $data['drivers']     = $this->fleet->get_drivers();
         $data['suppliers']   = $this->fleet->get_supplier('', 'fuel_station');
@@ -195,9 +199,11 @@ class Fuel extends AdminController
         }
         $supplier_id = $this->input->get('supplier_id');
         $supplier_id = is_numeric($supplier_id) ? (int) $supplier_id : null;
+        $fuel_type = $this->input->get('fuel_type');
+        $fuel_type = in_array($fuel_type, fleet_fuel_types(), true) ? $fuel_type : null;
 
         $rows = [];
-        foreach ($this->fleet->get_fuel_log('', '', $start, $end, $supplier_id) as $f) {
+        foreach ($this->fleet->get_fuel_log('', '', $start, $end, $supplier_id, $fuel_type) as $f) {
             $rows[] = [
                 $f['date'] ? _d($f['date']) : '', $f['vehicle_name'], $f['driver_name'],
                 $f['odometer'], $f['liters'], $f['price_per_liter'], $f['total_cost'],
