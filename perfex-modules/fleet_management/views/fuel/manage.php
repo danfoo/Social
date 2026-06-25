@@ -24,7 +24,7 @@ foreach (fleet_fuel_types() as $t) {
             <h3><i class="fa fa-tint text-info"></i> <?php echo _l('fleet_fuel'); ?></h3>
             <div class="fleet-tools">
                 <input type="text" class="form-control input-sm fleet-search" placeholder="<?php echo _l('fleet_search'); ?>" style="display:inline-block;width:auto;min-width:240px;">
-                <a href="<?php echo admin_url('fleet_management/fuel/export?period=' . $period . ($supplier_id ? '&supplier_id=' . $supplier_id : '')); ?>" class="btn btn-default btn-sm"><i class="fa fa-download"></i> <?php echo _l('fleet_export'); ?></a>
+                <a href="<?php echo admin_url('fleet_management/fuel/export?period=' . $period . ($specific_date ? '&date=' . $specific_date : '') . ($supplier_id ? '&supplier_id=' . $supplier_id : '')); ?>" class="btn btn-default btn-sm"><i class="fa fa-download"></i> <?php echo _l('fleet_export'); ?></a>
                 <?php if (staff_can('create', 'fleet')) : ?>
                     <a href="#" class="btn btn-primary btn-sm" onclick="fleet_fuel_modal(); return false;"><i class="fa fa-plus"></i> <?php echo _l('fleet_add_fuel'); ?></a>
                 <?php endif; ?>
@@ -52,13 +52,16 @@ foreach (fleet_fuel_types() as $t) {
             ?>
             <div class="btn-group fleet-period">
                 <?php foreach ($periods as $key => $label) :
-                    $active = $period === $key ? 'btn-primary' : 'btn-default';
+                    $active = ($period === $key && empty($specific_date)) ? 'btn-primary' : 'btn-default';
                     $url    = admin_url('fleet_management/fuel?period=' . $key . ($supplier_id ? '&supplier_id=' . $supplier_id : ''));
                     ?>
                     <a href="<?php echo $url; ?>" class="btn btn-sm <?php echo $active; ?>"><?php echo $label; ?></a>
                 <?php endforeach; ?>
             </div>
-            <span class="text-muted" style="margin-left:12px;"><i class="fa fa-calendar"></i>
+            <span style="display:inline-block;margin-left:10px;">
+                <input type="date" class="form-control input-sm" style="display:inline-block;width:auto;<?php echo !empty($specific_date) ? 'border-color:#6571ff;' : ''; ?>" value="<?php echo html_escape($specific_date); ?>" onchange="fleet_fuel_date_filter(this.value);" title="<?php echo _l('fleet_specific_date'); ?>">
+            </span>
+            <span class="text-muted" style="margin-left:6px;"><i class="fa fa-calendar"></i>
                 <?php echo $filter_start === $filter_end ? _d($filter_start) : (_d($filter_start) . ' → ' . _d($filter_end)); ?>
             </span>
             <div class="pull-right" style="min-width:220px;">
@@ -221,7 +224,14 @@ foreach (fleet_fuel_types() as $t) {
 <script>
 function fleet_fuel_station_filter(supplierId) {
     var url = '<?php echo admin_url('fleet_management/fuel'); ?>?period=<?php echo $period; ?>';
+    <?php if (!empty($specific_date)) : ?>url += '&date=<?php echo $specific_date; ?>';<?php endif; ?>
     if (supplierId) { url += '&supplier_id=' + supplierId; }
+    window.location.href = url;
+}
+function fleet_fuel_date_filter(date) {
+    var url = '<?php echo admin_url('fleet_management/fuel'); ?>?';
+    if (date) { url += 'date=' + date; } else { url += 'period=<?php echo $period; ?>'; }
+    <?php if ($supplier_id) : ?>url += '&supplier_id=<?php echo $supplier_id; ?>';<?php endif; ?>
     window.location.href = url;
 }
 $(function() {

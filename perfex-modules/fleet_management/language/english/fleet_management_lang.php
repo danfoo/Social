@@ -483,3 +483,4 @@ $lang['fleet_all_stations']             = 'All stations';
 $lang['fleet_fuel_by_station']          = 'Consumption per station';
 $lang['fleet_no_station']               = 'No station';
 $lang['fleet_no_data']                  = 'No data for this period';
+$lang['fleet_specific_date']            = 'Specific date';

@@ -16,17 +16,27 @@ class Fuel extends AdminController
             access_denied('fleet');
         }
 
-        // Dashboard granularity: day (default) / week / month / year.
+        // Dashboard granularity: day (default) / week / month / year, or a
+        // specific date when the ?date=YYYY-MM-DD parameter is supplied.
         $period = $this->input->get('period');
         if (!in_array($period, ['day', 'week', 'month', 'year'], true)) {
             $period = 'day';
         }
-        list($start, $end) = fleet_fuel_period_range($period);
+
+        $specific = $this->input->get('date');
+        $specific = ($specific && preg_match('/^\d{4}-\d{2}-\d{2}$/', $specific)) ? $specific : null;
+
+        if ($specific) {
+            $start = $end = $specific;
+        } else {
+            list($start, $end) = fleet_fuel_period_range($period);
+        }
 
         $supplier_id = $this->input->get('supplier_id');
         $supplier_id = is_numeric($supplier_id) ? (int) $supplier_id : null;
 
-        $data['period']      = $period;
+        $data['period']        = $period;
+        $data['specific_date'] = $specific;
         $data['filter_start'] = $start;
         $data['filter_end']   = $end;
         $data['supplier_id']  = $supplier_id;
@@ -176,7 +186,13 @@ class Fuel extends AdminController
         if (!in_array($period, ['day', 'week', 'month', 'year'], true)) {
             $period = 'day';
         }
-        list($start, $end) = fleet_fuel_period_range($period);
+        $specific = $this->input->get('date');
+        $specific = ($specific && preg_match('/^\d{4}-\d{2}-\d{2}$/', $specific)) ? $specific : null;
+        if ($specific) {
+            $start = $end = $specific;
+        } else {
+            list($start, $end) = fleet_fuel_period_range($period);
+        }
         $supplier_id = $this->input->get('supplier_id');
         $supplier_id = is_numeric($supplier_id) ? (int) $supplier_id : null;
 
