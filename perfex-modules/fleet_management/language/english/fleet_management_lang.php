@@ -502,3 +502,4 @@ $lang['fleet_atype_estimate']           = 'Commercial offer';
 $lang['fleet_rental_ended_notification'] = 'Rental reached its term: %s (ended %s)';
 $lang['fleet_rental_ended_intro']       = 'The following rental has reached its term. Please process the file (vehicle return, invoicing, deposit...).';
 $lang['fleet_not_invoiced']             = 'Not invoiced';
+$lang['fleet_atype_proposal']           = 'Commercial offer';

@@ -479,6 +479,9 @@ if ($CI->db->table_exists(db_prefix() . 'fleet_rentals')) {
     if (!$CI->db->field_exists('estimate_id', db_prefix() . 'fleet_rentals')) {
         $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_rentals` ADD `estimate_id` INT(11) NULL');
     }
+    if (!$CI->db->field_exists('proposal_id', db_prefix() . 'fleet_rentals')) {
+        $CI->db->query('ALTER TABLE `' . db_prefix() . 'fleet_rentals` ADD `proposal_id` INT(11) NULL');
+    }
 }
 
 // Vehicle documents (registration card, insurance, technical inspection...).

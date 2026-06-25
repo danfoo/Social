@@ -495,10 +495,11 @@ $lang['fleet_role']                    = 'Rôle';
 # Commercial offer (estimate) from a rental + end-of-term notification
 $lang['fleet_create_estimate']          = 'Créer une offre commerciale';
 $lang['fleet_view_estimate']            = 'Voir l\'offre commerciale';
-$lang['fleet_estimate_created']         = 'Offre commerciale (devis) créée avec succès';
+$lang['fleet_estimate_created']         = 'Offre commerciale (proposition) créée avec succès';
 $lang['fleet_estimate_create_failed']   = 'Impossible de créer l\'offre commerciale';
 $lang['fleet_log_estimate_created']     = 'Offre commerciale créée : %s';
 $lang['fleet_atype_estimate']           = 'Offre commerciale';
 $lang['fleet_rental_ended_notification'] = 'Location arrivée à terme : %s (fin le %s)';
 $lang['fleet_rental_ended_intro']       = 'La location suivante est arrivée à son terme. Merci de traiter le dossier (retour du véhicule, facturation, caution...).';
 $lang['fleet_not_invoiced']             = 'Non facturée';
+$lang['fleet_atype_proposal']           = 'Offre commerciale';

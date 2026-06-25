@@ -907,20 +907,20 @@ class Fleet_management_model extends App_Model
     }
 
     /**
-     * Create a draft Perfex estimate (commercial offer) from a rental and link
-     * it back. Mirrors create_invoice().
+     * Create a draft Perfex proposal (commercial offer) from a rental and link
+     * it back.
      *
-     * @return int|false Estimate id on success, false otherwise.
+     * @return int|false Proposal id on success, false otherwise.
      */
-    public function create_estimate($rental_id)
+    public function create_proposal($rental_id)
     {
         $rental = $this->get_rental($rental_id);
 
-        if (!$rental || !empty($rental->estimate_id)) {
+        if (!$rental || !empty($rental->proposal_id) || empty($rental->clientid)) {
             return false;
         }
 
-        $this->load->model('estimates_model');
+        $this->load->model('proposals_model');
         $this->load->model('currencies_model');
 
         $base_currency = $this->currencies_model->get_base_currency();
@@ -934,22 +934,34 @@ class Fleet_management_model extends App_Model
             $long .= ' — ' . _l('fleet_with_driver');
         }
 
-        $estimate_data = [
-            'clientid'         => $rental->clientid,
-            'number'           => get_option('next_estimate_number'),
+        // Recipient details from the client + primary contact.
+        $client  = $this->db->get_where(db_prefix() . 'clients', ['userid' => $rental->clientid])->row();
+        $contact = $this->db->where('userid', $rental->clientid)->where('is_primary', 1)
+            ->get(db_prefix() . 'contacts')->row();
+
+        $proposal_data = [
+            'subject'          => $description,
+            'rel_id'           => $rental->clientid,
+            'rel_type'         => 'customer',
+            'proposal_to'      => $client ? $client->company : '',
             'date'             => _d(date('Y-m-d')),
-            'expirydate'       => _d(date('Y-m-d', strtotime('+' . (int) get_option('fleet_invoice_due_days') . ' days'))),
+            'open_till'        => _d(date('Y-m-d', strtotime('+' . (int) get_option('fleet_invoice_due_days') . ' days'))),
             'currency'         => $base_currency->id,
-            'subtotal'         => $line_total,
-            'total'            => $line_total,
+            'status'           => 6, // draft
+            'assigned'         => get_staff_user_id(),
+            'email'            => $contact ? $contact->email : '',
+            'phone'            => $client ? $client->phonenumber : '',
+            'country'          => $client ? $client->country : 0,
+            'zip'              => $client ? $client->zip : '',
+            'state'            => $client ? $client->state : '',
+            'city'             => $client ? $client->city : '',
+            'address'          => $client ? $client->address : '',
+            'show_quantity_as' => 1,
             'adjustment'       => 0,
             'discount_percent' => 0,
             'discount_total'   => 0,
             'discount_type'    => '',
-            'status'           => 1,
-            'terms'            => get_option('predefined_terms_estimate'),
-            'clientnote'       => get_option('predefined_clientnote_estimate'),
-            'show_quantity_as' => 1,
+            'tags'             => '',
             'newitems'         => [
                 1 => [
                     'description'      => $description,
@@ -963,16 +975,16 @@ class Fleet_management_model extends App_Model
             ],
         ];
 
-        $estimate_id = $this->estimates_model->add($estimate_data);
+        $proposal_id = $this->proposals_model->add($proposal_data);
 
-        if ($estimate_id) {
+        if ($proposal_id) {
             $this->db->where('id', $rental_id);
-            $this->db->update(db_prefix() . 'fleet_rentals', ['estimate_id' => $estimate_id]);
+            $this->db->update(db_prefix() . 'fleet_rentals', ['proposal_id' => $proposal_id]);
 
-            $this->log_activity($rental->vehicle_id, 'estimate', _l('fleet_log_estimate_created', format_estimate_number($estimate_id)));
+            $this->log_activity($rental->vehicle_id, 'proposal', _l('fleet_log_estimate_created', '#' . $proposal_id));
         }
 
-        return $estimate_id;
+        return $proposal_id;
     }
 
     /**

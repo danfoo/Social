@@ -261,6 +261,7 @@ function fleet_activity_icon($type)
         'rental'     => 'fa-calendar',
         'invoice'    => 'fa-file-text',
         'estimate'   => 'fa-file',
+        'proposal'   => 'fa-file',
         'fine'       => 'fa-gavel',
     ];
 
@@ -281,6 +282,7 @@ function fleet_activity_color($type)
         'rental'     => 'info',
         'invoice'    => 'success',
         'estimate'   => 'warning',
+        'proposal'   => 'warning',
     ];
 
     return $map[$type] ?? 'default';

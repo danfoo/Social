@@ -14,7 +14,7 @@ define('FLEET_MANAGEMENT_MODULE', 'fleet_management');
 
 // Bump this whenever the database schema changes so the auto-migration below
 // recreates any missing table/column without a manual deactivate/reactivate.
-define('FLEET_MANAGEMENT_DB_VERSION', '1.0.22');
+define('FLEET_MANAGEMENT_DB_VERSION', '1.0.23');
 
 $CI = &get_instance();
 

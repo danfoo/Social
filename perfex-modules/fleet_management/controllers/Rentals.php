@@ -162,17 +162,17 @@ class Rentals extends AdminController
         redirect(admin_url('fleet_management/rentals/rental/' . $id));
     }
 
-    public function create_estimate($id)
+    public function create_proposal($id)
     {
-        if (!staff_can('create', 'fleet') || !has_permission('estimates', '', 'create')) {
+        if (!staff_can('create', 'fleet') || !has_permission('proposals', '', 'create')) {
             access_denied('fleet');
         }
 
-        $estimate_id = $this->fleet->create_estimate($id);
+        $proposal_id = $this->fleet->create_proposal($id);
 
-        if ($estimate_id) {
+        if ($proposal_id) {
             set_alert('success', _l('fleet_estimate_created'));
-            redirect(admin_url('estimates/list_estimates/' . $estimate_id));
+            redirect(admin_url('proposals/list_proposals/' . $proposal_id));
         }
 
         set_alert('warning', _l('fleet_estimate_create_failed'));
