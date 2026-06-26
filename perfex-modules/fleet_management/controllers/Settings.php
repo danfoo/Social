@@ -37,6 +37,21 @@ class Settings extends AdminController
             update_option('fleet_approval_enabled', $this->input->post('fleet_approval_enabled') ? 1 : 0);
             update_option('fleet_approver_id', $this->input->post('fleet_approver_id'));
 
+            // Managed reminder e-mail recipients (name + email pairs).
+            $r_names  = $this->input->post('recipient_name');
+            $r_emails = $this->input->post('recipient_email');
+            $recipients = [];
+            if (is_array($r_emails)) {
+                foreach ($r_emails as $i => $em) {
+                    $em = trim($em);
+                    if ($em === '') {
+                        continue;
+                    }
+                    $recipients[] = ['name' => trim($r_names[$i] ?? ''), 'email' => $em];
+                }
+            }
+            update_option('fleet_reminder_recipients', serialize($recipients));
+
             $this->_save_role_features();
 
             set_alert('success', _l('settings_updated'));
@@ -59,6 +74,8 @@ class Settings extends AdminController
         $this->db->where('active', 1);
         $this->db->order_by('firstname', 'asc');
         $data['staff'] = $this->db->get(db_prefix() . 'staff')->result_array();
+
+        $data['reminder_recipients'] = fleet_reminder_recipients_list();
 
         $data['title'] = _l('fleet_settings');
         $this->load->view('fleet_management/settings/manage', $data);

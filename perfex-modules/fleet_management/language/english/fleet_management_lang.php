@@ -536,3 +536,10 @@ $lang['fleet_set_approval_help']            = 'When enabled, any edit or deletio
 $lang['fleet_set_approver']                 = 'Approver';
 $lang['fleet_set_approver_help']            = 'Choose who can validate changes. Defaults to all admins.';
 $lang['fleet_approver_admins']              = 'All admins';
+
+# Reminder recipients & e-mail
+$lang['fleet_set_reminder_recipients']      = 'Reminder recipients (e-mail)';
+$lang['fleet_set_reminder_recipients_help'] = 'People who will receive, by e-mail, every reminder (maintenance, insurance, technical inspection, license...) with full details. Admins and the vehicle\'s current driver are always included.';
+$lang['fleet_recipient_name']               = 'Name';
+$lang['fleet_add_recipient']                = 'Add recipient';
+$lang['fleet_reminder_email_intro']         = 'A fleet reminder is due. Details below:';

@@ -536,3 +536,10 @@ $lang['fleet_set_approval_help']            = 'Quand cette option est active, to
 $lang['fleet_set_approver']                 = 'Personne qui valide';
 $lang['fleet_set_approver_help']            = 'Choisissez qui peut valider les changements. Par défaut, tous les administrateurs.';
 $lang['fleet_approver_admins']              = 'Tous les administrateurs';
+
+# Reminder recipients & e-mail
+$lang['fleet_set_reminder_recipients']      = 'Destinataires des rappels (e-mail)';
+$lang['fleet_set_reminder_recipients_help'] = 'Personnes qui recevront, par e-mail, tous les rappels (entretien, assurance, visite technique, permis...) avec le détail. Les administrateurs et le chauffeur concerné par le véhicule sont automatiquement inclus.';
+$lang['fleet_recipient_name']               = 'Nom';
+$lang['fleet_add_recipient']                = 'Ajouter un destinataire';
+$lang['fleet_reminder_email_intro']         = 'Un rappel de la gestion de flotte arrive à échéance. Détails ci-dessous :';

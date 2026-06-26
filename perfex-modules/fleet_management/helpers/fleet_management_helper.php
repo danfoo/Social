@@ -89,6 +89,20 @@ function fleet_first_allowed_feature_url()
     return '';
 }
 
+/**
+ * Managed list of reminder e-mail recipients [['name'=>..,'email'=>..], ...].
+ */
+function fleet_reminder_recipients_list()
+{
+    $raw = get_option('fleet_reminder_recipients');
+    if (!$raw) {
+        return [];
+    }
+    $list = @unserialize($raw);
+
+    return is_array($list) ? $list : [];
+}
+
 /* ===================================================================== *
  * Change-approval workflow
  * ===================================================================== */

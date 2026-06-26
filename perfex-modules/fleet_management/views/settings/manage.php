@@ -61,6 +61,26 @@ foreach ($expense_categories as $c) {
                         </div>
                     </div>
 
+                    <label class="control-label mtop15"><?php echo _l('fleet_set_reminder_recipients'); ?></label>
+                    <p class="text-muted tw-text-xs"><?php echo _l('fleet_set_reminder_recipients_help'); ?></p>
+                    <table class="table table-borderless" id="fleet_recipients_table" style="margin-bottom:6px;">
+                        <thead><tr>
+                            <th style="width:40%;"><?php echo _l('fleet_recipient_name'); ?></th>
+                            <th style="width:50%;"><?php echo _l('email'); ?></th>
+                            <th></th>
+                        </tr></thead>
+                        <tbody>
+                            <?php foreach ($reminder_recipients as $r) : ?>
+                                <tr>
+                                    <td><input type="text" name="recipient_name[]" class="form-control" value="<?php echo html_escape($r['name']); ?>"></td>
+                                    <td><input type="email" name="recipient_email[]" class="form-control" value="<?php echo html_escape($r['email']); ?>"></td>
+                                    <td><button type="button" class="btn btn-danger btn-icon" onclick="$(this).closest('tr').remove();"><i class="fa fa-remove"></i></button></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    <button type="button" class="btn btn-default btn-sm" onclick="fleetAddRecipient();"><i class="fa fa-plus"></i> <?php echo _l('fleet_add_recipient'); ?></button>
+
                     <h4 class="bold mtop20"><i class="fa fa-check-square-o text-success"></i> <?php echo _l('fleet_set_approval'); ?></h4>
                     <hr class="hr-panel-heading" />
                     <div class="checkbox checkbox-primary">
@@ -167,6 +187,14 @@ foreach ($expense_categories as $c) {
 // blocked (403) by Perfex's input filter or a server WAF, so we base64-encode
 // the editor content before submit and decode it server-side. The raw textarea
 // is disabled so no HTML tags appear in the request.
+function fleetAddRecipient() {
+    var row = '<tr>' +
+        '<td><input type="text" name="recipient_name[]" class="form-control"></td>' +
+        '<td><input type="email" name="recipient_email[]" class="form-control"></td>' +
+        '<td><button type="button" class="btn btn-danger btn-icon" onclick="$(this).closest(\'tr\').remove();"><i class="fa fa-remove"></i></button></td>' +
+        '</tr>';
+    $('#fleet_recipients_table tbody').append(row);
+}
 function fleetToggleRow(link) {
     var $row = $(link).closest('tr');
     var boxes = $row.find('input[type="checkbox"]');

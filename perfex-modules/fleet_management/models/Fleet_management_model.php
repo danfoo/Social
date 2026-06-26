@@ -285,7 +285,7 @@ class Fleet_management_model extends App_Model
         }
 
         $staff   = $this->db->get(db_prefix() . 'staff')->result_array();
-        $mail_to = $this->notification_emails();
+        $mail_to = $this->reminder_email_recipients();
 
         foreach ($drivers as $driver) {
             if (!empty($driver['license_notified'])) {
@@ -311,11 +311,16 @@ class Fleet_management_model extends App_Model
                 }
             }
 
-            // E-mail notification (when enabled in the settings).
+            // Detailed e-mail (always sent for reminders).
             $subject = _l('fleet_license_reminders') . ' — ' . $driver['full_name'];
             $body    = '<p>' . sprintf(_l('fleet_license_due_notification'), html_escape($driver['full_name']), _d($driver['license_expiry'])) . '</p>'
+                . $this->_reminder_email_table([
+                    _l('fleet_driver')          => $driver['full_name'],
+                    _l('fleet_license_number')  => $driver['license_number'] ?? '',
+                    _l('fleet_license_expiry')  => _d($driver['license_expiry']),
+                ])
                 . '<p><a href="' . admin_url('fleet_management/drivers/profile/' . $driver['staff_id']) . '">' . _l('fleet_driver_profile') . '</a></p>';
-            fleet_send_email($mail_to, $subject, $body);
+            fleet_send_email($mail_to, $subject, $body, true);
 
             $this->db->where('staff_id', $driver['staff_id']);
             $this->db->update(db_prefix() . 'fleet_driver_profiles', ['license_notified' => 1]);
@@ -649,12 +654,13 @@ class Fleet_management_model extends App_Model
         }
 
         // Notify every staff member allowed to view the fleet.
-        $staff       = $this->db->get(db_prefix() . 'staff')->result_array();
-        $mail_to     = $this->notification_emails();
+        $staff = $this->db->get(db_prefix() . 'staff')->result_array();
+        $bc    = get_base_currency();
 
         foreach ($reminders as $reminder) {
             $vehicle = $this->get_vehicle($reminder['vehicle_id']);
             $vehicle_label = $vehicle ? ($vehicle->name . ' (' . $vehicle->plate . ')') : ('#' . $reminder['vehicle_id']);
+            $days = (int) floor((strtotime($reminder['due_date']) - strtotime($today)) / 86400);
 
             foreach ($staff as $member) {
                 if (!is_staff_member($member['staffid']) || !staff_can('view', 'fleet', $member['staffid'])) {
@@ -675,17 +681,74 @@ class Fleet_management_model extends App_Model
                 }
             }
 
-            // E-mail notification (when enabled in the settings).
+            // Detailed e-mail to the managed recipients (always sent for reminders).
+            $rows = [
+                _l('fleet_vehicle')     => $vehicle_label,
+                _l('fleet_type')        => isset($reminder['type']) ? _l('fleet_rtype_' . $reminder['type']) : '',
+                _l('fleet_reminder_title') => $reminder['title'],
+                _l('fleet_due_date')    => _d($reminder['due_date']) . ($days < 0 ? ' (' . _l('fleet_reminder_expired') . ')' : ' (' . _l('fleet_reminder_soon', max(0, $days)) . ')'),
+                _l('fleet_provider')    => $reminder['provider'] ?? '',
+                _l('fleet_cost')        => !empty($reminder['cost']) ? app_format_money($reminder['cost'], $bc) : '',
+            ];
+            if ($vehicle && !empty($vehicle->current_driver_id)) {
+                $rows[_l('fleet_driver')] = get_staff_full_name($vehicle->current_driver_id);
+            }
+
             $subject = _l('fleet_reminders') . ' — ' . $reminder['title'] . ' — ' . $vehicle_label;
-            $body    = '<p><strong>' . html_escape($reminder['title']) . '</strong></p>'
-                . '<p>' . _l('fleet_vehicle') . ': ' . html_escape($vehicle_label) . '</p>'
-                . '<p>' . _l('fleet_due_date') . ': ' . _d($reminder['due_date']) . '</p>'
+            $body    = '<p>' . _l('fleet_reminder_email_intro') . '</p>' . $this->_reminder_email_table($rows)
                 . '<p><a href="' . admin_url('fleet_management/reminders') . '">' . _l('fleet_reminders') . '</a></p>';
-            fleet_send_email($mail_to, $subject, $body);
+            fleet_send_email($this->reminder_email_recipients($reminder['vehicle_id']), $subject, $body, true);
 
             $this->db->where('id', $reminder['id']);
             $this->db->update(db_prefix() . 'fleet_reminders', ['is_notified' => 1]);
         }
+    }
+
+    /** Recipient e-mails for reminder notifications: admins + managed list + the
+     *  vehicle's current driver (the "concerned" people). */
+    public function reminder_email_recipients($vehicle_id = null)
+    {
+        $emails = [];
+
+        // Admins are always notified.
+        foreach ($this->db->where('admin', 1)->where('active', 1)->get(db_prefix() . 'staff')->result_array() as $a) {
+            if (!empty($a['email'])) {
+                $emails[] = $a['email'];
+            }
+        }
+
+        // Managed recipient list (name + email) from the settings.
+        foreach (fleet_reminder_recipients_list() as $r) {
+            if (!empty($r['email'])) {
+                $emails[] = $r['email'];
+            }
+        }
+
+        // The vehicle's current driver (concerned person).
+        if ($vehicle_id) {
+            $vehicle = $this->get_vehicle($vehicle_id);
+            if ($vehicle && !empty($vehicle->current_driver_id)) {
+                $staff = $this->db->get_where(db_prefix() . 'staff', ['staffid' => $vehicle->current_driver_id])->row();
+                if ($staff && !empty($staff->email)) {
+                    $emails[] = $staff->email;
+                }
+            }
+        }
+
+        return array_values(array_unique(array_filter($emails)));
+    }
+
+    private function _reminder_email_table($rows)
+    {
+        $html = '<table cellpadding="6" style="border-collapse:collapse;font-size:13px;">';
+        foreach ($rows as $label => $value) {
+            if ($value === '' || $value === null) {
+                continue;
+            }
+            $html .= '<tr><td style="color:#777;"><strong>' . html_escape($label) . '</strong></td><td>' . html_escape($value) . '</td></tr>';
+        }
+
+        return $html . '</table>';
     }
 
     /* ----------------------------------------------------------------- *
