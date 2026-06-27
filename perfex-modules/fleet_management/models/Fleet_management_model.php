@@ -1564,16 +1564,8 @@ class Fleet_management_model extends App_Model
             $this->log_activity($data['vehicle_id'], 'fuel', $desc);
         }
 
-        if ($id) {
-            $this->_sync_record_expense(
-                'fleet_fuel_logs',
-                $id,
-                $data['total_cost'] ?? 0,
-                _l('fleet_fuel') . ' - ' . $this->_vehicle_label($data['vehicle_id'] ?? 0),
-                (isset($data['liters']) ? (float) $data['liters'] . ' L' : ''),
-                $data['date'] ?? null
-            );
-        }
+        // Fuel costs are tracked only inside the module, independently of the
+        // Perfex Expenses module (no expense sync).
 
         return $id;
     }
@@ -1586,25 +1578,12 @@ class Fleet_management_model extends App_Model
         $this->db->where('id', $id);
         $this->db->update(db_prefix() . 'fleet_fuel_logs', $data);
 
-        $record = $this->get_fuel_log($id);
-        if ($record) {
-            $this->_sync_record_expense(
-                'fleet_fuel_logs',
-                $id,
-                $record->total_cost,
-                _l('fleet_fuel') . ' - ' . $this->_vehicle_label($record->vehicle_id),
-                (float) $record->liters . ' L',
-                $record->date
-            );
-        }
-
         return true;
     }
 
     public function delete_fuel_log($id)
     {
-        $this->_delete_record_expense('fleet_fuel_logs', $id);
-
+        // Fuel is independent of the Perfex Expenses module (no linked expense).
         $this->db->where('id', $id);
         $this->db->delete(db_prefix() . 'fleet_fuel_logs');
 
