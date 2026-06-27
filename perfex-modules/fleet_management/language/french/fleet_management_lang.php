@@ -543,3 +543,9 @@ $lang['fleet_set_reminder_recipients_help'] = 'Personnes qui recevront, par e-ma
 $lang['fleet_recipient_name']               = 'Nom';
 $lang['fleet_add_recipient']                = 'Ajouter un destinataire';
 $lang['fleet_reminder_email_intro']         = 'Un rappel de la gestion de flotte arrive à échéance. Détails ci-dessous :';
+
+# Expense -> supplier assignment
+$lang['fleet_no_supplier']              = 'Aucun fournisseur';
+$lang['fleet_expense_supplier_label']   = 'Fournisseur (flotte)';
+$lang['fleet_assigned_expenses']        = 'Dépenses Perfex assignées';
+$lang['fleet_expense_name']             = 'Libellé';

@@ -132,6 +132,38 @@ function fleet_pay_badge($total, $paid)
                         </table>
                     </div>
                 </div></div>
+
+                <!-- Assigned Perfex expenses -->
+                <?php if (!empty($expenses)) : ?>
+                <div class="panel_s"><div class="panel-body">
+                    <h4 class="bold no-margin"><i class="fa fa-money"></i> <?php echo _l('fleet_assigned_expenses'); ?></h4>
+                    <hr class="hr-panel-heading" />
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead><tr>
+                                <th><?php echo _l('fleet_date'); ?></th>
+                                <th><?php echo _l('fleet_expense_name'); ?></th>
+                                <th><?php echo _l('fleet_category'); ?></th>
+                                <th class="text-right"><?php echo _l('fleet_total'); ?></th>
+                                <th class="text-right"><?php echo _l('options'); ?></th>
+                            </tr></thead>
+                            <tbody>
+                            <?php foreach ($expenses as $e) : ?>
+                                <tr>
+                                    <td><?php echo $e['date'] ? _d($e['date']) : '-'; ?></td>
+                                    <td class="bold"><?php echo html_escape($e['expense_name']) ?: ('#' . $e['id']); ?>
+                                        <?php if ($e['reference_no']) : ?><br><small class="text-muted"><?php echo html_escape($e['reference_no']); ?></small><?php endif; ?>
+                                    </td>
+                                    <td><?php echo html_escape($e['category_name']); ?></td>
+                                    <td class="text-right"><?php echo app_format_money($e['amount'], $bc); ?></td>
+                                    <td class="text-right"><a href="<?php echo admin_url('expenses/list_expenses/' . $e['id']); ?>" class="btn btn-default btn-icon btn-sm"><i class="fa fa-eye"></i></a></td>
+                                </tr>
+                            <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div></div>
+                <?php endif; ?>
             </div>
         </div>
     </div>

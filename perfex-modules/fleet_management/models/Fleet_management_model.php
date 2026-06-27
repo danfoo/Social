@@ -1310,6 +1310,56 @@ class Fleet_management_model extends App_Model
      * Other costed records linked to a supplier (maintenance / fuel / reminders),
      * normalised into a single ledger list.
      */
+    /* ---- Core Perfex expense <-> fleet supplier assignment ---- */
+
+    public function get_expense_supplier($expense_id)
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_expense_suppliers')) {
+            return 0;
+        }
+        $row = $this->db->get_where(db_prefix() . 'fleet_expense_suppliers', ['expense_id' => $expense_id])->row();
+
+        return $row ? (int) $row->supplier_id : 0;
+    }
+
+    public function set_expense_supplier($expense_id, $supplier_id)
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_expense_suppliers')) {
+            return;
+        }
+
+        $this->db->where('expense_id', (int) $expense_id)->delete(db_prefix() . 'fleet_expense_suppliers');
+
+        if ($supplier_id) {
+            $this->db->insert(db_prefix() . 'fleet_expense_suppliers', [
+                'expense_id'  => (int) $expense_id,
+                'supplier_id' => (int) $supplier_id,
+            ]);
+        }
+    }
+
+    /** Core Perfex expenses assigned to a supplier (for the supplier ledger). */
+    public function get_supplier_assigned_expenses($supplier_id, $start = null, $end = null)
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_expense_suppliers')
+            || !$this->db->table_exists(db_prefix() . 'expenses')) {
+            return [];
+        }
+
+        $this->db->select('e.id, e.expense_name, e.amount, e.date, e.reference_no, ec.name as category_name');
+        $this->db->from(db_prefix() . 'fleet_expense_suppliers es');
+        $this->db->join(db_prefix() . 'expenses e', 'e.id = es.expense_id');
+        $this->db->join(db_prefix() . 'expenses_categories ec', 'ec.id = e.category', 'left');
+        $this->db->where('es.supplier_id', $supplier_id);
+        if ($start && $end) {
+            $this->db->where('e.date >=', $start);
+            $this->db->where('e.date <=', $end);
+        }
+        $this->db->order_by('e.date', 'desc');
+
+        return $this->db->get()->result_array();
+    }
+
     public function get_supplier_costs($supplier_id, $start = null, $end = null)
     {
         $ledger = [];

@@ -42,6 +42,7 @@ class Suppliers extends AdminController
         $data['supplier'] = $supplier;
         $data['orders']   = $this->fleet->get_supplier_orders($id, $start, $end);
         $data['costs']    = $this->fleet->get_supplier_costs($id, $start, $end);
+        $data['expenses'] = $this->fleet->get_supplier_assigned_expenses($id, $start, $end);
         $data['summary']  = $this->fleet->supplier_accounting($id, $start, $end);
         $data['period']   = $period;
         $data['title']    = $supplier->name;

@@ -588,6 +588,16 @@ if (!$CI->db->table_exists(db_prefix() . 'fleet_fuel_files')) {
     ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
 }
 
+// Link a core Perfex expense to a fleet supplier (assigned from the expense form).
+if (!$CI->db->table_exists(db_prefix() . 'fleet_expense_suppliers')) {
+    $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_expense_suppliers` (
+        `expense_id` INT(11) NOT NULL,
+        `supplier_id` INT(11) NOT NULL,
+        PRIMARY KEY (`expense_id`),
+        KEY `supplier_id` (`supplier_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
+}
+
 // Change-approval workflow: pending update/delete requests awaiting validation.
 if (!$CI->db->table_exists(db_prefix() . 'fleet_approvals')) {
     $CI->db->query('CREATE TABLE `' . db_prefix() . "fleet_approvals` (

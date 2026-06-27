@@ -14,7 +14,7 @@ define('FLEET_MANAGEMENT_MODULE', 'fleet_management');
 
 // Bump this whenever the database schema changes so the auto-migration below
 // recreates any missing table/column without a manual deactivate/reactivate.
-define('FLEET_MANAGEMENT_DB_VERSION', '1.0.25');
+define('FLEET_MANAGEMENT_DB_VERSION', '1.0.26');
 
 $CI = &get_instance();
 
@@ -214,4 +214,90 @@ function fleet_management_cron()
     $CI->fleet_management_model->send_due_reminders();
     $CI->fleet_management_model->send_due_license_reminders();
     $CI->fleet_management_model->notify_ending_rentals();
+}
+
+/**
+ * Inject a "fleet supplier" dropdown into the core Perfex expense add/edit form
+ * (right below the Client field) so an expense can be assigned to a supplier.
+ */
+hooks()->add_action('app_admin_footer', 'fleet_expense_supplier_field');
+
+function fleet_expense_supplier_field()
+{
+    $CI = &get_instance();
+
+    if ($CI->uri->segment(1) !== 'expenses' || $CI->uri->segment(2) !== 'expense') {
+        return;
+    }
+    if (!staff_can('view', 'fleet')) {
+        return;
+    }
+
+    $CI->load->model('fleet_management/fleet_management_model', 'fleet');
+    $suppliers = $CI->fleet->get_supplier();
+
+    $expense_id = (int) $CI->uri->segment(3);
+    $selected   = $expense_id ? (int) $CI->fleet->get_expense_supplier($expense_id) : 0;
+
+    $options = '<option value="">' . _l('fleet_no_supplier') . '</option>';
+    foreach ($suppliers as $s) {
+        $sel = ($selected == $s['id']) ? 'selected' : '';
+        $options .= '<option value="' . $s['id'] . '" ' . $sel . '>' . html_escape($s['name']) . '</option>';
+    }
+
+    echo '<div id="fleet_expense_supplier_wrap" style="display:none;">
+        <div class="form-group">
+            <label class="control-label" for="fleet_supplier_id">' . _l('fleet_expense_supplier_label') . '</label>
+            <select name="fleet_supplier_id" id="fleet_supplier_id" class="selectpicker" data-width="100%" data-live-search="true" data-none-selected-text="' . _l('fleet_no_supplier') . '">' . $options . '</select>
+        </div>
+    </div>
+    <script>
+    $(function(){
+        var $client = $(\'select[name="clientid"]\').closest(".form-group");
+        var $wrap   = $("#fleet_expense_supplier_wrap .form-group");
+        if ($client.length && $wrap.length) {
+            $client.after($wrap);
+            $("#fleet_expense_supplier_wrap").remove();
+            if ($.fn.selectpicker) { $("#fleet_supplier_id").selectpicker(); }
+        }
+    });
+    </script>';
+}
+
+/**
+ * Persist / clean the expense -> fleet supplier assignment.
+ */
+hooks()->add_action('after_expense_added', 'fleet_save_expense_supplier');
+hooks()->add_action('after_expense_updated', 'fleet_save_expense_supplier');
+
+function fleet_save_expense_supplier($id)
+{
+    $CI = &get_instance();
+
+    if (is_array($id)) {
+        $id = $id['id'] ?? (isset($id['expenseid']) ? $id['expenseid'] : reset($id));
+    }
+    $id = (int) $id;
+    if (!$id) {
+        $id = (int) $CI->uri->segment(3);
+    }
+    if (!$id) {
+        return;
+    }
+
+    $CI->load->model('fleet_management/fleet_management_model', 'fleet');
+    $CI->fleet->set_expense_supplier($id, $CI->input->post('fleet_supplier_id'));
+}
+
+hooks()->add_action('after_expense_deleted', 'fleet_delete_expense_supplier');
+
+function fleet_delete_expense_supplier($id)
+{
+    $CI = &get_instance();
+    if (is_array($id)) {
+        $id = $id['id'] ?? reset($id);
+    }
+    if ($CI->db->table_exists(db_prefix() . 'fleet_expense_suppliers')) {
+        $CI->db->where('expense_id', (int) $id)->delete(db_prefix() . 'fleet_expense_suppliers');
+    }
 }
