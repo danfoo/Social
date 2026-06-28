@@ -294,6 +294,48 @@ function fleet_expense_supplier_field()
 }
 
 /**
+ * Remove our custom field from the POST very early (before Perfex's expense
+ * controller inserts the POST into tblexpenses, which would raise an "Unknown
+ * column" SQL error / 500). The value is stashed for the after-save hook.
+ */
+hooks()->add_action('app_init', 'fleet_capture_expense_supplier');
+
+function fleet_capture_expense_supplier()
+{
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+        return;
+    }
+    $uri = $_SERVER['REQUEST_URI'] ?? '';
+    if (strpos($uri, 'expenses/expense') === false) {
+        return;
+    }
+    if (isset($_POST['fleet_supplier_id'])) {
+        $GLOBALS['fleet_expense_supplier_value'] = $_POST['fleet_supplier_id'];
+        unset($_POST['fleet_supplier_id']);
+    }
+}
+
+/**
+ * Belt-and-suspenders: also strip the field from the data array Perfex filters
+ * just before the DB write, in case it reached that far.
+ */
+hooks()->add_filter('before_expense_added', 'fleet_filter_expense_data');
+hooks()->add_filter('before_expense_updated', 'fleet_filter_expense_data');
+hooks()->add_filter('before_update_expense', 'fleet_filter_expense_data');
+
+function fleet_filter_expense_data($data)
+{
+    if (is_array($data)) {
+        unset($data['fleet_supplier_id']);
+        if (isset($data['data']) && is_array($data['data'])) {
+            unset($data['data']['fleet_supplier_id']);
+        }
+    }
+
+    return $data;
+}
+
+/**
  * Persist / clean the expense -> fleet supplier assignment.
  */
 hooks()->add_action('after_expense_added', 'fleet_save_expense_supplier');
@@ -318,8 +360,10 @@ function fleet_save_expense_supplier($id)
         return;
     }
 
+    $supplier = $GLOBALS['fleet_expense_supplier_value'] ?? $CI->input->post('fleet_supplier_id');
+
     $CI->load->model('fleet_management/fleet_management_model', 'fleet');
-    $CI->fleet->set_expense_supplier($id, $CI->input->post('fleet_supplier_id'));
+    $CI->fleet->set_expense_supplier($id, $supplier);
 }
 
 hooks()->add_action('after_expense_deleted', 'fleet_delete_expense_supplier');
