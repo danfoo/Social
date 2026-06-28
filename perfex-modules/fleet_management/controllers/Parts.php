@@ -204,6 +204,17 @@ class Parts extends AdminController
 
     public function order_pdf($id)
     {
+        $this->_supplier_pdf('parts/order_pdf', 'bon-commande-' . $id, 'PO-' . $id, $id);
+    }
+
+    public function invoice_pdf($id)
+    {
+        $this->_supplier_pdf('parts/invoice_pdf', 'facture-fournisseur-' . $id, 'FACT-' . $id, $id);
+    }
+
+    /** Render a supplier purchase-order / invoice PDF with the company footer. */
+    private function _supplier_pdf($view, $filename, $title, $id)
+    {
         if (!staff_can('view', 'fleet')) {
             access_denied('fleet');
         }
@@ -221,7 +232,7 @@ class Parts extends AdminController
             'payments' => $this->fleet->get_payments('fleet_part_orders', $id),
         ];
 
-        $html = $this->load->view('fleet_management/parts/order_pdf', $data, true);
+        $html = $this->load->view('fleet_management/' . $view, $data, true);
 
         if (!class_exists('TCPDF')) {
             echo $html; // graceful fallback (printable HTML) if the PDF engine is unavailable
@@ -241,7 +252,7 @@ class Parts extends AdminController
         $pdf = new Fleet_po_pdf('P', 'mm', 'A4', true, 'UTF-8');
         $pdf->footerHtml = $footer;
         $pdf->SetCreator(get_option('companyname'));
-        $pdf->SetTitle('PO-' . $id);
+        $pdf->SetTitle($title);
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(true);
         $pdf->setFooterMargin(18);
@@ -250,7 +261,7 @@ class Parts extends AdminController
         $pdf->AddPage();
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        $pdf->Output('supplier-order-' . $id . '.pdf', 'I');
+        $pdf->Output($filename . '.pdf', 'I');
     }
 
     /* ---------------- Export ---------------- */

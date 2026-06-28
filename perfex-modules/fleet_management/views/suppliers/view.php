@@ -84,7 +84,8 @@ function fleet_pay_badge($total, $paid)
                                     <td class="text-danger"><?php echo app_format_money($o['remaining'], $bc); ?></td>
                                     <td><?php echo fleet_pay_badge($o['total_price'], $o['paid_amount']); ?></td>
                                     <td class="text-right">
-                                        <a href="<?php echo admin_url('fleet_management/parts/order_pdf/' . $o['id']); ?>" target="_blank" class="btn btn-default btn-icon btn-sm" title="PDF"><i class="fa fa-file-pdf"></i></a>
+                                        <a href="<?php echo admin_url('fleet_management/parts/order_pdf/' . $o['id']); ?>" target="_blank" class="btn btn-default btn-icon btn-sm" title="<?php echo _l('fleet_purchase_order'); ?>"><i class="fa fa-file-pdf"></i></a>
+                                        <a href="<?php echo admin_url('fleet_management/parts/invoice_pdf/' . $o['id']); ?>" target="_blank" class="btn btn-default btn-icon btn-sm" title="<?php echo _l('fleet_supplier_invoice'); ?>"><i class="fa fa-file-text"></i></a>
                                         <?php if ($o['remaining'] > 0.001 && staff_can('edit', 'fleet')) : ?>
                                             <a href="#" class="btn btn-success btn-sm" onclick="fleet_pay('fleet_part_orders', <?php echo $o['id']; ?>, <?php echo (float) $o['remaining']; ?>); return false;"><i class="fa fa-credit-card"></i> <?php echo _l('fleet_pay'); ?></a>
                                         <?php endif; ?>

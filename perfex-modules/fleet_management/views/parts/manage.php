@@ -143,7 +143,8 @@ foreach ($items as $it) {
                                                 <td><?php echo $o['order_date'] ? _d($o['order_date']) : '-'; ?></td>
                                                 <td><span class="label label-<?php echo $order_status[$o['status']] ?? 'default'; ?>"><?php echo _l('fleet_ostatus_' . $o['status']); ?></span></td>
                                                 <td class="text-right">
-                                                    <a href="<?php echo admin_url('fleet_management/parts/order_pdf/' . $o['id']); ?>" target="_blank" class="btn btn-default btn-icon btn-sm" title="PDF"><i class="fa fa-file-pdf"></i></a>
+                                                    <a href="<?php echo admin_url('fleet_management/parts/order_pdf/' . $o['id']); ?>" target="_blank" class="btn btn-default btn-icon btn-sm" title="<?php echo _l('fleet_purchase_order'); ?>"><i class="fa fa-file-pdf"></i></a>
+                                                    <a href="<?php echo admin_url('fleet_management/parts/invoice_pdf/' . $o['id']); ?>" target="_blank" class="btn btn-default btn-icon btn-sm" title="<?php echo _l('fleet_supplier_invoice'); ?>"><i class="fa fa-file-text"></i></a>
                                                     <?php if ($o['status'] === 'ordered' && staff_can('edit', 'fleet')) : ?>
                                                         <a href="<?php echo admin_url('fleet_management/parts/order_receive/' . $o['id']); ?>" class="btn btn-success btn-sm"><i class="fa fa-check"></i> <?php echo _l('fleet_receive'); ?></a>
                                                         <a href="<?php echo admin_url('fleet_management/parts/order_cancel/' . $o['id']); ?>" class="btn btn-default btn-sm"><?php echo _l('fleet_cancel_order'); ?></a>

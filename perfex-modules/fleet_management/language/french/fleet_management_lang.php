@@ -554,3 +554,8 @@ $lang['fleet_expense_name']             = 'Libellé';
 $lang['fleet_payments_history']         = 'Historique des paiements';
 $lang['fleet_no_payments']              = 'Aucun paiement enregistré';
 $lang['fleet_payment_deleted']          = 'Paiement supprimé';
+
+# Supplier invoice (purchase invoice) document
+$lang['fleet_supplier_invoice']         = 'Facture fournisseur';
+$lang['fleet_invoice_generated_by']     = 'Document généré par';
+$lang['fleet_invoice_billed_to']        = 'Facturé à';
