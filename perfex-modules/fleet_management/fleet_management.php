@@ -226,18 +226,25 @@ function fleet_expense_supplier_field()
 {
     $CI = &get_instance();
 
-    if ($CI->uri->segment(1) !== 'expenses' || $CI->uri->segment(2) !== 'expense') {
+    // Detect the expense add/edit page regardless of the leading "admin/"
+    // segment (admin controllers live in a sub-directory).
+    $uri = $CI->uri->uri_string();
+    if (strpos($uri, 'expenses/expense') === false) {
         return;
     }
     if (!staff_can('view', 'fleet')) {
         return;
     }
 
+    // Expense id is the segment right after "expense" (edit page only).
+    $parts      = explode('/', $uri);
+    $idx        = array_search('expense', $parts, true);
+    $expense_id = ($idx !== false && isset($parts[$idx + 1]) && is_numeric($parts[$idx + 1])) ? (int) $parts[$idx + 1] : 0;
+
     $CI->load->model('fleet_management/fleet_management_model', 'fleet');
     $suppliers = $CI->fleet->get_supplier();
 
-    $expense_id = (int) $CI->uri->segment(3);
-    $selected   = $expense_id ? (int) $CI->fleet->get_expense_supplier($expense_id) : 0;
+    $selected = $expense_id ? (int) $CI->fleet->get_expense_supplier($expense_id) : 0;
 
     $options = '<option value="">' . _l('fleet_no_supplier') . '</option>';
     foreach ($suppliers as $s) {
@@ -301,7 +308,11 @@ function fleet_save_expense_supplier($id)
     }
     $id = (int) $id;
     if (!$id) {
-        $id = (int) $CI->uri->segment(3);
+        $parts = explode('/', $CI->uri->uri_string());
+        $idx   = array_search('expense', $parts, true);
+        if ($idx !== false && isset($parts[$idx + 1]) && is_numeric($parts[$idx + 1])) {
+            $id = (int) $parts[$idx + 1];
+        }
     }
     if (!$id) {
         return;
