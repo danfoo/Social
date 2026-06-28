@@ -246,21 +246,43 @@ function fleet_expense_supplier_field()
     }
 
     echo '<div id="fleet_expense_supplier_wrap" style="display:none;">
-        <div class="form-group">
+        <div class="form-group fleet-expense-supplier" style="margin-top:10px;">
             <label class="control-label" for="fleet_supplier_id">' . _l('fleet_expense_supplier_label') . '</label>
-            <select name="fleet_supplier_id" id="fleet_supplier_id" class="selectpicker" data-width="100%" data-live-search="true" data-none-selected-text="' . _l('fleet_no_supplier') . '">' . $options . '</select>
+            <select name="fleet_supplier_id" id="fleet_supplier_id" class="selectpicker form-control" data-width="100%" data-live-search="true" data-none-selected-text="' . _l('fleet_no_supplier') . '">' . $options . '</select>
         </div>
     </div>
     <script>
-    $(function(){
-        var $client = $(\'select[name="clientid"]\').closest(".form-group");
-        var $wrap   = $("#fleet_expense_supplier_wrap .form-group");
-        if ($client.length && $wrap.length) {
-            $client.after($wrap);
-            $("#fleet_expense_supplier_wrap").remove();
-            if ($.fn.selectpicker) { $("#fleet_supplier_id").selectpicker(); }
+    (function(){
+        var tries = 0;
+        function inject(){
+            if (document.getElementById("fleet_supplier_id") && document.getElementById("fleet_supplier_id").offsetParent !== null) { return; }
+            var $wrap = jQuery("#fleet_expense_supplier_wrap .fleet-expense-supplier");
+            if (!$wrap.length) { return; }
+
+            // Find the expense form (the form holding the amount / client / category fields).
+            var $form = jQuery("form").filter(function(){
+                return jQuery(this).find(\'[name="amount"],[name="clientid"],[name="category"]\').length > 0;
+            }).first();
+
+            if (!$form.length) { if (tries++ < 40) { setTimeout(inject, 300); } return; }
+
+            // Preferred anchor: right after the Client field.
+            var $client = $form.find(\'[name="clientid"]\').first();
+            if ($client.length) {
+                var $container = $client.closest(".form-group, .mb-3, .mbot15, .form-group-custom");
+                if ($container.length) { $container.after($wrap); }
+                else { $client.after($wrap); }
+            } else {
+                var $submit = $form.find(\'button[type="submit"], [type="submit"]\').first();
+                if ($submit.length) { $submit.closest("div").before($wrap); }
+                else { $form.append($wrap); }
+            }
+
+            jQuery("#fleet_expense_supplier_wrap").remove();
+            if (jQuery.fn.selectpicker) { jQuery("#fleet_supplier_id").selectpicker(); }
         }
-    });
+        if (window.jQuery) { jQuery(inject); } else { setTimeout(inject, 500); }
+    })();
     </script>';
 }
 
