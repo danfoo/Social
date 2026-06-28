@@ -164,6 +164,41 @@ function fleet_pay_badge($total, $paid)
                     </div>
                 </div></div>
                 <?php endif; ?>
+
+                <!-- Payments history -->
+                <div class="panel_s"><div class="panel-body">
+                    <h4 class="bold no-margin"><i class="fa fa-credit-card"></i> <?php echo _l('fleet_payments_history'); ?></h4>
+                    <hr class="hr-panel-heading" />
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead><tr>
+                                <th><?php echo _l('fleet_payment_date'); ?></th>
+                                <th><?php echo _l('fleet_order'); ?></th>
+                                <th><?php echo _l('fleet_payment_mode'); ?></th>
+                                <th class="text-right"><?php echo _l('fleet_payment_amount'); ?></th>
+                                <th class="text-right"><?php echo _l('options'); ?></th>
+                            </tr></thead>
+                            <tbody>
+                            <?php foreach ($payments as $p) : ?>
+                                <tr>
+                                    <td><?php echo $p['payment_date'] ? _d($p['payment_date']) : '-'; ?></td>
+                                    <td><?php echo html_escape($p['source_label']); ?>
+                                        <?php if ($p['note']) : ?><br><small class="text-muted"><?php echo html_escape($p['note']); ?></small><?php endif; ?>
+                                    </td>
+                                    <td><?php echo html_escape($p['payment_mode']) ?: '—'; ?></td>
+                                    <td class="text-right text-success bold"><?php echo app_format_money($p['amount'], $bc); ?></td>
+                                    <td class="text-right">
+                                        <?php if (staff_can('edit', 'fleet')) : ?>
+                                            <a href="<?php echo admin_url('fleet_management/suppliers/delete_payment/' . $p['id'] . '/' . $supplier->id); ?>" class="btn btn-danger btn-icon btn-sm _delete"><i class="fa fa-remove"></i></a>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                            <?php if (empty($payments)) : ?><tr><td colspan="5" class="text-center text-muted"><?php echo _l('fleet_no_payments'); ?></td></tr><?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div></div>
             </div>
         </div>
     </div>
@@ -181,7 +216,13 @@ function fleet_pay_badge($total, $paid)
             <div class="col-md-6"><?php echo render_input('amount', 'fleet_payment_amount', '', 'number'); ?></div>
             <div class="col-md-6"><?php echo render_date_input('payment_date', 'fleet_payment_date', _d(date('Y-m-d'))); ?></div>
         </div>
-        <?php echo render_input('payment_mode', 'fleet_payment_mode', ''); ?>
+        <?php
+        $mode_options = [['id' => '', 'name' => '—']];
+        foreach ($payment_modes as $pm) {
+            $mode_options[] = ['id' => $pm['name'], 'name' => $pm['name']];
+        }
+        echo render_select('payment_mode', $mode_options, ['id', 'name'], 'fleet_payment_mode');
+        ?>
         <?php echo render_textarea('note', 'fleet_notes', ''); ?>
         <p class="text-muted"><small><?php echo _l('fleet_remaining'); ?> : <span id="pay_remaining" class="bold"></span></small></p>
     </div>

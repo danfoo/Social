@@ -218,6 +218,7 @@ class Parts extends AdminController
             'items'    => $this->fleet->get_order_items($id),
             'supplier' => $order->supplier_id ? $this->fleet->get_supplier($order->supplier_id) : null,
             'paid'     => $this->fleet->record_paid('fleet_part_orders', $id),
+            'payments' => $this->fleet->get_payments('fleet_part_orders', $id),
         ];
 
         $html = $this->load->view('fleet_management/parts/order_pdf', $data, true);

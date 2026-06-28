@@ -88,6 +88,25 @@ $has_logo  = $logo_path && is_file($logo_path);
     </tr>
 </table>
 
+<?php if (!empty($payments)) : ?>
+    <br>
+    <span style="font-size:11px; font-weight:bold;"><?php echo _l('fleet_payments_history'); ?></span>
+    <table border="1" cellpadding="5" style="width:100%; font-size:10px; border-collapse:collapse; margin-top:4px;">
+        <tr style="background-color:#f0f2f5;">
+            <th width="30%" style="text-align:left;"><?php echo _l('fleet_payment_date'); ?></th>
+            <th width="45%" style="text-align:left;"><?php echo _l('fleet_payment_mode'); ?></th>
+            <th width="25%" style="text-align:right;"><?php echo _l('fleet_payment_amount'); ?></th>
+        </tr>
+        <?php foreach ($payments as $p) : ?>
+            <tr>
+                <td><?php echo $p['payment_date'] ? _d($p['payment_date']) : '-'; ?></td>
+                <td><?php echo html_escape($p['payment_mode']) ?: '—'; ?></td>
+                <td style="text-align:right;"><?php echo app_format_money($p['amount'], $bc); ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+<?php endif; ?>
+
 <?php if ($order->notes) : ?>
     <br><br><span style="font-size:10px; color:#777777;"><?php echo nl2br(html_escape($order->notes)); ?></span>
 <?php endif; ?>

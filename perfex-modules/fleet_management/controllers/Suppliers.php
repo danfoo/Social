@@ -39,13 +39,17 @@ class Suppliers extends AdminController
         $period            = $this->input->get('period') ?: 'all';
         list($start, $end) = fleet_period_range($period);
 
-        $data['supplier'] = $supplier;
-        $data['orders']   = $this->fleet->get_supplier_orders($id, $start, $end);
-        $data['costs']    = $this->fleet->get_supplier_costs($id, $start, $end);
-        $data['expenses'] = $this->fleet->get_supplier_assigned_expenses($id, $start, $end);
-        $data['summary']  = $this->fleet->supplier_accounting($id, $start, $end);
-        $data['period']   = $period;
-        $data['title']    = $supplier->name;
+        $this->load->model('payment_modes_model');
+
+        $data['supplier']      = $supplier;
+        $data['orders']        = $this->fleet->get_supplier_orders($id, $start, $end);
+        $data['costs']         = $this->fleet->get_supplier_costs($id, $start, $end);
+        $data['expenses']      = $this->fleet->get_supplier_assigned_expenses($id, $start, $end);
+        $data['payments']      = $this->fleet->get_supplier_payments($id, $start, $end);
+        $data['payment_modes'] = $this->payment_modes_model->get('', ['active' => 1]);
+        $data['summary']       = $this->fleet->supplier_accounting($id, $start, $end);
+        $data['period']        = $period;
+        $data['title']         = $supplier->name;
         $this->load->view('fleet_management/suppliers/view', $data);
     }
 
@@ -107,6 +111,17 @@ class Suppliers extends AdminController
             set_alert('warning', _l('fleet_payment_invalid'));
         }
 
+        redirect(admin_url('fleet_management/suppliers/view/' . $supplier_id));
+    }
+
+    public function delete_payment($payment_id, $supplier_id)
+    {
+        if (!staff_can('edit', 'fleet')) {
+            access_denied('fleet');
+        }
+
+        $this->fleet->delete_payment($payment_id);
+        set_alert('success', _l('fleet_payment_deleted'));
         redirect(admin_url('fleet_management/suppliers/view/' . $supplier_id));
     }
 

@@ -549,3 +549,8 @@ $lang['fleet_no_supplier']              = 'Aucun fournisseur';
 $lang['fleet_expense_supplier_label']   = 'Fournisseur (flotte)';
 $lang['fleet_assigned_expenses']        = 'Dépenses Perfex assignées';
 $lang['fleet_expense_name']             = 'Libellé';
+
+# Supplier payments history
+$lang['fleet_payments_history']         = 'Historique des paiements';
+$lang['fleet_no_payments']              = 'Aucun paiement enregistré';
+$lang['fleet_payment_deleted']          = 'Paiement supprimé';

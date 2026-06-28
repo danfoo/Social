@@ -1501,6 +1501,44 @@ class Fleet_management_model extends App_Model
         return true;
     }
 
+    /** All payments recorded for a supplier (for the ledger history). */
+    public function get_supplier_payments($supplier_id, $start = null, $end = null)
+    {
+        if (!$this->db->table_exists(db_prefix() . 'fleet_payments')) {
+            return [];
+        }
+
+        $this->db->where('supplier_id', $supplier_id);
+        if ($start && $end) {
+            $this->db->where('payment_date >=', $start);
+            $this->db->where('payment_date <=', $end);
+        }
+        $this->db->order_by('payment_date', 'desc')->order_by('id', 'desc');
+        $rows = $this->db->get(db_prefix() . 'fleet_payments')->result_array();
+
+        $labels = [
+            'fleet_part_orders' => 'PO-',
+            'fleet_maintenance' => null,
+            'fleet_fuel_logs'   => null,
+            'fleet_reminders'   => null,
+        ];
+        foreach ($rows as &$r) {
+            if ($r['source_table'] === 'fleet_part_orders') {
+                $r['source_label'] = 'PO-' . $r['source_id'];
+            } elseif ($r['source_table'] === 'fleet_maintenance') {
+                $r['source_label'] = _l('fleet_maintenance') . ' #' . $r['source_id'];
+            } elseif ($r['source_table'] === 'fleet_fuel_logs') {
+                $r['source_label'] = _l('fleet_fuel') . ' #' . $r['source_id'];
+            } elseif ($r['source_table'] === 'fleet_reminders') {
+                $r['source_label'] = _l('fleet_reminder') . ' #' . $r['source_id'];
+            } else {
+                $r['source_label'] = '#' . $r['source_id'];
+            }
+        }
+
+        return $rows;
+    }
+
     /**
      * Toggle the paid flag of a costed record (supplier accounting).
      */
