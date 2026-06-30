@@ -169,7 +169,8 @@ hooks()->add_action('app_admin_footer', 'fleet_management_admin_footer');
 
 function fleet_management_admin_footer()
 {
-    echo '<style>
+    echo <<<'FLEETFOOTER'
+<style>
 .fleet-list-page .panel_s{border:0;border-radius:10px;box-shadow:0 2px 10px rgba(20,30,60,.05);}
 .fleet-list-page .fleet-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px;}
 .fleet-list-page .fleet-toolbar h3{margin:0;font-weight:700;font-size:20px;}
@@ -188,17 +189,91 @@ function fleet_management_admin_footer()
 .fleet-list-page .fleet-veh .av{width:38px;height:38px;border-radius:10px;background:#eef1ff;color:#6571ff;display:flex;align-items:center;justify-content:center;margin-right:10px;flex:0 0 38px;}
 .fleet-list-page .fleet-plate{display:inline-block;background:#f0f2f5;border-radius:6px;padding:2px 8px;font-weight:600;font-size:12px;letter-spacing:.5px;}
 .fleet-list-page .fleet-list .label{border-radius:20px;padding:.4em .85em;font-weight:600;font-size:11px;}
+.fleet-pagination{display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:12px 4px 2px;flex-wrap:wrap;}
+.fleet-pagination .fleet-pg-info{color:#97a1b3;font-size:12px;}
+.fleet-pagination .btn-group .btn{min-width:34px;}
 </style>
 <script>
 (function($){
+    var SIZE = 15;
+
+    function rowsOf($t){ return $t.children("tbody").children("tr").not(".fleet-pager-row"); }
+    function isEmptyRow($tr){ return $tr.children("td").length === 1 && $tr.children("td").attr("colspan"); }
+
+    function render($t){
+        var q = ($t.data("fq") || "").toString().toLowerCase();
+        var rows = rowsOf($t);
+        var matched = rows.filter(function(){
+            var $tr = $(this);
+            if (isEmptyRow($tr)) { return false; }
+            return q === "" || $tr.text().toLowerCase().indexOf(q) > -1;
+        });
+        var total = matched.length;
+        var pages = Math.max(1, Math.ceil(total / SIZE));
+        var page  = parseInt($t.data("fp") || 1, 10);
+        if (page > pages) { page = pages; }
+        if (page < 1) { page = 1; }
+        $t.data("fp", page);
+
+        rows.hide();
+        matched.slice((page - 1) * SIZE, page * SIZE).show();
+        if (q === "") { rows.filter(function(){ return isEmptyRow($(this)); }).show(); }
+
+        pager($t, page, pages, total);
+    }
+
+    function pager($t, page, pages, total){
+        var $anchor = $t.closest(".table-responsive");
+        if (!$anchor.length) { $anchor = $t; }
+        var $bar = $anchor.next(".fleet-pagination");
+
+        if (total <= SIZE){ if ($bar.length) { $bar.remove(); } return; }
+
+        if (!$bar.length){
+            $bar = $("<div class='fleet-pagination'></div>");
+            $anchor.after($bar);
+        }
+        $bar.data("ft", $t);
+
+        var from = (page - 1) * SIZE + 1, to = Math.min(page * SIZE, total);
+        var h = "<span class='fleet-pg-info'>" + from + "–" + to + " / " + total + "</span>";
+        h += "<div class='btn-group btn-group-sm'>";
+        h += "<button type='button' class='btn btn-default fleet-pg' data-pg='" + (page - 1) + "' " + (page <= 1 ? "disabled" : "") + "><i class='fa fa-angle-left'></i></button>";
+        var start = Math.max(1, page - 2), end = Math.min(pages, start + 4);
+        start = Math.max(1, end - 4);
+        for (var i = start; i <= end; i++){
+            h += "<button type='button' class='btn " + (i === page ? "btn-primary" : "btn-default") + " fleet-pg' data-pg='" + i + "'>" + i + "</button>";
+        }
+        h += "<button type='button' class='btn btn-default fleet-pg' data-pg='" + (page + 1) + "' " + (page >= pages ? "disabled" : "") + "><i class='fa fa-angle-right'></i></button>";
+        h += "</div>";
+        $bar.html(h);
+    }
+
     $(document).on("keyup", ".fleet-search", function(){
-        var q = $(this).val().toLowerCase();
-        $(this).closest(".panel-body").find("table.fleet-list > tbody > tr").each(function(){
-            $(this).toggle($(this).text().toLowerCase().indexOf(q) > -1);
+        var q = $(this).val();
+        $(this).closest(".fleet-list-page").find("table.fleet-list").each(function(){
+            $(this).data("fq", q).data("fp", 1);
+            render($(this));
         });
     });
+
+    $(document).on("click", ".fleet-pg", function(){
+        var $t = $(this).closest(".fleet-pagination").data("ft");
+        if (!$t) { return; }
+        $t.data("fp", parseInt($(this).data("pg"), 10));
+        render($t);
+    });
+
+    function initAll(){
+        $("table.fleet-list").each(function(){
+            if (!$(this).data("fpInit")){ $(this).data("fpInit", 1).data("fp", 1); render($(this)); }
+        });
+    }
+    $(initAll);
+    setTimeout(initAll, 800);
 })(jQuery);
-</script>';
+</script>
+FLEETFOOTER;
 }
 
 /**
